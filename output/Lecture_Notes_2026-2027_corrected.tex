@@ -1,0 +1,2422 @@
+\documentclass[11pt,a4paper]{article}
+
+%======================================================================
+%  Quantum Computing for Data Science -- DU Mathematics, UCA 2026-2027
+%  Corrected and completed version of the lecture notes of C. Kriegler
+%======================================================================
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{longtable,array,booktabs}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=BrickRed,citecolor=BrickRed,urlcolor=NavyBlue}
+
+\numberwithin{equation}{section}
+\setlist[enumerate]{label=\arabic*.,leftmargin=2em}
+
+%---------------------------------------------------------------- macros
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ip}[2]{\langle #1, #2\rangle}
+\newcommand{\norm}[1]{\left\| #1\right\|}
+\newcommand{\abs}[1]{\left| #1\right|}
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\ketbra}[2]{|#1\rangle\langle #2|}
+\newcommand{\conj}[1]{\overline{#1}}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\spn}{span}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\Ran}{Ran}
+\DeclareMathOperator{\Ker}{Ker}
+\DeclareMathOperator{\Real}{Re}
+\DeclareMathOperator{\Imag}{Im}
+\newcommand{\one}{1}
+
+%------------------------------------------------- theorem environments
+% Same numbering scheme as the original notes (shared counter per section)
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{remark}[theorem]{Remark}
+
+% Results that are NOT in the original notes get a letter suffix
+% (e.g. Lemma 1.7a) so that the original numbering is preserved.
+\newcommand{\thistheoremname}{}
+\theoremstyle{plain}
+\newtheorem*{addedthm*}{\thistheoremname}
+\theoremstyle{definition}
+\newtheorem*{addeddef*}{\thistheoremname}
+\newenvironment{addedthm}[1]{\renewcommand{\thistheoremname}{#1}\begin{addedthm*}}{\end{addedthm*}}
+\newenvironment{addeddef}[1]{\renewcommand{\thistheoremname}{#1}\begin{addeddef*}}{\end{addeddef*}}
+
+\renewcommand{\qedsymbol}{$\blacksquare$}
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+
+%------------------------------------------------------- coloured boxes
+\newtcolorbox{correction}[1][]{enhanced,breakable,colback=red!4,colframe=BrickRed,
+  fonttitle=\bfseries\small,title={Correction #1},left=4pt,right=4pt,top=2pt,bottom=2pt}
+\newtcolorbox{addition}[1][]{enhanced,breakable,colback=blue!3,colframe=NavyBlue!70,
+  fonttitle=\bfseries\small,title={Complement #1},left=4pt,right=4pt,top=2pt,bottom=2pt}
+
+\begin{document}
+
+%======================================================================
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Large\bfseries Universit\'e Clermont Auvergne\\[2pt]
+Quantum Computing for Data Science DU\\[2pt] Mathematics\\[2pt] Year 2026 -- 2027\par}
+\vspace{1cm}
+{\large Lecture notes of Christoph Kriegler (November 2026)\par}
+\vspace{0.6cm}
+{\large\bfseries Corrected and completed edition\par}
+\vspace{0.3cm}
+{\normalsize with all proofs, all exercise solutions and an errata list\par}
+\vfill
+\begin{minipage}{0.85\textwidth}\small
+\textbf{How to read this edition.} The text of the original notes is reproduced with
+the \emph{same numbering} (Definition 1.1, \dots, Example 8.6). In addition:
+\begin{itemize}[leftmargin=1.5em]
+\item \textcolor{BrickRed}{\textbf{red boxes}} (``Correction'') point out and fix a
+  mistake of the original notes; the statement printed in the main text is already the
+  corrected one;
+\item \textcolor{NavyBlue}{\textbf{blue boxes}} (``Complement'') contain material that was
+  missing or only announced (``one can prove'', ``with a little more work'', \dots);
+\item every exercise is followed by a complete \emph{Solution};
+\item every statement given without proof is followed by a \emph{Proof};
+\item new auxiliary results carry a letter suffix (e.g.\ Lemma 1.7a) so that the
+  original numbering is unchanged.
+\end{itemize}
+A summary of all corrections is given on the next pages.
+
+\medskip
+\textbf{Conventions.} $\N=\{1,2,3,\dots\}$ and $\N_0=\N\cup\{0\}$ (this is the convention
+implicitly used in Example 3.5). $\K$ denotes $\R$ or $\C$. Scalar products are
+\emph{anti-linear in the first} and linear in the second argument (physicists' convention,
+as in Definition 1.6).
+\end{minipage}
+\vspace{1cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+%======================================================================
+\section*{Summary of corrections (errata)}
+\addcontentsline{toc}{section}{Summary of corrections (errata)}
+
+Severity: \textbf{M} = mathematical error (wrong formula/statement),
+\textbf{G} = gap (true statement, incomplete argument or imprecise definition),
+\textbf{T} = typo / wording.
+
+{\small
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}p{0.6cm}p{1.9cm}p{5.6cm}p{6.0cm}c@{}}
+\toprule
+\# & Where & Original & Corrected & \\
+\midrule\endhead
+1 & Def.~1.1 & The list of vector space axioms omits commutativity and associativity of $+$ and the distributive law $\lambda(x+y)=\lambda x+\lambda y$. & Axioms completed. & G\\
+2 & Def.~1.6(3) & ``anti-symetry'' & \emph{conjugate (Hermitian) symmetry}; ``anti-symmetry'' means something else ($\ip{x}{y}=-\ip{y}{x}$). & T\\
+3 & Ex.~1.12 & $\ip{x}{y}=\sum_{k=1}^n\conj{x_n}\,y_n$ & $\ip{x}{y}=\sum_{k=1}^n\conj{x_k}\,y_k$ (wrong summation index). & M\\
+4 & after Ex.~1.14 & ``$C([a,b])$ is not a Hilbert space'' -- no justification. & Explicit non-convergent Cauchy sequence given. & G\\
+5 & Rem.~1.21, Ex.~1.22, \dots & Bra/kets typeset with the relation symbols $<,>$ ($|\phi>$, $<\psi|$). & $\ket{\phi}$, $\bra{\psi}$ with angle brackets $\langle\ \rangle$. & T\\
+6 & Prop.~2.8 & For a non-separable Hilbert space the orthonormal basis is uncountable; ``convergent series'' must be read as an unconditional sum with countably many non-zero terms. & Remark added. & G\\
+7 & Ex.~3.4 & ``$X$ is called a \emph{Bernoulli} variable with parameters $n$ and $p$'' & This is a \emph{binomial} variable $\mathcal B(n,p)$. A Bernoulli variable is the case $n=1$. & M\\
+8 & Ex.~3.6 & ``Show that $\PP(\{X\in\{0,\dots,n\}\})=1$'' & Trivially true since $X$ takes values in $\{0,\dots,n\}$; the intended (non-trivial) statement is $\sum_{k}\PP(A_k)=1$, i.e.\ the definition is consistent. Same for Poisson. & G\\
+9 & Def.~3.11 & $\E(X)$ defined ``whenever the series converges'' & Must require \emph{absolute} convergence (a sum over a countable set has no natural order). & M\\
+10 & Ex.~3.12(3) & Poisson parameter $\lambda\geqslant 0$, while Ex.~3.5 requires $\lambda>0$. & Harmless ($\lambda=0$ gives $X=0$ a.s.); made consistent. & T\\
+11 & Prop.~4.1(2) & $a_{ij}=\ip{T(e_j)}{f_i}$ & $a_{ij}=\ip{f_i}{T(e_j)}$. With a scalar product anti-linear in the first variable, the original formula gives $\conj{a_{ij}}$. & M\\
+12 & Prop.~4.1, Prop.~6.3, Ex.~4.7 & ``lines'' of a matrix; ``bijective (i.e.\ exact)''; ``quantum calculus'' & ``rows''; ``bijective''; ``quantum mechanics''. & T\\
+13 & \S5 intro & ``$\lambda\in C$'' & $\lambda\in\C$. & T\\
+14 & Def.~5.4 & $e^{tA}$ defined only for $t\geqslant 0$ & The proof of Prop.~5.7 uses $e^{hA}$ with $h<0$: define $e^{tA}$ for all $t\in\R$ (even $t\in\C$). & G\\
+15 & Lemma 5.6 & Proof omitted. & Proof via Cauchy product given. & G\\
+16 & Proof of Prop.~5.7 & ``according to Lemma ??'' & Broken reference: Lemma~5.6. & T\\
+17 & Proof of Prop.~5.7 & $\big\|\sum_{n\ge1}A\frac{(hA)^{n-1}}{n!}u_1-Au_1\big\| = \big\|\sum_{n\ge2}\frac{(hA)^{n-1}}{n!}u_1\big\|$, final bound $|h|\,\|A\|\,e^{|h|\|A\|}\|u_1\|$ & A factor $A$ is lost: correct is $\big\|\sum_{n\ge2}A\frac{(hA)^{n-1}}{n!}u_1\big\|\le |h|\,\|A\|^2e^{|h|\|A\|}\|u_1\|$. Conclusion unchanged. & M\\
+18 & Prop.~5.7 & Uniqueness ``with a little more work'' & Uniqueness proved. & G\\
+19 & Ex.~5.8 & ``expoential'' (twice) & ``exponential''. & T\\
+20 & Thm.~5.9 & Proof uses $C^k=e^{A+B}$ without saying so; uses $k$ instead of $n$. & Made explicit. & G\\
+21 & Proof of Prop.~6.3 & ``It remains to show that $A$ is positive \emph{definite}'' & positive \emph{semi}-definite (e.g.\ a pure state is never positive definite for $n\ge2$). & M\\
+22 & Proof of Prop.~6.3 & ``the matrix of $T_x$ is $(\conj{x_i}x_j)_{ij}$'' & The matrix of $T_x=\ketbra{x}{x}$ is $(x_i\conj{x_j})_{ij}$; then $\tr(AT_x)=\sum_{i,j}\conj{x_i}a_{ij}x_j=\ip{x}{Ax}$. & M\\
+23 & Prop.~6.3 & Uniqueness and the converse are not proved. & Proved. & G\\
+24 & Ex.~6.4 & $\sum_{k=1}^{n}\lambda_kT_{x_k}$ & $\sum_{k=1}^{N}\lambda_kT_{x_k}$. & T\\
+25 & Ex.~6.5(1) & $A=\begin{psmallmatrix}2&-1&-1\\-1&5&1\\-1&1&1\end{psmallmatrix}$ is claimed to equal $T_x+T_y$ & False: $T_x+T_y=\begin{psmallmatrix}2&1&-1\\1&5&1\\-1&1&1\end{psmallmatrix}$ (sign of $a_{12}=a_{21}$). In fact no $x=(x_1,x_2,0)$, $y\in\R^3$ give the printed matrix. & M\\
+26 & Ex.~6.5(2) & ``Deduce that $A$ is positive definite'' & False for $A=T_x+T_y$: it has rank 2 ($\det A=0$, kernel $\spn\{(-2,1,-3)\}$). It is positive \emph{semi}-definite. & M\\
+27 & Ex.~6.5(2) & ``$\Phi:M_3(\C)\to M_3(\C)$, $B\mapsto\tr(AB)$ defines a mixed state'' & Codomain is $\C$, and $\tr A=8\neq1$: the state is $\Phi(B)=\frac18\tr(AB)$, density matrix $\rho=\frac18A$. & M\\
+28 & Ex.~7.5 & ``$x,y$ are colinear'' & Means: $x,y$ and $0$ lie on one line (i.e.\ $x,y$ linearly dependent). ``open circles'' $\to$ ``open discs''. Triangle inequality not proved. & G/T\\
+29 & Ex.~7.4 & ``metric space generalises Hilbert space'' & More precisely: every \emph{normed} space is a metric space. & T\\
+29b & Def.~7.2 & Balls with radius $r\ge0$ & $r>0$ (for $r=0$ the open ball is empty). & T\\
+29c & Def.~8.1 & Positive definite kernel: sum $>0$ ``provided that not all $c_i$ are $0$'' & Points $x_1,\dots,x_n$ must be pairwise distinct, otherwise no kernel is positive definite ($x_1=x_2$, $c=(1,-1)$). & M\\
+30 & Ex.~8.6, (8.1) & Last equality $\sum_{j,l}c_j\conj{d_l}k(x_j,y_l)=\sum_jc_j\conj{g(x_j)}$ is used without justification. & Requires $k(x,y)=\conj{k(y,x)}$, which holds for every positive semi-definite kernel (Lemma 8.1a, proved). & G\\
+31 & Ex.~8.6 & Cauchy--Schwarz used for a form not yet known to be definite; completion ``is again a space of functions'' not proved. & Lemma 1.7a (C--S for semi-definite forms) and full proof of the Moore--Aronszajn theorem (Thm.~8.7) added. & G\\
+32 & \S8 & ``we will see a converse \dots\ in the final theorem of this lecture'' -- no theorem is stated. & Stated and proved as Theorem 8.7. & G\\
+\bottomrule
+\end{longtable}
+}
+\newpage
+%======================================================================
+\section{Hilbert spaces}
+
+\begin{definition}\label{def:vs}
+Let $X$ be a non-empty set such that one can add its elements (called vectors): there is
+a mapping, the vector addition, $X\times X\to X$, $(x,y)\mapsto x+y$, which is
+\emph{commutative} ($x+y=y+x$) and \emph{associative} ($(x+y)+z=x+(y+z)$), there is a
+neutral element $0$ such that $x+0=x$ for all $x\in X$, and for all $x\in X$ there is an
+opposite vector $-x$ such that $x+(-x)=0$. Then $X$ is called a \emph{$\C$-vector space}
+if there is another mapping, the scalar multiplication $\C\times X\to X$,
+$(\lambda,x)\mapsto\lambda\cdot x$, such that the usual rules of addition and
+multiplication are valid: for all $\lambda,\mu\in\C$ and $x,y\in X$,
+\[
+\lambda\cdot(\mu\cdot x)=(\lambda\mu)\cdot x,\quad 1\cdot x=x,\quad
+(\lambda+\mu)\cdot x=\lambda\cdot x+\mu\cdot x,\quad
+\lambda\cdot(x+y)=\lambda\cdot x+\lambda\cdot y .
+\]
+Consequences of these axioms are $0\cdot x=0$ and $(-\lambda)\cdot x=\lambda\cdot(-x)=-(\lambda x)$.
+
+Similarly, $X$ is called an \emph{$\R$-vector space} if there is a scalar multiplication
+$\R\times X\to X$ with the same properties.
+\end{definition}
+
+\begin{correction}[(Def.~1.1)]
+The original definition lists $\lambda(\mu x)=(\lambda\mu)x$, $0\cdot x=0$, $1\cdot x=x$,
+$(-\lambda)x=\lambda(-x)$ and $(\lambda+\mu)x=\lambda x+\mu x$, but omits the
+commutativity/associativity of $+$ and the distributive law
+$\lambda(x+y)=\lambda x+\lambda y$, which are genuine axioms (they do not follow from the
+others). On the other hand $0\cdot x=0$ and $(-\lambda)x=-(\lambda x)$ are
+\emph{consequences}: $0\cdot x=(0+0)\cdot x=0\cdot x+0\cdot x$, hence $0\cdot x=0$; and
+$\lambda x+(-\lambda)x=(\lambda-\lambda)x=0$.
+\end{correction}
+
+\begin{example}
+Let $n\in\N$. Consider $X=\C^n$ with vector addition
+$(x_1,\dots,x_n)+(y_1,\dots,y_n)=(x_1+y_1,\dots,x_n+y_n)$ and scalar multiplication
+$\lambda\cdot(x_1,\dots,x_n)=(\lambda x_1,\dots,\lambda x_n)$. Then $X$ is a $\C$-vector
+space. Similarly, $X=\R^n$ equipped with formally the same vector addition and scalar
+multiplication is an $\R$-vector space.
+\end{example}
+
+\begin{example}
+Let $a,b\in\R$ such that $a<b$. Let $X=C([a,b])$ be the space of continuous functions
+$f:[a,b]\to\C$. If we equip $X$ with vector addition $(f+g)(t)=f(t)+g(t)$ and scalar
+multiplication $(\lambda\cdot f)(t)=\lambda f(t)$, then $X$ becomes a $\C$-vector space
+(sums and scalar multiples of continuous functions are continuous).
+\end{example}
+
+\begin{example}\label{ex:l2}
+Let $X=\ell^2=\{(x_n)_{n\in\N}\subseteq\C:\ \sum_{n\in\N}|x_n|^2<\infty\}$. If we equip $X$
+with vector addition $(x_n)_n+(y_n)_n=(x_n+y_n)_n$ and scalar multiplication
+$\lambda(x_n)_n=(\lambda x_n)_n$, then $X$ becomes a $\C$-vector space.
+\end{example}
+
+\begin{proof}
+The nontrivial part is to show that the sum of two vectors $(x_n)_n$ and $(y_n)_n$ (which
+is clearly a sequence) satisfies $\sum_{n}|x_n+y_n|^2<\infty$. For any $x,y\in\C$ we have
+\[
+|x+y|^2\leqslant(|x|+|y|)^2\leqslant\big(2\max(|x|,|y|)\big)^2=4\max(|x|^2,|y|^2)
+\leqslant4|x|^2+4|y|^2 .
+\]
+Thus
+\[
+\sum_{n\in\N}|x_n+y_n|^2\leqslant\sum_{n\in\N}\big(4|x_n|^2+4|y_n|^2\big)
+=4\sum_{n\in\N}|x_n|^2+4\sum_{n\in\N}|y_n|^2<\infty .
+\]
+Closedness under scalar multiplication is clear:
+$\sum_n|\lambda x_n|^2=|\lambda|^2\sum_n|x_n|^2<\infty$. All the axioms of
+Definition~\ref{def:vs} then hold coordinatewise, since they hold in $\C$.
+\end{proof}
+
+\begin{addeddef}{Remark 1.4a (sharper constant)}
+Since $0\le(|x|-|y|)^2$ gives $2|x||y|\le|x|^2+|y|^2$, one even has
+$|x+y|^2\le|x|^2+2|x||y|+|y|^2\le 2|x|^2+2|y|^2$.
+\end{addeddef}
+
+\begin{definition}
+Let $X$ be a $\K$-vector space with $\K=\R$ or $\K=\C$. Let $\|\cdot\|:X\to[0,\infty)$ be a
+mapping. Then $\|\cdot\|$ is called a \emph{norm} on $X$, and $(X,\|\cdot\|)$ a
+\emph{normed vector space}, if
+\begin{enumerate}
+\item $\|x\|=0\iff x=0$,
+\item $\|\lambda x\|=|\lambda|\,\|x\|$ for all $x\in X$ and $\lambda\in\K$ (homogeneity),
+\item $\|x+y\|\leqslant\|x\|+\|y\|$ for all $x,y\in X$ (triangle inequality).
+\end{enumerate}
+\end{definition}
+
+\begin{definition}\label{def:sp}
+Let $X$ be a $\K$-vector space with $\K=\R$ or $\K=\C$. A mapping
+$\ip{\cdot}{\cdot}:X\times X\to\K$ is called a \emph{scalar product} if
+\begin{enumerate}
+\item $\ip{x_1+x_2}{y}=\ip{x_1}{y}+\ip{x_2}{y}$ $(x_1,x_2,y\in X)$ and
+      $\ip{x}{y_1+y_2}=\ip{x}{y_1}+\ip{x}{y_2}$ $(x,y_1,y_2\in X)$.
+\item $\ip{\lambda x}{y}=\conj{\lambda}\ip{x}{y}$ and $\ip{x}{\lambda y}=\lambda\ip{x}{y}$
+      $(x,y\in X,\ \lambda\in\K)$.
+\item $\ip{x}{y}=\conj{\ip{y}{x}}$ $(x,y\in X)$ (\emph{conjugate symmetry}, also called
+      \emph{Hermitian symmetry}).
+\item $\ip{x}{x}\geqslant0$, $\ip{x}{x}=0\iff x=0$ $(x\in X)$ (positive definiteness).
+\end{enumerate}
+Here the properties 1.\ and 2.\ together are called \emph{sesquilinearity} of the scalar product.
+\end{definition}
+
+\begin{correction}[(Def.~1.6)]
+Property 3 was called ``anti-symetry''. The correct name is \emph{conjugate symmetry}
+(or Hermitian symmetry); ``antisymmetry'' usually means $\ip{x}{y}=-\ip{y}{x}$, which is
+something different. Note also that 3.\ implies that $\ip{x}{x}\in\R$, so that the
+inequality in 4.\ makes sense. For $\K=\R$, the bars are void and 3.\ is ordinary symmetry.
+\end{correction}
+
+All our vector spaces below are $\R$- or $\C$-vector spaces. A vector space equipped with a
+scalar product is always a normed vector space with a particular norm. This is contained
+in the following proposition.
+
+\begin{proposition}\label{prop:CS}
+Let $X$ be a vector space equipped with a scalar product $\ip{\cdot}{\cdot}$. Then for all
+$x,y\in X$ we have
+\begin{enumerate}
+\item Cauchy--Schwarz inequality: $|\ip{x}{y}|^2\leqslant\ip{x}{x}\,\ip{y}{y}$.
+\item $\|x\|=\sqrt{\ip{x}{x}}$ is a norm on $X$.
+\end{enumerate}
+In particular, $|\ip{x}{y}|\leqslant\|x\|\,\|y\|$.
+\end{proposition}
+
+We prove part 1 in a slightly more general form, which will be needed in Section~8.
+
+\begin{addedthm}{Lemma 1.7a (Cauchy--Schwarz for semi-definite forms)}
+Let $X$ be a $\K$-vector space and $s:X\times X\to\K$ satisfy properties 1--3 of
+Definition~\ref{def:sp} and $s(x,x)\ge0$ for all $x$ (but not necessarily
+$s(x,x)=0\Rightarrow x=0$). Then $|s(x,y)|^2\le s(x,x)\,s(y,y)$ for all $x,y\in X$.
+\end{addedthm}
+\begin{proof}
+Fix $x,y$ and write $c=s(x,y)$. Choose $\omega\in\K$ with $|\omega|=1$ and $c=\omega|c|$.
+For $t\in\R$ let $v=y-t\omega x$. By sesquilinearity and conjugate symmetry,
+\[
+0\le s(v,v)=s(y,y)-t\omega\, s(y,x)-t\conj{\omega}\,s(x,y)+t^2|\omega|^2s(x,x)
+= s(y,y)-2t|c|+t^2s(x,x),
+\]
+because $\omega s(y,x)=\omega\conj{c}=\omega\conj{\omega}|c|=|c|$ and
+$\conj\omega s(x,y)=\conj\omega\omega|c|=|c|$.
+If $s(x,x)=0$, the affine function $t\mapsto s(y,y)-2t|c|$ is non-negative on $\R$, which
+forces $|c|=0$, and the inequality holds. If $s(x,x)>0$, the quadratic polynomial
+$t\mapsto s(x,x)t^2-2|c|t+s(y,y)$ is non-negative on $\R$, so its discriminant is
+$\le0$: $4|c|^2-4s(x,x)s(y,y)\le0$.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:CS}]
+Part 1 is Lemma 1.7a. Part 2 is Exercise~\ref{exo:norm} below. The final inequality is the
+square root of part 1.
+\end{proof}
+
+\begin{exercise}\label{exo:norm}
+Prove the second part of Proposition~\ref{prop:CS}, assuming that the first part is true.
+\end{exercise}
+\begin{solution}
+By property 4 of Definition~\ref{def:sp}, $\ip{x}{x}\ge0$, so $\|x\|=\sqrt{\ip{x}{x}}\in[0,\infty)$ is well defined.
+\begin{enumerate}
+\item $\|x\|=0\iff\ip{x}{x}=0\iff x=0$ by positive definiteness.
+\item $\|\lambda x\|^2=\ip{\lambda x}{\lambda x}=\conj\lambda\lambda\ip{x}{x}=|\lambda|^2\|x\|^2$; take square roots.
+\item Using $\ip{y}{x}=\conj{\ip{x}{y}}$, $\Real z\le|z|$ and Cauchy--Schwarz,
+\begin{align*}
+\|x+y\|^2&=\|x\|^2+\ip{x}{y}+\ip{y}{x}+\|y\|^2=\|x\|^2+2\Real\ip{x}{y}+\|y\|^2\\
+&\le\|x\|^2+2\|x\|\|y\|+\|y\|^2=(\|x\|+\|y\|)^2 .\qedhere
+\end{align*}
+\end{enumerate}
+\end{solution}
+
+\begin{definition}
+Let $X$ be a normed vector space (e.g.\ a vector space equipped with scalar product and
+the norm from Proposition~\ref{prop:CS}). Let $(x_n)_n$ be a sequence in $X$.
+\begin{enumerate}
+\item The sequence $(x_n)_n$ is called \emph{bounded} if there exists $C>0$ such that
+      $\|x_n\|\le C$ for all $n\in\N$.
+\item The sequence $(x_n)_n$ is called a \emph{Cauchy sequence} if for all $\epsilon>0$ there
+      exists $n_0\in\N$ such that for all $n,m\geqslant n_0$, one has $\|x_n-x_m\|\leqslant\epsilon$.
+\item The sequence $(x_n)_n$ is called a \emph{convergent sequence} if there exists some
+      $x\in X$ such that for all $\epsilon>0$ there exists $n_0\in\N$ such that for all
+      $n\geqslant n_0$, one has $\|x_n-x\|\leqslant\epsilon$.
+\end{enumerate}
+\end{definition}
+
+\begin{exercise}
+Let $(x_n)_n$ be a sequence in a normed vector space.
+\begin{enumerate}
+\item Show that if $(x_n)_n$ is a Cauchy sequence, then it is bounded.
+\item Show that if $(x_n)_n$ is a convergent sequence, then it is Cauchy.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. Take $\epsilon=1$: there is $n_0$ with $\|x_n-x_{n_0}\|\le1$ for $n\ge n_0$, hence
+$\|x_n\|\le\|x_{n_0}\|+1$ for $n\ge n_0$ (triangle inequality). Then
+$C:=\max\{\|x_1\|,\dots,\|x_{n_0}\|\}+1$ satisfies $\|x_n\|\le C$ for all $n$.
+
+2. Let $x$ be the limit and $\epsilon>0$. Choose $n_0$ with $\|x_n-x\|\le\epsilon/2$ for
+$n\ge n_0$. Then for $n,m\ge n_0$:
+$\|x_n-x_m\|\le\|x_n-x\|+\|x-x_m\|\le\epsilon/2+\epsilon/2=\epsilon$.
+\end{solution}
+
+\begin{definition}
+Let $X$ be a vector space equipped with a scalar product and the norm from
+Proposition~\ref{prop:CS}. If all Cauchy sequences in $X$ converge, then $X$ is called a
+\emph{Hilbert space}.
+\end{definition}
+
+\begin{example}\label{ex:Cn}
+Let $n\in\N$. Let $X=\C^n$ equipped with
+\[
+\ip{(x_1,\dots,x_n)}{(y_1,\dots,y_n)}=\sum_{k=1}^n\conj{x_k}\,y_k .
+\]
+Then $\ip{\cdot}{\cdot}$ is a scalar product and $X$ is a Hilbert space. Here, convergence
+of a sequence $(x^{(k)})_k=(x_1^{(k)},\dots,x_n^{(k)})_k$ in $X$ simply means that
+$\lim_kx_j^{(k)}=x_j$ for all $j=1,\dots,n$ and some limit $x=(x_1,\dots,x_n)$. Similarly,
+$X=\R^n$ is a Hilbert space.
+\end{example}
+
+\begin{correction}[(Ex.~1.12)]
+The original formula reads $\sum_{k=1}^n\conj{x_n}\,y_n$: the summation index $k$ does not
+appear in the summand (it would give $n\,\conj{x_n}y_n$). The correct formula is
+$\sum_{k=1}^n\conj{x_k}\,y_k$.
+\end{correction}
+
+\begin{proof}[Proof of the claims of Example~\ref{ex:Cn}]
+Sesquilinearity and conjugate symmetry are immediate from the formula. Moreover
+$\ip{x}{x}=\sum_k|x_k|^2\ge0$, with equality iff all $x_k=0$.
+\emph{Convergence is coordinatewise:} for every $j$,
+$|x_j^{(k)}-x_j|\le\big(\sum_i|x_i^{(k)}-x_i|^2\big)^{1/2}=\|x^{(k)}-x\|$, and conversely
+$\|x^{(k)}-x\|^2=\sum_{j=1}^n|x_j^{(k)}-x_j|^2$ is a \emph{finite} sum of terms tending to $0$.
+\emph{Completeness:} if $(x^{(k)})_k$ is Cauchy in $\C^n$, then by the same inequality each
+coordinate sequence $(x^{(k)}_j)_k$ is Cauchy in $\C$, hence converges to some $x_j$
+because $\C$ is complete; by coordinatewise convergence $x^{(k)}\to x=(x_1,\dots,x_n)$.
+\end{proof}
+
+\begin{exercise}
+Let $X=\C^3$ equipped with the scalar product and induced norm from Example~\ref{ex:Cn}.
+Let $x=(2,1,-1)$, $y=(-1,1,i)$, $z=(2,i,0)$ be elements of $X$. Let also
+$x_n=\big(e^{-n},\sum_{k=0}^n\frac1{2^k},\frac{n}{n+1}\big)$ for $n\in\N$.
+\begin{enumerate}
+\item Calculate the scalar products $\ip{x}{y}$, $\ip{y}{z}$ and $\ip{z}{x}$.
+\item Calculate the norms $\|x\|,\|y\|,\|z\|$.
+\item Determine whether the sequence $(x_n)_n$ converges in $X$ and if it is the case, the limit in $X$.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+Remember that the \emph{first} vector is conjugated.
+\begin{enumerate}
+\item $\ip{x}{y}=2\cdot(-1)+1\cdot1+(-1)\cdot i=-1-i$;\quad
+$\ip{y}{z}=(-1)\cdot2+1\cdot i+\conj{i}\cdot0=-2+i$;\quad
+$\ip{z}{x}=2\cdot2+\conj{i}\cdot1+0\cdot(-1)=4-i$.
+\item $\|x\|=\sqrt{4+1+1}=\sqrt6$, $\|y\|=\sqrt{1+1+|i|^2}=\sqrt3$, $\|z\|=\sqrt{4+|i|^2+0}=\sqrt5$.
+\item Coordinatewise: $e^{-n}\to0$; $\sum_{k=0}^n2^{-k}=\frac{1-2^{-(n+1)}}{1-1/2}=2-2^{-n}\to2$;
+$\frac n{n+1}=1-\frac1{n+1}\to1$. By Example~\ref{ex:Cn} the sequence converges in $X$, with
+limit $(0,2,1)$. (Explicitly $\|x_n-(0,2,1)\|^2=e^{-2n}+4^{-n}+(n+1)^{-2}\to0$.)\qedhere
+\end{enumerate}
+\end{solution}
+
+\begin{exercise}
+Let $a,b\in\R$, $a<b$. Let $X=C([a,b])$ equipped with
+$\ip{f}{g}=\int_a^b\conj{f(t)}\,g(t)\,dt$. Show that this defines a scalar product on $X$.
+\end{exercise}
+\begin{solution}
+The integral exists because $\conj fg$ is continuous on the compact interval $[a,b]$.
+Properties 1 and 2 follow from linearity of the integral and from
+$\conj{(\lambda f)}=\conj\lambda\,\conj f$. Property 3:
+$\conj{\ip{g}{f}}=\conj{\int\conj gf}=\int g\conj f=\ip{f}{g}$
+(the integral of the conjugate is the conjugate of the integral). Property 4:
+$\ip{f}{f}=\int_a^b|f(t)|^2dt\ge0$. Suppose $\ip{f}{f}=0$ but $f(t_0)\neq0$ for some
+$t_0$. By continuity of $|f|^2$ there are $\delta>0$ and an interval $I\subseteq[a,b]$ of
+length $\ell>0$ containing $t_0$ with $|f|^2\ge\delta$ on $I$. Then
+$\int_a^b|f|^2\ge\delta\ell>0$, a contradiction. Hence $f=0$.
+(Here continuity is essential: for Riemann-integrable functions, a function vanishing
+except at one point has $\int|f|^2=0$.)
+\end{solution}
+
+The space $C([a,b])$ is not a Hilbert space: not every Cauchy sequence converges.
+
+\begin{addition}[(proof that $C({[a,b]})$ is not complete)]
+Let $c=\frac{a+b}2$ and, for $n$ large enough that $c+\frac1n\le b$,
+\[
+f_n(t)=\begin{cases}0,&a\le t\le c,\\ n(t-c),&c\le t\le c+\tfrac1n,\\ 1,&c+\tfrac1n\le t\le b.\end{cases}
+\]
+Each $f_n$ is continuous. For $m\ge n$, $f_n-f_m$ vanishes outside $[c,c+\frac1n]$ and
+$|f_n-f_m|\le1$, so $\|f_n-f_m\|^2\le\frac1n$: $(f_n)$ is a Cauchy sequence.
+Suppose $f_n\to f$ for some $f\in C([a,b])$. Since $f_n=0$ on $[a,c]$,
+$\int_a^c|f|^2\le\|f-f_n\|^2\to0$, so $f=0$ on $[a,c]$ (by the argument of Exercise~1.14).
+For every $\delta>0$ and $n\ge1/\delta$, $f_n=1$ on $[c+\delta,b]$, so
+$\int_{c+\delta}^b|f-1|^2\le\|f-f_n\|^2\to0$ and $f=1$ on $[c+\delta,b]$; hence $f=1$ on
+$(c,b]$. Then $f$ jumps from $0$ to $1$ at $c$, contradicting continuity. So $(f_n)$ has no
+limit in $C([a,b])$. (Its ``limit'' is the indicator function of $(c,b]$; the completion of
+$C([a,b])$ is the Lebesgue space $L^2([a,b])$.)
+\end{addition}
+
+\begin{example}\label{ex:l2sp}
+Let $X=\ell^2$ from Example~\ref{ex:l2}. Equip it with
+$\ip{(x_n)_n}{(y_n)_n}=\sum_{n\in\N}\conj{x_n}\cdot y_n$. Then $\ip{\cdot}{\cdot}$ is well
+defined and yields a scalar product on $\ell^2$. The space $\ell^2$ is a Hilbert space. It
+is the archetype of an infinite dimensional Hilbert space, in the same way as $\C^n$ is the
+archetype of a finite ($n$-)dimensional Hilbert space.
+\end{example}
+\begin{proof}
+\emph{Well defined.} By Remark 1.4a,
+$|\conj{x_n}y_n|\le\frac12(|x_n|^2+|y_n|^2)$, so the series converges absolutely.
+\emph{Scalar product.} Properties 1--3 follow termwise from those in $\C$ (sums of
+convergent series are additive, and conjugation is continuous). $\ip{x}{x}=\sum|x_n|^2\ge0$
+with equality iff all $x_n=0$.
+\emph{Completeness.} Let $(x^{(k)})_k$ be a Cauchy sequence in $\ell^2$, $\epsilon>0$ and
+$n_0$ such that $\|x^{(k)}-x^{(l)}\|\le\epsilon$ for $k,l\ge n_0$. For each fixed $n$,
+$|x^{(k)}_n-x^{(l)}_n|\le\|x^{(k)}-x^{(l)}\|$, so $(x_n^{(k)})_k$ is Cauchy in $\C$ and has
+a limit $x_n$. For each $N\in\N$ and $k,l\ge n_0$,
+$\sum_{n=1}^N|x^{(k)}_n-x^{(l)}_n|^2\le\epsilon^2$. Letting $l\to\infty$ (finite sum!)
+gives $\sum_{n=1}^N|x^{(k)}_n-x_n|^2\le\epsilon^2$, and then letting $N\to\infty$,
+$\sum_{n=1}^\infty|x^{(k)}_n-x_n|^2\le\epsilon^2$ for $k\ge n_0$. Hence
+$x^{(k)}-x\in\ell^2$, so $x=x^{(k)}-(x^{(k)}-x)\in\ell^2$, and $\|x^{(k)}-x\|\le\epsilon$
+for $k\ge n_0$, i.e.\ $x^{(k)}\to x$ in $\ell^2$.
+\end{proof}
+
+\begin{exercise}
+Let $X=\ell^2$.
+\begin{enumerate}
+\item Verify whether the following sequences belong to $X$:
+$(x_n)_n=(n)_n$, $(y_n)_n=\big(\frac1{\sqrt{n+1}}\big)_n$, $(z_n)_n=\big(\frac1{2^n}\big)_n$.
+\item For each of the above sequences, in case that they belong to $X$, calculate their
+norm defined by $\|x\|=\sqrt{\ip{x}{x}}$, where the scalar product is the one from
+Example~\ref{ex:l2sp}.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. $\sum_n|x_n|^2=\sum_nn^2=\infty$: $(x_n)\notin\ell^2$ (its terms do not even tend to $0$).
+$\sum_n|y_n|^2=\sum_n\frac1{n+1}=\infty$ (harmonic series): $(y_n)\notin\ell^2$, although
+$y_n\to0$. $\sum_n|z_n|^2=\sum_n4^{-n}<\infty$ (geometric series): $(z_n)\in\ell^2$.
+
+2. With $\N=\{1,2,\dots\}$: $\|z\|^2=\sum_{n=1}^\infty4^{-n}=\frac{1/4}{1-1/4}=\frac13$, so
+$\|z\|=\frac1{\sqrt3}$. (If one indexes from $n=0$, then $\|z\|^2=\frac1{1-1/4}=\frac43$ and
+$\|z\|=\frac2{\sqrt3}$.)
+\end{solution}
+
+\begin{definition}\label{def:bdd}
+Let $X,Y$ be Hilbert spaces, equipped with scalar products and the induced norms.
+\begin{enumerate}
+\item A \emph{bounded linear operator} $T$ is a mapping $T:X\to Y$ that is linear:
+$T(x+y)=T(x)+T(y)$, $T(\lambda x)=\lambda T(x)$ for all $x,y\in X$ and $\lambda\in\C$ (or
+$\R$), and for which there exists a constant $C>0$ such that $\|T(x)\|\le C\|x\|$ for all
+$x\in X$.
+\item A \emph{bounded linear form} on $X$ is a bounded linear operator $T:X\to\C$, where
+$Y=\C$ is indeed a $\C$-vector space and Hilbert space.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}\label{rem:finitedim}
+In the case that the space $X$ in Definition~\ref{def:bdd} above is finite dimensional, the
+boundedness condition is automatic. That is, for any Hilbert space $Y$ and any linear
+mapping $T:X\to Y$, there exists $C>0$ such that $\|T(x)\|\le C\|x\|$ for all $x\in X$.
+\end{remark}
+\begin{proof}
+Let $e_1,\dots,e_n$ be an orthonormal basis of $X$ (it exists by Gram--Schmidt, see
+Proposition~2.8). Then $x=\sum_j\ip{e_j}{x}e_j$ and $|\ip{e_j}{x}|\le\|x\|$, so
+\[
+\|T(x)\|=\Big\|\sum_{j=1}^n\ip{e_j}{x}T(e_j)\Big\|\le\sum_{j=1}^n|\ip{e_j}{x}|\,\|T(e_j)\|
+\le\Big(\sum_{j=1}^n\|T(e_j)\|\Big)\|x\| .
+\]
+Take $C=\max\{1,\sum_j\|T(e_j)\|\}$.
+\end{proof}
+
+\begin{theorem}[Riesz' Theorem]\label{thm:Riesz}
+Let $X$ be a Hilbert space. The bounded linear forms on $X$ are exactly all mappings of
+the form $T=T_y:X\to\C$, $T_y(x)=\ip{y}{x}$ with $y\in X$. Moreover $y$ is unique and
+$\|T_y\|:=\sup_{\|x\|\le1}|T_y(x)|=\|y\|$.
+\end{theorem}
+
+\begin{exercise}\label{exo:Ty}
+Show that $T_y$ in Riesz' Theorem~\ref{thm:Riesz} is indeed a bounded linear form. (The
+nontrivial part of Theorem~\ref{thm:Riesz} is that every bounded linear form is of this shape.)
+\end{exercise}
+\begin{solution}
+Linearity: $T_y(x_1+\lambda x_2)=\ip{y}{x_1+\lambda x_2}=\ip{y}{x_1}+\lambda\ip{y}{x_2}$
+because the scalar product is linear in the second variable. Boundedness: by
+Cauchy--Schwarz, $|T_y(x)|\le\|y\|\,\|x\|$, so $C=\|y\|$ works (or $C=1$ if $y=0$).
+Moreover $T_y(y/\|y\|)=\|y\|$ for $y\ne0$, hence $\|T_y\|=\|y\|$.
+\end{solution}
+
+\begin{addition}[(proof of Riesz' Theorem)]
+We need one geometric fact.
+
+\smallskip\noindent\textbf{Lemma 1.19a (orthogonal vector).} \emph{Let $N\subsetneq X$ be a
+closed linear subspace of a Hilbert space. Then there is $z\in X$, $z\ne0$, with
+$\ip{n}{z}=0$ for all $n\in N$.}
+
+\smallskip\noindent\emph{Proof.} Take $w\in X\setminus N$, let
+$d=\inf_{n\in N}\|w-n\|$ and $n_k\in N$ with $\|w-n_k\|^2\to d^2$. The
+\emph{parallelogram law} $\|u+v\|^2+\|u-v\|^2=2\|u\|^2+2\|v\|^2$ (expand both sides) with
+$u=w-n_k$, $v=w-n_l$ gives, since $\frac{n_k+n_l}2\in N$,
+\[
+\|n_k-n_l\|^2=2\|w-n_k\|^2+2\|w-n_l\|^2-4\Big\|w-\tfrac{n_k+n_l}2\Big\|^2
+\le2\|w-n_k\|^2+2\|w-n_l\|^2-4d^2\xrightarrow[k,l\to\infty]{}0 .
+\]
+So $(n_k)$ is Cauchy and converges to some $n_0\in X$; $n_0\in N$ as $N$ is closed, and
+$\|w-n_0\|=d$. Put $z=w-n_0\ne0$ (as $w\notin N$). For $n\in N$, $t\in\C$, we have
+$n_0+tn\in N$, so
+$d^2\le\|z-tn\|^2=d^2-2\Real\big(t\ip{z}{n}\big)+|t|^2\|n\|^2$. With
+$t=s\,\conj{\ip{z}{n}}$, $s>0$: $0\le-2s|\ip{z}{n}|^2+s^2|\ip{z}{n}|^2\|n\|^2$; divide by
+$s$ and let $s\to0$: $\ip{z}{n}=0$. \hfill$\square$
+
+\smallskip\noindent\emph{Proof of Theorem~\ref{thm:Riesz}.} Let $T$ be a bounded linear form.
+If $T=0$ take $y=0$. Otherwise $N=\Ker T$ is a linear subspace, $N\ne X$, and $N$ is closed:
+if $n_k\in N$, $n_k\to x$, then $|T(x)|=|T(x-n_k)|\le C\|x-n_k\|\to0$. Let $z$ be as in
+Lemma~1.19a. For every $x\in X$, the vector $T(x)z-T(z)x$ lies in $N$ (apply $T$), hence
+\begin{gather*}
+0=\ip{z}{T(x)z-T(z)x}=T(x)\|z\|^2-T(z)\ip{z}{x},\quad\text{hence}\\
+T(x)=\frac{T(z)}{\|z\|^2}\ip{z}{x}=\ip{y}{x}\qquad\text{with}\qquad y:=\frac{\conj{T(z)}}{\|z\|^2}\,z .
+\end{gather*}
+\emph{Uniqueness:} if $\ip{y}{x}=\ip{y'}{x}$ for all $x$, take $x=y-y'$: $\|y-y'\|^2=0$.
+The equality $\|T_y\|=\|y\|$ was shown in Exercise~\ref{exo:Ty}. \hfill$\square$
+
+\smallskip In finite dimension the lemma is elementary: complete an orthonormal basis of
+$N$ to one of $X$ (Gram--Schmidt) and take one of the new vectors. Then simply
+$y=\sum_j\conj{T(e_j)}e_j$ for any orthonormal basis $(e_j)$.
+\end{addition}
+
+\begin{remark}\label{rem:braket}
+When you will pass to the physics part of this lecture, the notation will typically be the
+following: a vector $x$ in a Hilbert space $X$ is denoted $x=\ket{\phi}$ and a bounded
+linear form $T_y$ is denoted $T_y=\bra{\psi}$. Then by Riesz' Theorem~\ref{thm:Riesz},
+there exists a vector $y\in X$ such that $T_y(x)=\bra{\psi}(\ket{\phi})=\ip{y}{x}$. Thus the
+physicist notation is an intuitive way to memorize Riesz' Theorem; the linear form
+$\bra{\psi}$ is called \emph{bra}, the vector $\ket{\phi}$ is called \emph{ket}, and when
+putting them together as $T_y(x)\in\C$ as above, one obtains a bra-ket, or
+\emph{bracket} $\langle\psi|\phi\rangle$.
+\end{remark}
+
+\begin{correction}[(notation)]
+In the original, bras and kets are typeset with the order relations, $|\phi>$ and
+$<\psi|$. The correct symbols are the angle brackets: $\ket{\phi}$, $\bra{\psi}$,
+$\langle\psi|\phi\rangle$ (\verb+\langle+, \verb+\rangle+ in \LaTeX).
+\end{correction}
+
+\begin{example}\label{ex:ketbra}
+Let $X$ be a Hilbert space and $x=\ket{\phi}$ some vector in $X$, as well as $y=\bra{\psi}$
+some bounded linear form on $X$. Then $T=\ketbra{\phi}{\psi}$ is a bounded linear operator
+$T:X\to X$. It is given, for $z=\ket{\xi}\in X$, by
+$T(z)=\ketbra{\phi}{\psi}(\ket{\xi})=\ket{\phi}\langle\psi|\xi\rangle=\ip{y}{z}\,x$.
+\end{example}
+
+\begin{exercise}
+In the setting of Example~\ref{ex:ketbra} above, show that $T$ is indeed linear $X\to X$
+and bounded.
+\end{exercise}
+\begin{solution}
+$T(z_1+\lambda z_2)=\ip{y}{z_1+\lambda z_2}x=\ip{y}{z_1}x+\lambda\ip{y}{z_2}x
+=T(z_1)+\lambda T(z_2)$. By Cauchy--Schwarz
+$\|T(z)\|=|\ip{y}{z}|\,\|x\|\le\|x\|\,\|y\|\,\|z\|$, so $T$ is bounded with constant
+$C=\|x\|\|y\|$ (and in fact $\|T\|=\|x\|\|y\|$, attained at $z=y$).
+\end{solution}
+
+\begin{exercise}
+Let $X=\C^3$ and $x=\ket{\phi}=(2,-1,0)$, $y=\bra{\psi}=(5,1,-1)$ and $z=\ket{\xi}=(1,0,3)$.
+Calculate $\ketbra{\phi}{\psi}(\ket{\xi})$.
+\end{exercise}
+\begin{solution}
+$\langle\psi|\xi\rangle=\ip{y}{z}=5\cdot1+1\cdot0+(-1)\cdot3=2$, hence
+$\ketbra{\phi}{\psi}(\ket\xi)=2\,(2,-1,0)=(4,-2,0)$.
+\end{solution}
+%======================================================================
+\section{Tensor products}
+
+\begin{remark}
+In the following definition, we recall that a \emph{basis} of a vector space $X$ is some
+collection $(x_k)_k\subseteq X$ such that any $x\in X$ can be uniquely written as
+$x=\sum_k\lambda_kx_k$ where $\lambda_k\in\C$ and all but finitely many of the $\lambda_k$
+are $0$. A fundamental result of linear algebra is that any vector space has a basis. In
+case that there is a finite basis $(x_k)_k=x_1,\dots,x_n$, $X$ is called finite
+dimensional. In this case any basis consists of $n$ vectors. In this section we are only
+concerned with finite dimensional vector spaces.
+\end{remark}
+
+\begin{definition}\label{def:tensor}
+Let $X$ and $Y$ be finite dimensional vector spaces. Suppose that $X$ has the basis
+$x_1,\dots,x_n$ and $Y$ has the basis $y_1,\dots,y_k$. We define the \emph{tensor product}
+of $X$ and $Y$, written $X\otimes Y$, as
+\[
+X\otimes Y=\Big\{\sum_{i=1}^n\sum_{j=1}^k\lambda_{i,j}\,x_i\otimes y_j:\ \lambda_{i,j}\in\C\Big\}.
+\]
+Here $x_i\otimes y_j$ is first an abstract element. The space $X\otimes Y$ is again a vector
+space with addition
+\[
+\Big(\sum_{i,j}\lambda_{i,j}x_i\otimes y_j\Big)+\Big(\sum_{i,j}\mu_{i,j}x_i\otimes y_j\Big)
+=\sum_{i,j}(\lambda_{i,j}+\mu_{i,j})\,x_i\otimes y_j
+\]
+and scalar multiplication
+\[
+\lambda\Big(\sum_{i,j}\lambda_{i,j}x_i\otimes y_j\Big)=\sum_{i,j}\lambda\lambda_{i,j}\,x_i\otimes y_j .
+\]
+The space $X\otimes Y$ possesses naturally the basis $x_i\otimes y_j$, $i=1,\dots,n$,
+$j=1,\dots,k$, and thus is again a finite dimensional vector space. Actually
+$\dim(X\otimes Y)=\dim(X)\cdot\dim(Y)$.
+\end{definition}
+
+\begin{remark}\label{rem:bilin}
+If $X$ and $Y$ are finite dimensional vector spaces and $x=\sum_i\lambda_ix_i\in X$ and
+$y=\sum_j\mu_jy_j\in Y$, then one writes
+$x\otimes y=\sum_{i,j}\lambda_i\mu_j\,x_i\otimes y_j\in X\otimes Y$. One can check that
+$x\otimes y+x\otimes z=x\otimes(y+z)$, $x\otimes y+t\otimes y=(x+t)\otimes y$ and
+$\lambda(x\otimes y)=(\lambda x)\otimes y=x\otimes(\lambda y)$ for all $x,t\in X$,
+$y,z\in Y$ and $\lambda\in\C$. Actually, these observations are typically used to define
+the tensor product of not necessarily finite dimensional vector spaces. Any element $p$ of
+$X\otimes Y$ can be written as a finite sum $p=\sum_ka_k\otimes b_k$ with the $a_k\in X$ and
+the $b_k\in Y$. This way of writing $p$ is not unique in general.
+\end{remark}
+
+\begin{addition}[(verifications for Remark~2.3 and independence of the bases)]
+\emph{Bilinearity.} With $x=\sum_i\lambda_ix_i$, $y=\sum_j\mu_jy_j$, $z=\sum_j\nu_jy_j$:
+$x\otimes y+x\otimes z=\sum_{i,j}\lambda_i(\mu_j+\nu_j)x_i\otimes y_j=x\otimes(y+z)$, since
+$y+z$ has coordinates $\mu_j+\nu_j$. The other identities are checked in the same way.
+\emph{Finite sums.} $p=\sum_{i,j}\lambda_{i,j}x_i\otimes y_j=\sum_{i,j}(\lambda_{i,j}x_i)\otimes y_j$.
+\emph{Non-uniqueness.} E.g.\ $x_1\otimes y_1+x_1\otimes y_2=x_1\otimes(y_1+y_2)$.
+
+\emph{The definition does not depend on the chosen bases.} Let $(u_p)_{p\le n}$ and
+$(v_q)_{q\le k}$ be other bases of $X$ and $Y$. Writing $x_i=\sum_p\alpha_{pi}u_p$ and
+$y_j=\sum_q\beta_{qj}v_q$, bilinearity gives
+$x_i\otimes y_j=\sum_{p,q}\alpha_{pi}\beta_{qj}\,u_p\otimes v_q$. Hence the $nk$ vectors
+$u_p\otimes v_q$ span the $nk$-dimensional space $X\otimes Y$, so they form a basis. In
+other words, one obtains the same space (with the same elements $x\otimes y$) starting
+from any pair of bases.
+\end{addition}
+
+\begin{remark}
+In the same way as in Definition~\ref{def:tensor}, one can define multiple tensor products:
+let $X_1,\dots,X_n$ be finite dimensional vector spaces with bases
+$(x^{(1)}_{k_1})_{k_1},\dots,(x^{(n)}_{k_n})_{k_n}$. Then $X_1\otimes X_2\otimes\dots\otimes X_n$
+is the vector space
+\[
+\Big\{\sum_{k_1,\dots,k_n}\lambda_{k_1,\dots,k_n}\,x^{(1)}_{k_1}\otimes\dots\otimes x^{(n)}_{k_n}:\
+\lambda_{k_1,\dots,k_n}\in\C\Big\}.
+\]
+\end{remark}
+
+\begin{remark}
+In physicists' notation, the tensor product of $\ket{\psi_1},\dots,\ket{\psi_n}$ belonging
+respectively to Hilbert spaces $X_1,\dots,X_n$ is often denoted by
+$\ket{\psi_1,\dots,\psi_n}$ (or $\ket{\psi_1}\ket{\psi_2}\cdots\ket{\psi_n}$). For
+example, the $n$-qubit space is $(\C^2)^{\otimes n}\cong\C^{2^n}$ with basis
+$\ket{b_1b_2\dots b_n}$, $b_i\in\{0,1\}$.
+\end{remark}
+
+Particularly relevant for us will be tensor products of (finite dimensional)
+\emph{Hilbert} spaces.
+
+\begin{proposition}\label{prop:tensorsp}
+Let $X,Y$ be finite dimensional Hilbert spaces. Then $X\otimes Y$ is again a (finite
+dimensional) Hilbert space when equipped with the following scalar product. Let
+$a=\sum_kx_k\otimes y_k$ and $b=\sum_jx'_j\otimes y'_j$ belong to the tensor product
+$X\otimes Y$. Then
+\[
+\ip{a}{b}_{X\otimes Y}=\sum_{k,j}\ip{x_k}{x'_j}_X\,\ip{y_k}{y'_j}_Y .
+\]
+Even if the representation of $a$ and $b$ as above is not unique (as we have stated in
+Remark~\ref{rem:bilin} above), the expression $\ip{\cdot}{\cdot}_{X\otimes Y}$ above is
+well-defined (i.e.\ $\ip{a}{b}_{X\otimes Y}$ is independent of the representations of $a$
+and $b$). Moreover, $\ip{\cdot}{\cdot}_{X\otimes Y}$ is a scalar product and $X\otimes Y$
+is a Hilbert space when equipped with it.
+
+In the same way, if $X_1,\dots,X_n$ are finite dimensional Hilbert spaces and
+$a=\sum_kx_k^{(1)}\otimes\dots\otimes x_k^{(n)}$ and
+$b=\sum_ly_l^{(1)}\otimes\dots\otimes y_l^{(n)}$, then
+$\ip{a}{b}=\sum_{k,l}\ip{x_k^{(1)}}{y_l^{(1)}}\cdots\ip{x_k^{(n)}}{y_l^{(n)}}$ defines a scalar
+product on $X_1\otimes\dots\otimes X_n$.
+\end{proposition}
+\begin{proof}
+(The proof uses orthonormal bases, which exist by Proposition~\ref{prop:onb} below; its
+proof does not use Proposition~\ref{prop:tensorsp}.) Let $(e_i)_{i\le n}$ and
+$(f_j)_{j\le m}$ be orthonormal bases of $X$ and $Y$. By the Complement above,
+$(e_i\otimes f_j)_{i,j}$ is a basis of $X\otimes Y$, so every $a\in X\otimes Y$ has unique
+coordinates $\alpha_{ij}$ with $a=\sum_{i,j}\alpha_{ij}e_i\otimes f_j$. Define
+\[
+[a,b]:=\sum_{i,j}\conj{\alpha_{ij}}\,\beta_{ij}\qquad\text{if }b=\sum_{i,j}\beta_{ij}e_i\otimes f_j .
+\]
+In coordinates this is the scalar product of $\C^{nm}$ (Example~\ref{ex:Cn}); hence
+$[\cdot,\cdot]$ is a scalar product and $X\otimes Y$ is complete for it, i.e.\ a Hilbert
+space.
+
+Now let $a=\sum_kx_k\otimes y_k$ be \emph{any} representation. Expanding
+$x_k=\sum_i\ip{e_i}{x_k}e_i$ and $y_k=\sum_j\ip{f_j}{y_k}f_j$ (Proposition~\ref{prop:onb})
+and using bilinearity, $\alpha_{ij}=\sum_k\ip{e_i}{x_k}\ip{f_j}{y_k}$; similarly
+$\beta_{ij}=\sum_l\ip{e_i}{x'_l}\ip{f_j}{y'_l}$. Therefore, by
+Proposition~\ref{prop:onb}(5),
+\[
+[a,b]=\sum_{k,l}\Big(\sum_i\ip{x_k}{e_i}\ip{e_i}{x'_l}\Big)\Big(\sum_j\ip{y_k}{f_j}\ip{f_j}{y'_l}\Big)
+=\sum_{k,l}\ip{x_k}{x'_l}_X\,\ip{y_k}{y'_l}_Y .
+\]
+So the right-hand side of the formula in the proposition equals $[a,b]$ for every choice
+of representations: it is well-defined, it is a scalar product, and $X\otimes Y$ is a
+Hilbert space. The case of $n$ factors is identical, with orthonormal basis
+$e^{(1)}_{i_1}\otimes\dots\otimes e^{(n)}_{i_n}$.
+\end{proof}
+
+\begin{exercise}
+Let $X=Y=\R^3$. Let $x_1=(1,2,1)$, $y_1=(2,0,-1)$, $x_2=(1,1,2)$, $y_2=(3,0,2)$, and
+$a=(1,-1,-1)$, $b=(2,1,0)$.
+\begin{enumerate}
+\item Justify briefly why $r=x_1\otimes y_1+x_2\otimes y_2$ and $s=a\otimes b$ belong to $X\otimes Y$.
+\item Assume now that $X$ and $Y$ are equipped with their standard scalar product and that
+$X\otimes Y$ is equipped with the inherited scalar product as in
+Proposition~\ref{prop:tensorsp}. Calculate $\ip{r}{s}_{X\otimes Y}$.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. By Remark~\ref{rem:bilin}, $x\otimes y\in X\otimes Y$ for all $x\in X$, $y\in Y$
+(expand $x$, $y$ in the standard bases); $X\otimes Y$ is a vector space, so the sum
+$r$ also belongs to it.
+
+2. By Proposition~\ref{prop:tensorsp},
+$\ip{r}{s}=\ip{x_1}{a}\ip{y_1}{b}+\ip{x_2}{a}\ip{y_2}{b}$ with
+$\ip{x_1}{a}=1-2-1=-2$, $\ip{y_1}{b}=4+0+0=4$, $\ip{x_2}{a}=1-1-2=-2$, $\ip{y_2}{b}=6+0+0=6$.
+Hence $\ip{r}{s}_{X\otimes Y}=(-2)\cdot4+(-2)\cdot6=-20$.
+(Check with Kronecker vectors in $\R^9$, see Exercise 2.11:
+$r=(5,0,1,7,0,0,8,0,3)$, $s=(2,1,0,-2,-1,0,-2,-1,0)$ and $r\cdot s=10-14-16=-20$.)
+\end{solution}
+
+Hilbert spaces do not only possess a basis but also an \emph{orthonormal} basis. What this
+is, see the next proposition.
+
+\begin{proposition}\label{prop:onb}
+Let $X$ be a Hilbert space. Then there exists a family $(x_k)_k$ of linearly independent
+vectors in $X$ that have the following properties:
+\begin{enumerate}
+\item The vectors $x_k$ are normalized: $\|x_k\|=1$ for all $k$.
+\item The vectors $x_k$ are orthogonal to each other: $\ip{x_k}{x_l}=0$ for $k\ne l$.
+\item Any $x\in X$ can be written as a convergent series $x=\sum_k\lambda_kx_k$ with unique
+coefficients $\lambda_k=\ip{x_k}{x}$.
+\item The norm of any $x\in X$ can be computed as $\|x\|^2=\sum_k|\lambda_k|^2=\sum_k|\ip{x_k}{x}|^2$.
+\item The scalar product of two vectors $x,y\in X$ can be computed as
+$\ip{x}{y}=\sum_k\ip{x}{x_k}\ip{x_k}{y}$.
+\end{enumerate}
+A family with the above properties is called \emph{orthonormal basis}.
+\end{proposition}
+\begin{proof}[Proof (finite dimensional case)]
+Let $v_1,\dots,v_n$ be a basis of $X$. \emph{Gram--Schmidt:} put $u_1=v_1/\|v_1\|$ and,
+recursively for $k=2,\dots,n$,
+\[
+w_k=v_k-\sum_{j<k}\ip{u_j}{v_k}u_j,\qquad u_k=w_k/\|w_k\| .
+\]
+$w_k\neq0$, since otherwise $v_k\in\spn\{u_1,\dots,u_{k-1}\}=\spn\{v_1,\dots,v_{k-1}\}$,
+contradicting linear independence. By induction, $u_k$ is normalized and for $l<k$:
+\[
+\ip{u_l}{w_k}=\ip{u_l}{v_k}-\sum_{j<k}\ip{u_j}{v_k}\ip{u_l}{u_j}=\ip{u_l}{v_k}-\ip{u_l}{v_k}=0 .
+\]
+Orthonormal vectors are linearly independent (if $\sum_k\lambda_ku_k=0$, take the scalar
+product with $u_l$: $\lambda_l=0$); $n$ of them form a basis. This gives 1 and 2.
+3.: write $x=\sum_k\lambda_ku_k$ and take the scalar product with $u_l$:
+$\ip{u_l}{x}=\sum_k\lambda_k\ip{u_l}{u_k}=\lambda_l$.
+5.: with $\mu_l=\ip{u_l}{y}$,
+\[
+\ip{x}{y}=\Big\langle\sum_k\lambda_ku_k,\sum_l\mu_lu_l\Big\rangle
+=\sum_{k,l}\conj{\lambda_k}\mu_l\delta_{kl}=\sum_k\conj{\ip{u_k}{x}}\ip{u_k}{y}
+=\sum_k\ip{x}{u_k}\ip{u_k}{y}.
+\]
+4.\ is 5.\ with $y=x$ (Parseval's identity).
+\end{proof}
+
+\begin{addition}[(infinite dimensional case)]
+If $X$ is separable (has a countable dense subset $\{v_1,v_2,\dots\}$), apply Gram--Schmidt
+to the $v_k$, discarding those already in the span of the previous ones; the resulting
+orthonormal family $(u_k)$ has dense span. \emph{Bessel's inequality}
+$\sum_k|\ip{u_k}{x}|^2\le\|x\|^2$ (which follows from
+$0\le\|x-\sum_{k\le N}\ip{u_k}{x}u_k\|^2=\|x\|^2-\sum_{k\le N}|\ip{u_k}{x}|^2$) shows that
+$\sum_k\ip{u_k}{x}u_k$ is Cauchy, hence converges in $X$ (completeness!) to some $x'$ with
+$x-x'\perp u_k$ for all $k$, hence $x-x'\perp\overline{\spn}\{u_k\}=X$, i.e.\ $x=x'$. For
+non-separable $X$ one uses Zorn's lemma to get a maximal orthonormal family, which is then
+uncountable; the ``series'' in 3.--5.\ must be understood as unconditional sums, in which
+for each $x$ only countably many coefficients $\ip{x_k}{x}$ are non-zero (by Bessel).
+\end{addition}
+
+\begin{remark}
+In case that $X$ is an infinite dimensional Hilbert space, its orthonormal bases are
+infinite as well. In that case, an orthonormal basis is not a basis in the sense of linear
+algebra since in Proposition~\ref{prop:onb} above, the sum in the third property has in
+general infinitely many non-zero coefficients $\lambda_k$, as opposed to a basis, where the
+sum has always only finitely many non-zero $\lambda_k$. But for the rest of this lecture,
+this ambiguity is not important, since we are mainly concerned with finite dimensional
+Hilbert spaces, in which case indeed an orthonormal basis is always a basis.
+\end{remark}
+
+How do orthonormal bases behave when we take tensor products? The answer is quite
+satisfactory as reveals the following proposition.
+
+\begin{proposition}\label{prop:tensoronb}
+Let $X,Y$ be finite dimensional Hilbert spaces. Let $(x_k)_k$ and $(y_l)_l$ be orthonormal
+bases of $X$ and $Y$ respectively. Then $(x_k\otimes y_l)_{k,l}$ is an orthonormal basis of
+$X\otimes Y$. In particular, for $a,b\in X\otimes Y$, the scalar product
+$\ip{a}{b}_{X\otimes Y}$ can be calculated as
+\[
+\ip{a}{b}_{X\otimes Y}=\sum_{k,l}\ip{a}{x_k\otimes y_l}\ip{x_k\otimes y_l}{b} .
+\]
+Moreover, if $a=\sum_{k,l}\lambda_{k,l}\,x_k\otimes y_l$ belongs to $X\otimes Y$, then
+$\|a\|^2=\sum_{k,l}|\lambda_{k,l}|^2$.
+\end{proposition}
+\begin{proof}
+By Proposition~\ref{prop:tensorsp},
+$\ip{x_k\otimes y_l}{x_{k'}\otimes y_{l'}}=\ip{x_k}{x_{k'}}\ip{y_l}{y_{l'}}=\delta_{kk'}\delta_{ll'}$,
+so the family is orthonormal. It has $\dim X\cdot\dim Y=\dim(X\otimes Y)$ elements and is
+linearly independent, hence it is a basis, and thus an orthonormal basis. The two formulas
+are properties 5 and 4 of Proposition~\ref{prop:onb}, with
+$\lambda_{k,l}=\ip{x_k\otimes y_l}{a}$.
+\end{proof}
+
+\begin{exercise}
+Let $X=\R^2$ and $Y=\R^3$ equipped with the orthonormal bases $x_1=(1,0)$, $x_2=(0,1)$, as
+well as $y_1=(1,0,0)$, $y_2=(0,1,0)$, $y_3=(0,0,1)$. Find a convenient way to write the
+resulting orthonormal basis of $X\otimes Y=\R^2\otimes\R^3$.
+\end{exercise}
+\begin{solution}
+By Proposition~\ref{prop:tensoronb}, $(x_i\otimes y_j)_{i\le2,j\le3}$ is an orthonormal
+basis of the 6-dimensional space $\R^2\otimes\R^3$. Two convenient identifications:
+
+\emph{(a) Kronecker vectors.} Identify $\R^2\otimes\R^3\cong\R^6$ via
+$a\otimes b\mapsto(a_1b_1,a_1b_2,a_1b_3,a_2b_1,a_2b_2,a_2b_3)=(a_1b,\,a_2b)$. Then
+$x_i\otimes y_j\mapsto e_{3(i-1)+j}$:
+\[
+x_1\otimes y_1=e_1,\ x_1\otimes y_2=e_2,\ x_1\otimes y_3=e_3,\
+x_2\otimes y_1=e_4,\ x_2\otimes y_2=e_5,\ x_2\otimes y_3=e_6,
+\]
+the standard basis of $\R^6$. This identification preserves scalar products since
+$\sum_{i,j}a_ib_ja'_ib'_j=\ip{a}{a'}\ip{b}{b'}$. This is the convention used for qubits:
+$\ket{0}\otimes\ket{1}=\ket{01}$, etc.
+
+\emph{(b) Matrices.} Identify $a\otimes b$ with the $2\times3$ matrix $ab^T=(a_ib_j)_{ij}$;
+then $x_i\otimes y_j$ is the matrix unit $E_{ij}$ (a $1$ at position $(i,j)$, $0$
+elsewhere), and the scalar product becomes the Hilbert--Schmidt product $\tr(A^TB)$.
+\end{solution}
+%======================================================================
+\section{Probabilities}
+
+\begin{definition}\label{def:prob}
+Let $\Omega$ be some non-empty set, either finite or countably infinite. Let $\PP$ be a
+mapping defined on the subsets of $\Omega$ and with values in $[0,1]$. Then $(\Omega,\PP)$
+is called a \emph{probability space} if
+\begin{enumerate}
+\item $\PP(\emptyset)=0$, $\PP(\Omega)=1$,
+\item $\PP\big(\bigcup_{n\in\N}A_n\big)=\sum_{n\in\N}\PP(A_n)$ for any countable family of
+pairwise disjoint $A_n$.
+\end{enumerate}
+The set $\Omega$ is called \emph{universe}, the subsets $A\subseteq\Omega$ are called
+\emph{events} and $\PP(A)$ is called its \emph{probability}. Naturally,
+$\PP(A)\in[0,1]=[0\%,100\%]$.
+\end{definition}
+
+\begin{correction}[(Def.~3.1)]
+The original allows $\Omega$ ``finite or infinite''. For \emph{uncountable} $\Omega$ (e.g.\
+$\Omega=[0,1]$) it is in general impossible to define $\PP$ on \emph{all} subsets (e.g.\
+there is no translation-invariant $\sigma$-additive extension of length to all subsets of
+$[0,1]$, by Vitali's construction); one has to restrict to a $\sigma$-algebra of events.
+Since Definition~3.11 assumes anyway that $\Omega$ is at most countable ``as is always the
+case in this section'', we state this assumption from the start.
+\end{correction}
+
+\begin{addition}[(elementary consequences)]
+For a countable $\Omega$, put $p_\omega=\PP(\{\omega\})$. Since every $A\subseteq\Omega$ is
+the countable disjoint union of its singletons, $\PP(A)=\sum_{\omega\in A}p_\omega$, and
+$\sum_{\omega\in\Omega}p_\omega=1$. Conversely, any family $p_\omega\ge0$ with
+$\sum_\omega p_\omega=1$ defines a probability by this formula ($\sigma$-additivity is the
+rearrangement theorem for series with non-negative terms). Further:
+$\PP(\Omega\setminus A)=1-\PP(A)$, and $A\subseteq B\Rightarrow\PP(A)\le\PP(B)$.
+\end{addition}
+
+\begin{definition}
+Let $(\Omega,\PP)$ be a probability space and $X:\Omega\to\R$ or $X:\Omega\to\C$ be a
+function. Then $X$ is called a \emph{random variable} (either real valued (mostly) or
+complex valued).
+\end{definition}
+
+\begin{example}
+Let $\Omega=\{1,\dots,6\}$ and $\PP(A)=\frac16\#A$, where $\#A$ denotes the cardinality of
+the subset $A$ of $\Omega$. Then $(\Omega,\PP)$ is a probability space. The function
+$X:\Omega\to\R$, $x\mapsto x$ is a random variable designed to implement a rolling dice.
+\end{example}
+
+\begin{example}\label{ex:binom}
+Let $(\Omega,\PP)$ be a probability space. Let $n\in\N$ and $p\in[0,1]$. Let
+$X:\Omega\to\{0,1,\dots,n\}$ be a random variable. Then $X$ is called a \emph{binomial}
+variable with parameters $n$ and $p$ if for $k=0,\dots,n$, the sets
+$A_k=\{\omega\in\Omega:\ X(\omega)=k\}$ have the probability
+\[
+\PP(A_k)=\binom nkp^k(1-p)^{n-k}.
+\]
+For $n=1$ (values in $\{0,1\}$, $\PP(X=1)=p$) $X$ is called a \emph{Bernoulli} variable.
+\end{example}
+
+\begin{correction}[(Ex.~3.4)]
+The original calls this a ``Bernoulli variable with parameters $n$ and $p$''. This is the
+\emph{binomial distribution} $\mathcal B(n,p)$: it counts the number of successes in $n$
+independent Bernoulli trials with success probability $p$. A Bernoulli variable is the
+special case $n=1$. (The convention $0^0=1$ is used for $p\in\{0,1\}$.)
+\end{correction}
+
+\begin{example}
+Let $(\Omega,\PP)$ be a probability space. Let $\lambda>0$. Let $X:\Omega\to\N_0$ be a
+random variable. Then $X$ is called a \emph{Poisson variable} with parameter $\lambda$ if
+for any $k\geqslant0$, the sets $A_k=\{\omega\in\Omega:\ X(\omega)=k\}$ have the probability
+\[
+\PP(A_k)=e^{-\lambda}\frac{\lambda^k}{k!}.
+\]
+\end{example}
+
+\begin{exercise}
+Show that for a binomial variable $X$ with parameters $n$ and $p$ (``Bernoulli variable'' in
+the original), one has $\PP(\{\omega\in\Omega:\ X(\omega)\in\{0,\dots,n\}\})=1$.
+Show that for a Poisson variable $X$ with parameter $\lambda$, one has
+$\PP(\{\omega\in\Omega:\ X(\omega)\geqslant0\})=1$.
+\end{exercise}
+
+\begin{correction}[(Ex.~3.6)]
+As literally stated, the exercise is trivial: since $X$ takes its values in $\{0,\dots,n\}$
+(resp.\ $\N_0$), the event in question is all of $\Omega$, whose probability is $1$ by
+definition. The intended (and instructive) statement is that the probabilities of the
+events $A_k$ add up to $1$, i.e.\ that the definitions in Examples 3.4 and 3.5 are
+\emph{consistent}: no variable with these properties could exist otherwise.
+\end{correction}
+\begin{solution}
+The sets $A_k$ are pairwise disjoint and $\bigcup_kA_k=\{X\in\{0,\dots,n\}\}=\Omega$.
+By $\sigma$-additivity and the binomial theorem,
+\[
+\PP(\Omega)=\sum_{k=0}^n\PP(A_k)=\sum_{k=0}^n\binom nkp^k(1-p)^{n-k}=(p+(1-p))^n=1 .
+\]
+For the Poisson variable, $\{X\ge0\}=\bigcup_{k\ge0}A_k$ (disjoint), and by the exponential series,
+\[
+\sum_{k=0}^\infty\PP(A_k)=e^{-\lambda}\sum_{k=0}^\infty\frac{\lambda^k}{k!}=e^{-\lambda}e^{\lambda}=1 .\qedhere
+\]
+\end{solution}
+
+\begin{remark}
+Note that an easy way to implement a binomial or Poisson variable is as follows. For the
+binomial variable, take $\Omega=\{0,\dots,n\}$ with
+$\PP(\{k\})=\binom nkp^k(1-p)^{n-k}$ for $k=0,\dots,n$ and $\PP(A)=\sum_{k\in A}\PP(\{k\})$.
+Then define $X(\omega)=\omega$. For the Poisson variable, take $\Omega=\N_0$ with
+$\PP(\{k\})=e^{-\lambda}\frac{\lambda^k}{k!}$ for $k\in\Omega$. Then define again
+$X(\omega)=\omega$. (These are probability spaces by Exercise~3.6 and the Complement after
+Definition~\ref{def:prob}.)
+\end{remark}
+
+\begin{definition}
+Let $(\Omega,\PP)$ be a probability space. Let $A,B\subseteq\Omega$. Then $A$ and $B$ are
+called (stochastically) \emph{independent} if $\PP(A\cap B)=\PP(A)\cdot\PP(B)$. ``The
+knowledge if $A$ occurs does not lower or raise the probability that $B$ occurs.'' Moreover,
+let $X,Y$ be random variables over $\Omega$. Then $X,Y$ are called independent if the sets
+$A=\{\omega\in\Omega:\ X(\omega)\in A_X\}$ and $B=\{\omega\in\Omega:\ Y(\omega)\in B_Y\}$ are
+independent for all $A_X,B_Y\subseteq\R$ (or $\subseteq\C$ if $X,Y$ are complex valued).
+\end{definition}
+
+\begin{exercise}
+Let $\Omega=\{1,2,3,4,5,6\}$ together with $\PP(A)=\frac16\#A$ be the universe of rolling a dice.
+\begin{enumerate}
+\item Let $A=\{2,3,5\}$ be the event ``the dice shows a prime number'', and $B=\{3,6\}$ be
+the event ``the dice shows a number divisible by 3''. Determine whether $A$ and $B$ are independent.
+\item Let $A$ be the same event as before and $B=\{1,2,3\}$ be the event ``the dice shows a
+number smaller or equal than 3''. Determine whether $A$ and $B$ are independent.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. $\PP(A)=\frac36=\frac12$, $\PP(B)=\frac26=\frac13$, $A\cap B=\{3\}$,
+$\PP(A\cap B)=\frac16=\frac12\cdot\frac13$: \emph{independent}.
+
+2. $\PP(B)=\frac12$, $A\cap B=\{2,3\}$, $\PP(A\cap B)=\frac13\ne\frac14=\PP(A)\PP(B)$:
+\emph{not independent} (knowing that the result is $\le3$ raises the probability of a
+prime from $\frac12$ to $\frac23$).
+\end{solution}
+
+\begin{remark}\label{rem:product}
+Let $(\Omega,\PP)$ be a probability space and $X,Y$ be random variables. A standard way to
+obtain random variables $X',Y'$ which have the same behaviour as $X,Y$ but which are
+independent is as follows. Define $\Omega_2=\Omega\times\Omega$ and
+$\PP_2(A\times B)=\PP(A)\PP(B)$ for any $A\times B\subseteq\Omega_2$. Extend $\PP_2$ to a
+probability by taking
+$\PP_2\big(\bigcup_{n\in\N}A_n\times B_n\big)=\sum_{n\in\N}\PP_2(A_n\times B_n)$ whenever
+the $A_n\times B_n$ are pairwise disjoint. Then let $X'(\omega_1,\omega_2)=X(\omega_1)$
+and $Y'(\omega_1,\omega_2)=Y(\omega_2)$.
+\end{remark}
+
+\begin{addition}[(details for Remark~3.10)]
+Since $\Omega$ is countable, so is $\Omega_2$, and every $C\subseteq\Omega_2$ is the
+countable disjoint union of the ``rectangles'' $\{\omega_1\}\times\{\omega_2\}$,
+$(\omega_1,\omega_2)\in C$. Hence the extension is necessarily
+$\PP_2(C)=\sum_{(\omega_1,\omega_2)\in C}p_{\omega_1}p_{\omega_2}$, which is a probability
+(Complement after Def.~\ref{def:prob}, since $\sum_{\omega_1,\omega_2}p_{\omega_1}p_{\omega_2}=1$),
+and indeed $\PP_2(A\times B)=\sum_{\omega_1\in A}p_{\omega_1}\sum_{\omega_2\in B}p_{\omega_2}=\PP(A)\PP(B)$.
+
+\emph{Same behaviour:} $\{X'\in A_X\}=\{X\in A_X\}\times\Omega$, so
+$\PP_2(X'\in A_X)=\PP(X\in A_X)\PP(\Omega)=\PP(X\in A_X)$; similarly for $Y'$.
+
+\emph{Independence:} $\{X'\in A_X\}\cap\{Y'\in B_Y\}=\{X\in A_X\}\times\{Y\in B_Y\}$, so
+$\PP_2(X'\in A_X,\,Y'\in B_Y)=\PP(X\in A_X)\PP(Y\in B_Y)=\PP_2(X'\in A_X)\PP_2(Y'\in B_Y)$.
+\end{addition}
+
+\begin{definition}\label{def:expect}
+Let $X$ be a random variable over the probability space $(\Omega,\PP)$. Assume that
+$\Omega$ is at most countable as is always the case in this section. Then
+\[
+\E(X)=\sum_{\omega\in\Omega}X(\omega)\PP(\{\omega\})
+\]
+is called the \emph{expectation} of $X$, whenever the series converges \emph{absolutely},
+i.e.\ if
+\[
+\E(|X|)=\sum_{\omega\in\Omega}|X(\omega)|\,\PP(\{\omega\})<\infty
+\]
+(e.g.\ if $X$ is bounded).
+The expectation has the following properties:
+\begin{enumerate}
+\item $\E(1)=1$,
+\item $\E(X+Y)=\E(X)+\E(Y)$ whenever $\E(X)$ and $\E(Y)$ are meaningful,
+\item $\E(\lambda X)=\lambda\E(X)$ whenever $\E(X)$ is meaningful,
+\item $\E(X)\geqslant0$ whenever $X\geqslant0$,
+\item $\E(XY)=\E(X)\E(Y)$ whenever $X,Y$ are independent and their expectations are meaningful.
+\end{enumerate}
+\end{definition}
+
+\begin{correction}[(Def.~3.11)]
+The original requires only that ``the series converges''. But a sum indexed by a countable
+set $\Omega$ has no preferred order, and a merely conditionally convergent series can be
+rearranged to give any value (Riemann's rearrangement theorem). The correct condition is
+\emph{absolute} convergence, under which the value does not depend on the enumeration of
+$\Omega$, and which is needed for properties 2 and 5.
+\end{correction}
+
+\begin{proof}[Proof of properties 1--5]
+1.\ $\E(1)=\sum_\omega p_\omega=1$. 2.\ and 3.: $|X+Y|\le|X|+|Y|$ and $|\lambda X|=|\lambda||X|$
+give absolute convergence, and sums/scalar multiples of absolutely convergent series are
+computed termwise. 4.: all terms are $\ge0$.
+
+5.\ \emph{Grouping by values.} $X(\Omega)$ and $Y(\Omega)$ are countable. Because of
+absolute convergence, we may regroup the terms of the series:
+\begin{align*}
+\E(XY)&=\sum_{\omega}X(\omega)Y(\omega)p_\omega
+=\sum_{a\in X(\Omega)}\sum_{b\in Y(\Omega)}ab\,\PP(X=a,\,Y=b)\\
+&=\sum_{a}\sum_{b}ab\,\PP(X=a)\PP(Y=b)=\E(X)\E(Y),
+\end{align*}
+using independence with $A_X=\{a\}$, $B_Y=\{b\}$, and $\E(X)=\sum_aa\PP(X=a)$ (again by
+grouping). The same computation with $|a||b|$ shows $\E(|XY|)=\E(|X|)\E(|Y|)<\infty$, which
+justifies the regrouping.
+\end{proof}
+
+\begin{exercise}
+\begin{enumerate}
+\item Let $\Omega=\{1,2,3,4,5,6\}$ with probabilities $\PP(A)=\frac16\#A$ for any
+$A\subseteq\Omega$. Let $X:\Omega\to\R$, $X(\omega)=\omega$. Calculate the expectation of $X$.
+\item Let $X$ be a binomial random variable with parameters $n\in\N$ and $p\in[0,1]$.
+Calculate its expectation.
+\item Let $X$ be a Poisson random variable with parameter $\lambda>0$. Calculate its expectation.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. $\E(X)=\frac16(1+2+3+4+5+6)=\frac{21}6=\frac72$.
+
+2. By grouping, $\E(X)=\sum_{k=0}^nk\binom nkp^k(1-p)^{n-k}$. Using
+$k\binom nk=n\binom{n-1}{k-1}$ for $k\ge1$ and the binomial theorem,
+\[
+\E(X)=np\sum_{k=1}^n\binom{n-1}{k-1}p^{k-1}(1-p)^{(n-1)-(k-1)}=np\,(p+1-p)^{n-1}=np .
+\]
+(Alternatively: $X$ has the same distribution as a sum of $n$ independent Bernoulli($p$)
+variables, each with expectation $p$; use property 2.)
+
+3. $\E(X)=\sum_{k=0}^\infty ke^{-\lambda}\frac{\lambda^k}{k!}
+=\lambda e^{-\lambda}\sum_{k=1}^\infty\frac{\lambda^{k-1}}{(k-1)!}=\lambda e^{-\lambda}e^\lambda=\lambda$.
+(The series has non-negative terms, so absolute convergence is automatic. For $\lambda=0$,
+which the original also allows, $X=0$ almost surely and $\E(X)=0=\lambda$.)
+\end{solution}
+%======================================================================
+\section{Operators acting on Hilbert space}
+
+Let $X,Y$ be Hilbert spaces. We recall that we have defined the notion of a bounded linear
+operator $T:X\to Y$ in Definition~\ref{def:bdd}. As a special case, we examine now what can
+be said if $X=\C^n$ and $Y=\C^m$.
+
+\begin{proposition}\label{prop:matrix}
+Let $n,m\in\N$ and $X=\C^n$ and $Y=\C^m$ be the Hilbert spaces equipped with the scalar
+product from Section~1.
+\begin{enumerate}
+\item Let $A=(a_{ij})$ be a matrix with $m$ rows and $n$ columns. Then $A$ defines a
+(bounded) linear operator $T_A:\C^n\to\C^m$ by the formula
+$T_A(x_1,\dots,x_n)=\big(\sum_{j=1}^na_{ij}x_j\big)_{i=1}^m$.
+\item Conversely each (bounded) linear operator $T:\C^n\to\C^m$ gives rise to a matrix
+$A=(a_{ij})$ with $m$ rows and $n$ columns with
+\[
+a_{ij}=\ip{f_i}{T(e_j)} ,
+\]
+where $e_j$ (resp.\ $f_i$) is the vector from the standard basis of $\C^n$ (resp.\ $\C^m$)
+having zero entries everywhere except at the $j$-th (resp.\ $i$-th) position where there
+is a $1$. Then $T=T_A$ with $T_A$ as in the first case.
+\item The correspondence $A\longleftrightarrow T_A$ between matrices and linear operators is
+bijective.
+\end{enumerate}
+\end{proposition}
+
+\begin{correction}[(Prop.~4.1(2))]
+The original formula is $a_{ij}=\ip{T(e_j)}{f_i}$. With our scalar product (anti-linear in
+the first variable), $\ip{T(e_j)}{f_i}=\conj{(T(e_j))_i}=\conj{a_{ij}}$, so the original
+formula gives the complex \emph{conjugate} of the correct entry (e.g.\ for $T=i\cdot\mathrm{Id}$
+on $\C^1$ it gives $-i$ instead of $i$). The correct formula is $a_{ij}=\ip{f_i}{T(e_j)}$,
+i.e.\ the $i$-th coordinate of the $j$-th column $T(e_j)$. (In mathematics texts where the
+scalar product is linear in the first variable, the original formula is correct; the
+point is to be consistent with Definition~1.6.) Also: ``lines'' $\to$ ``rows'', and
+``bijective (i.e.\ exact)'' $\to$ ``bijective''.
+\end{correction}
+
+\begin{proof}
+1. Linearity of $T_A$ is clear. Boundedness: by Cauchy--Schwarz in $\C^n$,
+\[
+\|T_Ax\|^2=\sum_i\Big|\sum_ja_{ij}x_j\Big|^2\le\sum_i\Big(\sum_j|a_{ij}|^2\Big)\|x\|^2,
+\]
+so $\|T_Ax\|\le\|A\|_{HS}\|x\|$ with $\|A\|_{HS}=(\sum_{i,j}|a_{ij}|^2)^{1/2}$ (or use
+Remark~\ref{rem:finitedim}).
+
+2. Write $T(e_j)=\sum_i\ip{f_i}{T(e_j)}f_i=\sum_ia_{ij}f_i$ (Proposition~\ref{prop:onb}).
+For $x=\sum_jx_je_j$, linearity gives
+$T(x)=\sum_jx_jT(e_j)=\sum_i\big(\sum_ja_{ij}x_j\big)f_i=T_A(x)$.
+
+3. Part 2 shows that $A\mapsto T_A$ is surjective. It is injective: if $T_A=T_B$ then
+$a_{ij}=\ip{f_i}{T_A(e_j)}=\ip{f_i}{T_B(e_j)}=b_{ij}$.
+\end{proof}
+
+\begin{exercise}
+Let $X=Y=\C^3$. Let $\ket{\phi}=(1,2,-1)$ and $\bra{\psi}=(0,3,2)$. Calculate the matrix of
+the linear operator $T=\ketbra{\phi}{\psi}$ from Example~\ref{ex:ketbra}.
+\end{exercise}
+\begin{solution}
+$T(z)=\ip{\psi}{z}\phi$, so $T(e_j)=\conj{\psi_j}\,\phi$ and
+$a_{ij}=\ip{e_i}{T(e_j)}=\phi_i\conj{\psi_j}$: the matrix of $\ketbra{\phi}{\psi}$ is
+$\phi\,\psi^*$ (column times conjugated row). Here $\psi$ is real, so
+\[
+T=\begin{pmatrix}1\\2\\-1\end{pmatrix}\begin{pmatrix}0&3&2\end{pmatrix}
+=\begin{pmatrix}0&3&2\\0&6&4\\0&-3&-2\end{pmatrix}.\qedhere
+\]
+\end{solution}
+
+\begin{definition}\label{def:adjoint}
+Let $X,Y$ be Hilbert spaces and $T:X\to Y$ a bounded linear operator. Then there exists
+exactly one bounded linear operator $S:Y\to X$ such that $\ip{Tx}{y}_Y=\ip{x}{Sy}_X$ for all
+$x\in X$ and $y\in Y$. This operator $S$ is denoted by $T^*$ and called the \emph{adjoint} of $T$.
+\end{definition}
+
+\begin{addition}[(existence and uniqueness of the adjoint)]
+Fix $y\in Y$. The map $x\mapsto\ip{y}{Tx}_Y$ is linear and $|\ip{y}{Tx}|\le\|y\|\|T\|\|x\|$,
+so it is a bounded linear form on $X$. By Riesz' Theorem~\ref{thm:Riesz} there is a unique
+$z=:Sy\in X$ with $\ip{y}{Tx}=\ip{Sy}{x}$ for all $x$; conjugating,
+$\ip{Tx}{y}=\ip{x}{Sy}$. \emph{Linearity of $S$:}
+$\ip{x}{S(y_1+\lambda y_2)}=\ip{Tx}{y_1+\lambda y_2}=\ip{x}{Sy_1+\lambda Sy_2}$ for all $x$,
+so $S(y_1+\lambda y_2)=Sy_1+\lambda Sy_2$ (uniqueness in Riesz).
+\emph{Boundedness:} $\|Sy\|^2=\ip{Sy}{Sy}=\ip{TSy}{y}\le\|T\|\|Sy\|\|y\|$, hence
+$\|Sy\|\le\|T\|\|y\|$. \emph{Uniqueness:} if also $\ip{Tx}{y}=\ip{x}{S'y}$, then
+$\ip{x}{(S-S')y}=0$ for all $x$; take $x=(S-S')y$.
+\end{addition}
+
+\begin{exercise}\label{exo:adjmatrix}
+Let $A=(a_{ij})$ be an $m\times n$ matrix and $T=T_A:\C^n\to\C^m$ be the associated linear
+operator. Determine the matrix of $T^*$ in the sense of Proposition~\ref{prop:matrix}.
+\end{exercise}
+\begin{solution}
+$T^*:\C^m\to\C^n$ has an $n\times m$ matrix $B=(b_{ij})$ with, by Proposition~\ref{prop:matrix},
+\[
+b_{ij}=\ip{e_i}{T^*f_j}=\ip{Te_i}{f_j}=\conj{\ip{f_j}{Te_i}}=\conj{a_{ji}} .
+\]
+So the matrix of $T^*$ is the \emph{conjugate transpose} $A^*=\conj{A}^{\,T}=(\conj{a_{ji}})_{ij}$.
+(Note that with the uncorrected formula of Prop.~4.1 one would have to be very careful
+here: the correct formula is essential.) Check: $\ip{Ax}{y}=\sum_{i,j}\conj{a_{ij}x_j}\,y_i
+=\sum_j\conj{x_j}\sum_i\conj{a_{ij}}y_i=\ip{x}{A^*y}$.
+\end{solution}
+
+Particularly relevant for us will be two classes of linear operators which are defined next.
+
+\begin{definition}
+Let $X,Y$ be Hilbert spaces.
+\begin{enumerate}
+\item Let $T:X\to X$ be a bounded linear operator. Then $T$ is called \emph{self-adjoint} if $T=T^*$.
+\item Let $U:X\to Y$ be a bounded linear operator. Then $U$ is called \emph{unitary} if $U$
+is bijective and $U^{-1}=U^*$.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}\label{prop:unitary}
+A bounded linear operator $U:X\to Y$ between Hilbert spaces is unitary if and only if it is
+bijective and $\|U(x)\|_Y=\|x\|_X$ for all $x\in X$. In this case, one also has
+$\ip{U(x)}{U(y)}=\ip{x}{y}$ for all $x,y\in X$.
+\end{proposition}
+\begin{proof}
+\emph{Polarization identity.} For any $x,y$ in a complex Hilbert space,
+\[
+\ip{x}{y}=\frac14\sum_{k=0}^3i^{-k}\,\|x+i^ky\|^2 .
+\]
+Indeed $\|x+i^ky\|^2=\|x\|^2+\|y\|^2+i^k\ip{x}{y}+i^{-k}\ip{y}{x}$; multiplying by $i^{-k}$
+and summing over $k$, the terms with $\sum_ki^{-k}=0$ and $\sum_ki^{-2k}=\sum_k(-1)^k=0$
+vanish and $4\ip{x}{y}$ remains. (In the real case:
+$\ip{x}{y}=\frac14(\|x+y\|^2-\|x-y\|^2)$.)
+
+$(\Rightarrow)$ If $U^{-1}=U^*$, then $\ip{Ux}{Uy}=\ip{x}{U^*Uy}=\ip{x}{y}$; with $y=x$
+we get $\|Ux\|=\|x\|$. $(\Leftarrow)$ If $U$ preserves norms, then by polarization (and
+linearity of $U$) $\ip{Ux}{Uy}=\ip{x}{y}$, i.e.\ $\ip{x}{U^*Uy}=\ip{x}{y}$ for all $x$, so
+$U^*U=\mathrm{Id}_X$. Since $U$ is bijective, multiplying from the right by $U^{-1}$ gives
+$U^*=U^{-1}$.
+\end{proof}
+
+\begin{example}
+In quantum mechanics, the configuration (state) of a quantum system is usually described by
+means of a Hilbert space $X$: each vector $x\in X$ such that $\|x\|_X=1$ corresponds to a
+configuration. Then an action on the quantum configuration, e.g.\ a calculation of a
+quantum computer, corresponds to a bounded linear operator $T:X\to X$. In order that this
+operator be well-defined resp.\ acting in a reversible way, it needs to send a configuration
+to a configuration, that is $\|T(x)\|=1$ when $\|x\|=1$, resp.\ $T$ needs to be bijective.
+By Proposition~\ref{prop:unitary}, that means exactly that $T$ is unitary.
+\end{example}
+
+\begin{addition}[(Example~4.7)]
+The step ``$\|Tx\|=1$ whenever $\|x\|=1$'' $\Rightarrow$ ``$\|Tx\|=\|x\|$ for all $x$''
+uses linearity: for $x\ne0$, $\|Tx\|=\|x\|\,\|T(x/\|x\|)\|=\|x\|$. Moreover, physically two
+unit vectors $x$ and $e^{i\theta}x$ describe the \emph{same} state (a state is a ``ray''),
+which is why density matrices $\ketbra{x}{x}$ (Section~6), which do not see the phase,
+are used. (``Quantum calculus'' in the original should read ``quantum mechanics''.)
+\end{addition}
+
+\begin{exercise}
+Let $T:\C^n\to\C^n$ be a linear operator given by a matrix $A=(a_{ij})$. Determine a
+criterion on $A$ that characterizes that $T$ is self-adjoint.
+\end{exercise}
+\begin{solution}
+By Exercise~\ref{exo:adjmatrix} and Proposition~\ref{prop:matrix}(3), $T=T^*$ iff $A=A^*$,
+i.e.\ $a_{ij}=\conj{a_{ji}}$ for all $i,j$ ($A$ is \emph{Hermitian}). In particular the
+diagonal entries are real. For real matrices: $A$ symmetric.
+\end{solution}
+
+\begin{exercise}\label{exo:unitcols}
+Let $T:\C^n\to\C^n$ be unitary given by a matrix $A=(a_{ij})$. For $j=1,\dots,n$ let
+$b_j=(a_{ij})_{i=1}^n$ be the column vectors of $A$, and for $i=1,\dots,n$ let
+$c_i=(a_{ij})_{j=1}^n$ be the row vectors of $A$. Show that the $b_j$ are mutually
+orthogonal and normalized, that is, $\ip{b_j}{b_k}=0$ if $j\ne k$ and $\|b_j\|=1$ for all
+$j=1,\dots,n$. Show also that the $c_i$ are mutually orthogonal and normalized, too.
+
+In fact, these properties characterize unitaries.
+\end{exercise}
+\begin{solution}
+Unitarity means $A^*A=I=AA^*$. Now
+$(A^*A)_{jk}=\sum_i\conj{a_{ij}}a_{ik}=\ip{b_j}{b_k}$, so $A^*A=I$ says exactly
+$\ip{b_j}{b_k}=\delta_{jk}$. Similarly $(AA^*)_{ik}=\sum_ja_{ij}\conj{a_{kj}}=\ip{c_k}{c_i}$,
+so $AA^*=I$ says $\ip{c_k}{c_i}=\delta_{ik}$.
+
+\emph{Converse (``characterize''):} if the columns are orthonormal, then $A^*A=I$; hence
+$A$ is injective ($Ax=0\Rightarrow x=A^*Ax=0$), thus bijective as a square matrix, and
+$A^{-1}=A^*$ (multiply $A^*A=I$ by $A^{-1}$ from the right). If the rows are orthonormal,
+$AA^*=I$ and the same argument applies to $A^*$. So in finite dimension, orthonormal
+columns $\iff$ orthonormal rows $\iff$ unitary.
+\end{solution}
+
+From now on, we will say that a matrix is self-adjoint (resp.\ unitary) whenever the
+associated operator is self-adjoint (resp.\ unitary).
+
+\begin{definition}
+Let $n\in\N$. Let $A=(a_{ij})$ be an $n\times n$ matrix. It is called \emph{diagonal} if
+$a_{ij}=0$ for all indices $i\ne j$. That is, $A$ has the shape
+\[
+A=\begin{pmatrix}a_{11}&0&0&\dots&0\\0&a_{22}&0&\dots&0\\\vdots&\vdots&\vdots&&\vdots\\
+0&0&\dots&a_{n-1,n-1}&0\\0&0&\dots&0&a_{nn}\end{pmatrix}.
+\]
+\end{definition}
+
+\begin{exercise}
+Determine when exactly a diagonal matrix gives rise to a self-adjoint resp.\ unitary operator.
+\end{exercise}
+\begin{solution}
+$A^*=\mathrm{diag}(\conj{a_{11}},\dots,\conj{a_{nn}})$ and
+$A^*A=AA^*=\mathrm{diag}(|a_{11}|^2,\dots,|a_{nn}|^2)$. Hence a diagonal matrix is
+self-adjoint iff all $a_{ii}\in\R$, and unitary iff $|a_{ii}|=1$ for all $i$
+(i.e.\ $a_{ii}=e^{i\theta_i}$).
+\end{solution}
+
+\begin{theorem}[Spectral theorem]\label{thm:spectral}
+Let $n\in\N$. Let $A$ be a self-adjoint or unitary $n\times n$ matrix. Then there exists a
+diagonal matrix $D$ and a unitary matrix $U$, both of size $n\times n$ again, such that
+\[
+A=UDU^{-1}\ (=UDU^*).
+\]
+The entries $\lambda$ on the diagonal of $D$ are exactly the eigenvalues of $A$: there
+exists $x\in\C^n$, $x\ne0$ such that $Ax=\lambda x$. The columns of $U$ are the
+corresponding eigenvectors, normalized so that $\|x\|=1$. In the $i$-th column of $U$ it is
+the eigenvector of the eigenvalue on the $i$-th diagonal entry of $D$. If $A$ has one or
+several eigenspaces of dimension $\geqslant2$, then one takes several orthogonal normalized
+vectors in $U$. If $A$ is self-adjoint, its eigenvalues are real; if $A$ is unitary, they
+have modulus $1$.
+\end{theorem}
+
+\begin{addition}[(proof of the spectral theorem)]
+Both self-adjoint and unitary matrices are \emph{normal}: $AA^*=A^*A$. We prove the
+theorem for normal $A$, by induction on $n$; $n=1$ is trivial.
+
+\emph{Step 1: for normal $A$, $Ax=\lambda x\iff A^*x=\conj\lambda x$.} $B=A-\lambda I$ is
+normal too, and $\|Bx\|^2=\ip{x}{B^*Bx}=\ip{x}{BB^*x}=\|B^*x\|^2$. As $B^*=A^*-\conj\lambda I$,
+the claim follows.
+
+\emph{Step 2.} By the fundamental theorem of algebra, the characteristic polynomial
+$\det(A-\lambda I)$ has a root $\lambda_1$, i.e.\ $A$ has an eigenvector $u_1$ with
+$\|u_1\|=1$. Let $V=u_1^\perp=\{v:\ip{u_1}{v}=0\}$, of dimension $n-1$. For $v\in V$:
+$\ip{u_1}{Av}=\ip{A^*u_1}{v}=\ip{\conj{\lambda_1}u_1}{v}=\lambda_1\ip{u_1}{v}=0$ and
+$\ip{u_1}{A^*v}=\ip{Au_1}{v}=\conj{\lambda_1}\ip{u_1}{v}=0$. So $A$ and $A^*$ map $V$ into
+$V$; the restriction $A|_V$ is normal on the Hilbert space $V$ (with adjoint $A^*|_V$). By
+induction $V$ has an orthonormal basis $u_2,\dots,u_n$ of eigenvectors of $A$.
+
+\emph{Step 3.} Let $U$ be the matrix with columns $u_1,\dots,u_n$ and
+$D=\mathrm{diag}(\lambda_1,\dots,\lambda_n)$. $U$ is unitary by
+Exercise~\ref{exo:unitcols}, and $AU=UD$ column by column, hence $A=UDU^{-1}$.
+Conversely, if $A=UDU^{-1}$ then $Au_i=d_{ii}u_i$ and
+$\det(A-\lambda I)=\det(D-\lambda I)=\prod_i(d_{ii}-\lambda)$, so the $d_{ii}$ are all the
+eigenvalues, with multiplicity.
+
+\emph{Eigenvalues.} If $A=A^*$ and $Ax=\lambda x$, $\|x\|=1$:
+$\lambda=\ip{x}{Ax}=\ip{Ax}{x}=\conj\lambda$. If $A$ is unitary:
+$|\lambda|=\|Ax\|=\|x\|=1$. (If $A$ is real symmetric, all of this can be done in $\R^n$,
+and $U$ can be chosen real orthogonal.)
+\end{addition}
+
+\begin{exercise}
+Consider the matrix
+\[
+A=\begin{pmatrix}1&-\frac23&-\frac23\\-\frac23&\frac23&0\\-\frac23&0&\frac43\end{pmatrix}.
+\]
+\begin{enumerate}
+\item Is this matrix self-adjoint? Is it unitary?
+\item The following are eigenvectors of $A$: $x=(1,-2,2)$, $y=(2,-1,-2)$, $z=(2,2,1)$.
+With this information at hand, try to find matrices $D$ and $U$ as in
+Theorem~\ref{thm:spectral} such that $A=UDU^{-1}$.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. $A$ is real and symmetric, hence $A=A^*$: \emph{self-adjoint}. It is \emph{not unitary}:
+its first column has norm$^2$ $1+\frac49+\frac49=\frac{17}9\ne1$ (Exercise~\ref{exo:unitcols});
+equivalently $A^*A=A^2\ne I$. (It is not even invertible, see below.)
+
+2. Compute $Ax=(1+\frac43-\frac43,\,-\frac23-\frac43,\,-\frac23+\frac83)=(1,-2,2)=1\cdot x$,
+$Ay=(2+\frac23+\frac43,\,-\frac43-\frac23,\,-\frac43-\frac83)=(4,-2,-4)=2\cdot y$,
+$Az=(2-\frac43-\frac23,\,-\frac43+\frac43,\,-\frac43+\frac43)=(0,0,0)=0\cdot z$.
+The eigenvalues are $1,2,0$ (check: $\tr A=1+\frac23+\frac43=3=1+2+0$). The eigenvectors
+are pairwise orthogonal ($\ip xy=2+2-4=0$, $\ip xz=2-4+2=0$, $\ip yz=4-2-2=0$, as it must
+be for distinct eigenvalues of a self-adjoint matrix) and each has norm $3$. Hence
+\[
+U=\frac13\begin{pmatrix}1&2&2\\-2&-1&2\\2&-2&1\end{pmatrix},\qquad
+D=\begin{pmatrix}1&0&0\\0&2&0\\0&0&0\end{pmatrix},\qquad U^{-1}=U^*=U^T,
+\]
+and $A=UDU^{-1}$. Since $0$ is an eigenvalue, $A$ is not invertible.
+\end{solution}
+
+\begin{definition}\label{def:HS}
+Let $n\in\N$ and denote $M_n(\C)$ the space of $n\times n$ matrices (with complex entries).
+The \emph{trace} $\tr:M_n(\C)\to\C$ is the linear functional $\tr((a_{ij})_{ij})=\sum_{i=1}^na_{ii}$.
+It defines a scalar product on $M_n(\C)$ by
+\[
+\ip{A}{B}=\tr(A^*B).
+\]
+Here, $A^*$ is the adjoint matrix of $A$. In this way, $M_n(\C)$ becomes a Hilbert space;
+the above scalar product and its norm are called \emph{Hilbert--Schmidt scalar product} and
+\emph{Hilbert--Schmidt norm}.
+\end{definition}
+
+\begin{addition}[(why this is a scalar product)]
+$\tr(A^*B)=\sum_i\sum_j(A^*)_{ij}b_{ji}=\sum_{i,j}\conj{a_{ji}}b_{ji}$, i.e.\ the
+Hilbert--Schmidt product is the standard scalar product of $\C^{n^2}$ applied to the
+entries. Hence it is a scalar product, $M_n(\C)$ is a Hilbert space (Example~\ref{ex:Cn}),
+and $\|A\|_{HS}^2=\sum_{i,j}|a_{ij}|^2$. Useful facts: $\tr(AB)=\tr(BA)$ (both equal
+$\sum_{i,j}a_{ij}b_{ji}$), and, by Cauchy--Schwarz, $\|AB\|_{HS}\le\|A\|_{HS}\|B\|_{HS}$ and
+$\|Ax\|\le\|A\|_{HS}\|x\|$.
+\end{addition}
+
+\begin{definition}
+Let $n\in\N$. Let $A$ be an $n\times n$ matrix. For any $k\geqslant1$, the $k$-th power of
+$A$ is defined as $A^k=A\cdot A\cdots A$ with $k$ factors. For $k=0$, $A^0=1_n$ where $1_n$
+is the diagonal matrix with entries $1$ everywhere on the diagonal.
+
+We define the \emph{matrix exponential}
+\[
+e^A=\sum_{k=0}^\infty\frac1{k!}A^k .
+\]
+Similarly for $z\in\C$, we define the matrix exponential
+\[
+e^{zA}=\sum_{k=0}^\infty\frac{z^k}{k!}A^k .
+\]
+The convergence of the series is e.g.\ with respect to the Hilbert--Schmidt norm.
+\end{definition}
+
+\begin{addition}[(convergence)]
+By submultiplicativity, $\|A^k\|_{HS}\le\|A\|_{HS}^k$ for $k\ge1$, so
+$\sum_k\frac{|z|^k}{k!}\|A^k\|_{HS}\le\sqrt n+e^{|z|\|A\|_{HS}}<\infty$. An absolutely
+convergent series in the complete space $M_n(\C)$ converges (the partial sums form a Cauchy
+sequence). Since all norms on the finite-dimensional space $M_n(\C)$ are equivalent, the
+limit is the same for any norm, e.g.\ the operator norm of Section~5. Also: if
+$A=UDU^{-1}$ with $D=\mathrm{diag}(\lambda_i)$, then $A^k=UD^kU^{-1}$ and
+$e^{zA}=U\,\mathrm{diag}(e^{z\lambda_i})\,U^{-1}$.
+\end{addition}
+
+A particularly important example of matrices in quantum mechanics are the following
+$2\times2$ matrices.
+
+\begin{definition}
+Consider the following $2\times2$ matrices:
+\[
+\sigma_x=\begin{pmatrix}0&1\\1&0\end{pmatrix},\quad
+\sigma_y=\begin{pmatrix}0&-i\\i&0\end{pmatrix},\quad
+\sigma_z=\begin{pmatrix}1&0\\0&-1\end{pmatrix},\quad
+1=\begin{pmatrix}1&0\\0&1\end{pmatrix}.
+\]
+The matrices $\sigma_x,\sigma_y,\sigma_z$ are called \emph{Pauli matrices}.
+\end{definition}
+
+\begin{exercise}
+\begin{enumerate}
+\item Convince yourself that $\sigma_x,\sigma_y,\sigma_z$ are all both self-adjoint and unitary.
+\item Show that $\sigma_x$ and $\sigma_y$ are orthogonal in the Hilbert--Schmidt scalar product.
+\end{enumerate}
+In fact, the matrices $1,\sigma_x,\sigma_y,\sigma_z$ are all mutually orthogonal and form
+a basis of the $4$-dimensional $\C$-vector space $M_2(\C)$.
+\end{exercise}
+\begin{solution}
+1. Each matrix equals its conjugate transpose (for $\sigma_y$:
+$\conj{\begin{psmallmatrix}0&-i\\i&0\end{psmallmatrix}}^{T}=\begin{psmallmatrix}0&-i\\i&0\end{psmallmatrix}$).
+Moreover $\sigma_x^2=\sigma_y^2=\sigma_z^2=1$ (direct computation), so
+$\sigma^{-1}=\sigma=\sigma^*$: unitary.
+
+2. $\sigma_x\sigma_y=\begin{psmallmatrix}i&0\\0&-i\end{psmallmatrix}=i\sigma_z$, so
+$\ip{\sigma_x}{\sigma_y}=\tr(\sigma_x^*\sigma_y)=\tr(i\sigma_z)=0$.
+
+\emph{The remark.} Similarly $\sigma_y\sigma_z=i\sigma_x$, $\sigma_z\sigma_x=i\sigma_y$,
+and all Pauli matrices are traceless, so $\ip{1}{\sigma_j}=\tr\sigma_j=0$ and
+$\ip{\sigma_j}{\sigma_k}=\tr(\sigma_j\sigma_k)=0$ for $j\ne k$; also
+$\ip{\sigma_j}{\sigma_j}=\tr1=2=\ip11$. Four mutually orthogonal non-zero vectors are
+linearly independent, hence a basis of the 4-dimensional space $M_2(\C)$. Explicitly,
+\[
+\begin{pmatrix}a&b\\c&d\end{pmatrix}=\frac{a+d}2\,1+\frac{b+c}2\,\sigma_x+\frac{i(b-c)}2\,\sigma_y+\frac{a-d}2\,\sigma_z .\qedhere
+\]
+\end{solution}
+
+\begin{exercise}\label{exo:expsx}
+\begin{enumerate}
+\item Calculate $\sigma_x^2$.
+\item Deduce $\sigma_x^k$ for all $k\geqslant0$.
+\item Deduce the matrix exponential $\exp(z\sigma_x)$ for $z\in\C$.
+\end{enumerate}
+\end{exercise}
+\begin{solution}
+1. $\sigma_x^2=\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}=1$.
+
+2. $\sigma_x^{2m}=(\sigma_x^2)^m=1$ and $\sigma_x^{2m+1}=\sigma_x$.
+
+3. Splitting the series into even and odd terms,
+\[
+e^{z\sigma_x}=\sum_{m\ge0}\frac{z^{2m}}{(2m)!}1+\sum_{m\ge0}\frac{z^{2m+1}}{(2m+1)!}\sigma_x
+=\cosh(z)\,1+\sinh(z)\,\sigma_x=\begin{pmatrix}\cosh z&\sinh z\\\sinh z&\cosh z\end{pmatrix}.
+\]
+In particular, for $z=-i\theta$: $e^{-i\theta\sigma_x}=\cos\theta\,1-i\sin\theta\,\sigma_x$
+(used in Example~8.4). The same holds for $\sigma_y,\sigma_z$ and in fact for
+$\vec n\cdot\vec\sigma$ with $\vec n\in\R^3$ a unit vector, since $(\vec n\cdot\vec\sigma)^2=1$.
+\end{solution}
+%======================================================================
+\section{Operator exponential and Trotter--Lie product formula}
+
+We recall that in Definition~\ref{def:bdd}, we have defined the notion of a bounded linear
+operator between Hilbert spaces. That is, if $X$ is a Hilbert space (more generally a
+complete normed space), then a bounded linear mapping $A:X\to X$ satisfies by definition
+$A(x+\lambda y)=A(x)+\lambda A(y)$ for $x,y\in X$ and $\lambda\in\C$ and for some constant
+$C>0$, we have $\|A(x)\|_X\le C\|x\|_X$.
+
+\begin{definition}
+If $A:X\to X$ is a bounded linear operator as above, then the least constant $C\geqslant0$
+such that $\|A(x)\|\le C\|x\|$ holds for all $x\in X$ is denoted by $\|A\|$. Equivalently,
+$\|A\|=\sup_{\|x\|\le1}\|A(x)\|$ (the \emph{operator norm}).
+\end{definition}
+
+\begin{remark}
+The space $B(X)$ of bounded linear operators from $X$ to $X$ is a normed vector space with
+norm $\|A\|$ as in Definition~5.1 above.
+\end{remark}
+
+\begin{addition}[(proof of Remark 5.2, and completeness of $B(X)$)]
+\emph{Least constant exists:} with $s=\sup_{\|x\|\le1}\|Ax\|$, for $x\ne0$ we have
+$\|Ax\|=\|x\|\,\|A(x/\|x\|)\|\le s\|x\|$, and no $C<s$ works. \emph{Norm axioms:}
+$\|A\|=0\Rightarrow Ax=0$ for all $x$; $\|\lambda A\|=|\lambda|\|A\|$ is clear;
+$\|(A+B)x\|\le\|Ax\|+\|Bx\|\le(\|A\|+\|B\|)\|x\|$.
+
+\emph{$B(X)$ is complete} (a Banach space): let $(A_n)$ be Cauchy in $B(X)$. For each $x$,
+$\|A_nx-A_mx\|\le\|A_n-A_m\|\|x\|$, so $(A_nx)$ is Cauchy in $X$ and converges to some
+$Ax$. $A$ is linear (limits of linear expressions), and given $\epsilon>0$ and $n_0$ with
+$\|A_n-A_m\|\le\epsilon$ for $n,m\ge n_0$, letting $m\to\infty$ in
+$\|A_nx-A_mx\|\le\epsilon\|x\|$ gives $\|(A_n-A)x\|\le\epsilon\|x\|$. Hence $A\in B(X)$ and
+$\|A_n-A\|\le\epsilon$ for $n\ge n_0$.
+
+\emph{The ``result from Banach space theory'' used in Lemma~5.5:} in a complete normed space,
+every absolutely convergent series $\sum_n a_n$ ($\sum_n\|a_n\|<\infty$) converges, because
+$\|\sum_{n=N}^Ma_n\|\le\sum_{n=N}^M\|a_n\|\to0$, so the partial sums are Cauchy.
+\end{addition}
+
+\begin{lemma}\label{lem:comp}
+Let $A,B:X\to X$ be two bounded linear operators on a Hilbert space $X$. Then
+$A\circ B:X\to X$ is again a bounded linear operator and $\|A\circ B\|\le\|A\|\,\|B\|$.
+\end{lemma}
+\begin{proof}
+We have
+$A\circ B(x+\lambda y)=A(B(x+\lambda y))=A(B(x)+\lambda B(y))=A(B(x))+\lambda A(B(y))
+=A\circ B(x)+\lambda A\circ B(y)$.
+Thus, $A\circ B$ is again linear. Moreover,
+\[
+\|A\circ B(x)\|=\|A(B(x))\|\le\|A\|\,\|B(x)\|\le\|A\|\,\|B\|\,\|x\|.
+\]
+Thus $A\circ B$ is bounded and $\|A\circ B\|\le\|A\|\,\|B\|$.
+\end{proof}
+
+\begin{definition}\label{def:opexp}
+Let $X$ and $A$ be as above. Let $t\in\R$ (or even $t\in\C$). Then we define the
+\emph{operator exponential} $e^{tA}$ by
+\[
+e^{tA}=\sum_{n=0}^\infty\frac{(tA)^n}{n!}.
+\]
+\end{definition}
+
+\begin{correction}[(Def.~5.4)]
+The original defines $e^{tA}$ only for $t\ge0$. However, the proof of Proposition~5.7 uses
+$e^{hA}$ for $h\ne0$ of either sign (to compute a two-sided derivative), and the inverse of
+$e^{tA}$ is $e^{-tA}$. Nothing in the definition or in Lemmas 5.5--5.6 requires $t\ge0$, so
+we define $e^{tA}$ for all real (or complex) $t$.
+\end{correction}
+
+Note that by Lemma~\ref{lem:comp}, we have indeed $(tA)^n\in B(X)$.
+
+\begin{lemma}\label{lem:abs}
+The series defining $e^{tA}$ above converges absolutely, and by a result from Banach space
+theory (see the Complement after Remark 5.2) therefore also simply.
+Moreover $\|e^{tA}\|\le e^{|t|\,\|A\|}$.
+\end{lemma}
+\begin{proof}
+Indeed, by Lemma~\ref{lem:comp} applied successively, we have
+\[
+\|A^n\|=\|A^{n-1}\circ A\|\le\|A^{n-1}\|\,\|A\|\le\dots\le\|A\|\,\|A\|\cdots\|A\|=\|A\|^n.
+\]
+Thus, $\|(tA)^n\|=\|t^nA^n\|=|t|^n\|A^n\|\le|t|^n\|A\|^n$ and
+\[
+\sum_{n=0}^\infty\Big\|\frac{(tA)^n}{n!}\Big\|\le\sum_{n=0}^\infty\frac{|t|^n\|A\|^n}{n!}=e^{|t|\,\|A\|}<\infty .\qedhere
+\]
+\end{proof}
+
+As for the scalar valued exponential, using Cauchy summation of double sums, one can prove
+the following lemma.
+
+\begin{lemma}\label{lem:explaw}
+The operator exponential satisfies the exponential law
+\[
+e^{(t+s)A}=e^{tA}e^{sA}\qquad(t,s\in\R).
+\]
+In particular $e^{tA}$ is invertible with $(e^{tA})^{-1}=e^{-tA}$, and $(e^{A/k})^k=e^A$ for $k\in\N$.
+\end{lemma}
+
+\begin{addition}[(proof of Lemma~5.6)]
+\emph{Cauchy product in $B(X)$.} Let $a_n,b_n\in B(X)$ with $\sum\|a_n\|<\infty$,
+$\sum\|b_n\|<\infty$ and put $c_n=\sum_{k=0}^na_kb_{n-k}$. Then
+$\sum_nc_n=\big(\sum_ka_k\big)\big(\sum_lb_l\big)$. Indeed,
+\begin{align*}
+\Big\|\sum_{n\le N}c_n-\sum_{k\le N}a_k\sum_{l\le N}b_l\Big\|
+&=\Big\|\sum_{\substack{k,l\le N\\k+l>N}}a_kb_l\Big\|\\
+&\le\Big(\sum_k\|a_k\|\Big)\sum_{l>N/2}\|b_l\|+\Big(\sum_{k>N/2}\|a_k\|\Big)\sum_l\|b_l\|\xrightarrow[N\to\infty]{}0,
+\end{align*}
+because $k+l>N$ forces $k>N/2$ or $l>N/2$, and tails of convergent series tend to $0$.
+
+\emph{Exponential law.} Apply this with $a_k=\frac{(tA)^k}{k!}$, $b_l=\frac{(sA)^l}{l!}$
+(absolutely convergent by Lemma~\ref{lem:abs}). Since powers of the \emph{same} operator
+$A$ commute, $a_kb_{n-k}=\frac{t^ks^{n-k}}{k!(n-k)!}A^n$, and the binomial theorem gives
+\[
+c_n=\frac{A^n}{n!}\sum_{k=0}^n\binom nkt^ks^{n-k}=\frac{(t+s)^nA^n}{n!},\qquad
+e^{tA}e^{sA}=\sum_nc_n=e^{(t+s)A}.
+\]
+With $s=-t$: $e^{tA}e^{-tA}=e^{0A}=I=e^{-tA}e^{tA}$. Induction gives $(e^{A/k})^k=e^{A}$.
+
+\emph{Remark.} The same proof shows $e^{A+B}=e^Ae^B$ whenever $AB=BA$ (the binomial
+formula $(A+B)^n=\sum\binom nkA^kB^{n-k}$ requires commutation). Example~5.8 shows that this
+fails in general.
+\end{addition}
+
+The operator exponential can be used to solve abstractly an initial value differential
+equation. Namely, we let $X$ be a Hilbert space and $A:X\to X$ a bounded linear operator.
+Let $u_0\in X$ be an initial value. Consider the differential equation
+\begin{equation}\label{eq:ivp}
+\begin{cases}\partial_tu(t)=Au(t)&(t\ge0)\\u(0)=u_0\end{cases},
+\end{equation}
+where $u:[0,\infty)\to X$ is the unknown function to find.
+
+\begin{proposition}\label{prop:ivp}
+The solution of \eqref{eq:ivp} is given by $u(t)=e^{tA}u_0$ for $t\geqslant0$, and it is the
+only solution.
+\end{proposition}
+
+We shall prove that the above $u(t)$ solves indeed the differential equation, and then
+that it is the only solution.
+
+\begin{proof}[Proof (existence)]
+Let us show that $u$ is differentiable and calculate at the same time its derivative. We
+have for $h\ne0$ and $t\ge0$ (with $t+h\ge0$), according to Lemma~\ref{lem:explaw},
+\[
+\frac1h\big(u(t+h)-u(t)\big)=\frac1h\big(e^{(t+h)A}u_0-e^{tA}u_0\big)=\frac1h\big(e^{hA}e^{tA}u_0-e^{tA}u_0\big).
+\]
+Write $u_1=e^{tA}u_0$. Then the above calculation continues
+\[
+=\frac1h\big(e^{hA}u_1-u_1\big)=\frac1h\Big(\sum_{n=0}^\infty\frac{(hA)^n}{n!}u_1-u_1\Big)
+=\frac1h\sum_{n=1}^\infty\frac{(hA)^n}{n!}u_1=\sum_{n=1}^\infty A\frac{(hA)^{n-1}}{n!}u_1 .
+\]
+We estimate the norm of the difference:
+\begin{align*}
+\Big\|\frac1h\big(u(t+h)-u(t)\big)-Ae^{tA}u_0\Big\|
+&=\Big\|\sum_{n=1}^\infty A\frac{(hA)^{n-1}}{n!}u_1-Au_1\Big\|
+=\Big\|\sum_{n=2}^\infty A\frac{(hA)^{n-1}}{n!}u_1\Big\|\\
+&\le\sum_{n=2}^\infty\frac{|h|^{n-1}\|A\|^{n}}{n!}\|u_1\|
+\le|h|\,\|A\|^2\sum_{n=2}^\infty\frac{|h|^{n-2}\|A\|^{n-2}}{(n-2)!}\|u_1\|\\
+&=|h|\,\|A\|^2e^{|h|\,\|A\|}\|u_1\|\to0\qquad(h\to0).
+\end{align*}
+Thus, $u(t)$ is differentiable in $t$ and $\partial_tu(t)=Ae^{tA}u_0=Au(t)$. Moreover,
+$u(0)=e^{0A}u_0=\big(I+\sum_{n\ge1}\frac{0^n}{n!}A^n\big)u_0=u_0$.
+\end{proof}
+
+\begin{correction}[(proof of Prop.~5.7)]
+(a) The reference ``Lemma ??'' is broken; it is Lemma~5.6 (exponential law).
+(b) In the second line of the estimate, the original writes
+$\big\|\sum_{n=2}^\infty\frac{(hA)^{n-1}}{n!}u_1\big\|$: the factor $A$ in front was lost.
+Consequently the original final bound $|h|\,\|A\|\,e^{|h|\|A\|}\|u_1\|$ should be
+$|h|\,\|A\|^2e^{|h|\|A\|}\|u_1\|$, as above. Since it still tends to $0$, the conclusion
+is unaffected. (c) For $h<0$ one needs $e^{hA}$ with negative exponent, see the correction
+to Definition~5.4; at $t=0$ only $h>0$ is allowed (right derivative).
+\end{correction}
+
+\begin{proof}[Proof (uniqueness; ``with a little more work'')]
+The estimate above, with $u_1$ replaced by an arbitrary vector of norm $\le1$, shows
+$\big\|\frac1h(e^{(t+h)A}-e^{tA})-Ae^{tA}\big\|\le|h|\|A\|^2e^{|h|\|A\|}\|e^{tA}\|\to0$,
+i.e.\ $t\mapsto e^{tA}$ is differentiable in operator norm with derivative $Ae^{tA}=e^{tA}A$;
+in particular it is continuous. Let now $v$ be any solution of \eqref{eq:ivp} and
+$w(t)=e^{-tA}v(t)$. Then
+\begin{align*}
+\frac{w(t+h)-w(t)}h&=e^{-(t+h)A}\frac{v(t+h)-v(t)}h+\frac{e^{-(t+h)A}-e^{-tA}}h\,v(t)\\
+&\xrightarrow[h\to0]{}e^{-tA}Av(t)-Ae^{-tA}v(t)=0,
+\end{align*}
+using $\|e^{-(t+h)A}\|\le e^{(|t|+1)\|A\|}$ for $|h|\le1$ and the continuity of
+$s\mapsto e^{-sA}$. So $w'\equiv0$ on $[0,\infty)$. For every $y\in X$, the scalar
+function $t\mapsto\ip{y}{w(t)}$ has zero derivative (real and imaginary parts separately),
+hence is constant by the mean value theorem: $\ip{y}{w(t)-w(0)}=0$ for all $y$, so
+$w(t)=w(0)=v(0)=u_0$. Thus $v(t)=e^{tA}w(t)=e^{tA}u_0=u(t)$.
+\end{proof}
+
+In practice, the operator exponential is often of the form $e^{t(A+B)}$ where $A$ and $B$ are
+two operators of different nature. One can often calculate $e^{tA}$ and $e^{tB}$
+separately. The following example shows that this does not automatically give the full
+operator exponential $e^{t(A+B)}$.
+
+\begin{example}\label{ex:noncomm}
+Let $X=\C^2$ and
+\[
+A=\begin{pmatrix}0&1\\0&0\end{pmatrix},\qquad B=\begin{pmatrix}0&0\\1&0\end{pmatrix}.
+\]
+We can calculate powers of $A$:
+$A^0=\begin{psmallmatrix}1&0\\0&1\end{psmallmatrix}=:I$, $A^1=A$ and
+$A^2=\begin{psmallmatrix}0&1\\0&0\end{psmallmatrix}\begin{psmallmatrix}0&1\\0&0\end{psmallmatrix}=0$.
+Thus for any $n\ge2$, $A^n=0$. Therefore the operator exponential is
+\[
+e^{tA}=I+tA=\begin{pmatrix}1&t\\0&1\end{pmatrix}.
+\]
+In a similar manner, $B^0=I$, $B^1=B$, $B^n=0$ for $n\ge2$, and therefore
+$e^{tB}=I+tB=\begin{psmallmatrix}1&0\\t&1\end{psmallmatrix}$. The product of the two
+operator exponentials becomes
+\[
+e^{tA}e^{tB}=\begin{pmatrix}1&t\\0&1\end{pmatrix}\begin{pmatrix}1&0\\t&1\end{pmatrix}
+=\begin{pmatrix}1+t^2&t\\t&1\end{pmatrix}.
+\]
+On the other hand, $A+B=\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}\,(=\sigma_x)$ and
+$(A+B)^2=I$. Therefore $(A+B)^n=A+B$ for $n$ odd and $(A+B)^n=I$ for $n$ even. We deduce
+the operator exponential of $A+B$ (compare Exercise~\ref{exo:expsx}):
+\[
+e^{t(A+B)}=\sum_{n=0}^\infty\frac{t^n}{n!}(A+B)^n=\sum_{n=0}^\infty\frac{t^{2n}}{(2n)!}I
++\sum_{n=0}^\infty\frac{t^{2n+1}}{(2n+1)!}(A+B)=\begin{pmatrix}\cosh t&\sinh t\\\sinh t&\cosh t\end{pmatrix}.
+\]
+We see in this example that in general, $e^{tA}e^{tB}\ne e^{t(A+B)}$.
+\end{example}
+
+\begin{addition}[(why: non-commutativity)]
+Here $AB=\begin{psmallmatrix}1&0\\0&0\end{psmallmatrix}\ne\begin{psmallmatrix}0&0\\0&1\end{psmallmatrix}=BA$,
+with commutator $[A,B]=AB-BA=\sigma_z$. Expanding to second order,
+$e^{tA}e^{tB}-e^{t(A+B)}=\begin{psmallmatrix}t^2/2&0\\0&-t^2/2\end{psmallmatrix}+O(t^3)
+=\frac{t^2}2[A,B]+O(t^3)$, in accordance with the Baker--Campbell--Hausdorff formula
+$e^{tA}e^{tB}=e^{t(A+B)+\frac{t^2}2[A,B]+O(t^3)}$.
+\end{addition}
+
+In order to obtain a correct dependency of $e^{t(A+B)}$ in terms of $e^{tA}$ and $e^{tB}$,
+there is the following theorem.
+
+\begin{theorem}[Trotter--Lie product formula]\label{thm:trotter}
+Let $X$ be a Hilbert space and $A,B$ be bounded linear operators over $X$. Then for any
+$t\geqslant0$, we have the Trotter--Lie formula
+\[
+e^{t(A+B)}=\lim_{n\to\infty}\big(e^{\frac tnA}e^{\frac tnB}\big)^n
+\]
+(limit in operator norm). More precisely,
+$\big\|e^{t(A+B)}-(e^{\frac tnA}e^{\frac tnB})^n\big\|\le\frac2n\,e^{2t(\|A\|+\|B\|)}$.
+\end{theorem}
+\begin{proof}
+Upon renaming $tA$ into $A$ and $tB$ into $B$, we can assume that $t=1$. We write $k$
+instead of $n$. Define $C=e^{(A+B)/k}$ and $D=e^{A/k}e^{B/k}$. By Lemma~\ref{lem:explaw},
+$C^k=e^{A+B}$, and $D^k$ is the Trotter product, so we must show $\|C^k-D^k\|\to0$.
+We have the following estimates according to the proof of Lemma~\ref{lem:abs} and
+Lemma~\ref{lem:comp}:
+\[
+\|C\|,\ \|D\|\le\exp\Big[\frac{\|A\|+\|B\|}k\Big]=\exp(\|A\|+\|B\|)^{1/k}.
+\]
+Applying the Cauchy product formula (Complement after Lemma~5.6) to $D$ yields
+\[
+D=e^{A/k}e^{B/k}=\sum_{i=0}^\infty\frac{(A/k)^i}{i!}\cdot\sum_{j=0}^\infty\frac{(B/k)^j}{j!}
+=\sum_{m=0}^\infty k^{-m}\sum_{i=0}^m\frac{A^i}{i!}\cdot\frac{B^{m-i}}{(m-i)!}.
+\]
+The terms with $m=0$ ($I$) and $m=1$ ($\frac{A+B}k$) coincide in $C$ and $D$. This permits
+us to bound the norm of $C-D$ by
+\begin{align*}
+\|C-D\|&=\Big\|\sum_{i=0}^\infty\frac{([A+B]/k)^i}{i!}-\sum_{m=0}^\infty k^{-m}\sum_{i=0}^m\frac{A^i}{i!}\cdot\frac{B^{m-i}}{(m-i)!}\Big\|\\
+&=\Big\|\sum_{i=2}^\infty k^{-i}\frac{(A+B)^i}{i!}-\sum_{m=2}^\infty k^{-m}\sum_{i=0}^m\frac{A^i}{i!}\cdot\frac{B^{m-i}}{(m-i)!}\Big\|\\
+&\le\frac1{k^2}\Big[\exp(\|A\|+\|B\|)+\sum_{m=2}^\infty\sum_{i=0}^m\frac{\|A\|^i}{i!}\cdot\frac{\|B\|^{m-i}}{(m-i)!}\Big]\\
+&=\frac1{k^2}\Big[\exp(\|A\|+\|B\|)+\sum_{m=2}^\infty\frac1{m!}\sum_{i=0}^m\binom mi\|A\|^i\|B\|^{m-i}\Big]\\
+&=\frac1{k^2}\Big[\exp(\|A\|+\|B\|)+\sum_{m=2}^\infty\frac{(\|A\|+\|B\|)^m}{m!}\Big]
+\le\frac2{k^2}\exp(\|A\|+\|B\|),
+\end{align*}
+where we used $k^{-i}\le k^{-2}$ for $i\ge2$ and $\|(A+B)^i\|\le(\|A\|+\|B\|)^i$.
+By the telescoping identity
+$C^k-D^k=\sum_{m=0}^{k-1}C^m(C-D)D^{k-m-1}$
+(the sum equals $\sum_m(C^{m+1}D^{k-m-1}-C^mD^{k-m})$), we obtain
+\[
+\|C^k-D^k\|=\Big\|\sum_{m=0}^{k-1}C^m(C-D)D^{k-m-1}\Big\|\le\exp(\|A\|+\|B\|)\cdot k\cdot\|C-D\|,
+\]
+where we used that
+$\|C\|^m\cdot\|D\|^{k-m-1}\le\exp(\|A\|+\|B\|)^{(k-1)/k}\le\exp(\|A\|+\|B\|)$. Together
+with the estimate for $\|C-D\|$, this yields
+\[
+\|C^k-D^k\|\le\frac{2\exp(2\|A\|+2\|B\|)}k,
+\]
+which upon letting $k\to\infty$ proves the theorem.
+\end{proof}
+
+\begin{addition}[(numerical illustration and relevance)]
+For Example~\ref{ex:noncomm} with $t=1$, one has
+$e^{A/n}e^{B/n}=\begin{psmallmatrix}1+1/n^2&1/n\\1/n&1\end{psmallmatrix}$ and
+$e^{A+B}=\begin{psmallmatrix}\cosh1&\sinh1\\\sinh1&\cosh1\end{psmallmatrix}
+\approx\begin{psmallmatrix}1.543081&1.175201\\1.175201&1.543081\end{psmallmatrix}$:
+\begin{center}\footnotesize\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{rccc}
+\toprule
+$n$ & $(e^{A/n}e^{B/n})^n$ & error $\|\cdot-e^{A+B}\|$ & $n\times$ error\\
+\midrule
+1 & $\begin{pmatrix}2&1\\1&1\end{pmatrix}$ & 0.5729 & 0.573\\
+2 & $\begin{pmatrix}1.8125&1.125\\1.125&1.25\end{pmatrix}$ & 0.2975 & 0.595\\
+10 & $\begin{pmatrix}1.601246&1.173094\\1.173094&1.483937\end{pmatrix}$ & 0.0592 & 0.592\\
+100 & $\begin{pmatrix}1.548952&1.175180\\1.175180&1.537200\end{pmatrix}$ & 0.00588 & 0.588\\
+1000 & $\begin{pmatrix}1.543668&1.175201\\1.175201&1.542493\end{pmatrix}$ & 0.000588 & 0.588\\
+\bottomrule
+\end{tabular}
+\end{center}
+The error decays exactly like $1/n$, as predicted by the theorem. In quantum computing, this
+is the basis of \emph{Trotterization}: to simulate $e^{-itH}$ for a Hamiltonian
+$H=H_1+H_2$ whose parts are easy to implement as gates, one applies
+$(e^{-itH_1/n}e^{-itH_2/n})^n$; the theorem guarantees an error $O(t^2/n)$ (more precisely,
+from the second-order term, $\approx\frac{t^2}{2n}\|[H_1,H_2]\|$).
+\end{addition}
+%======================================================================
+\section{Density matrix}
+
+\begin{definition}\label{def:psd}
+Let $n\in\N$. A matrix $A=(a_{ij})_{ij}\in M_n(\C)$ is \emph{positive semi-definite} if
+\[
+\ip{x}{A(x)}=\sum_{i,j=1}^nx_j\conj{x_i}a_{ij}\geqslant0
+\]
+for all $x\in\C^n$. Moreover, $A$ is called \emph{positive definite} if
+\[
+\ip{x}{A(x)}=\sum_{i,j=1}^nx_j\conj{x_i}a_{ij}>0
+\]
+for all $x\in\C^n$, $x\ne0$.
+\end{definition}
+
+\begin{addedthm}{Lemma 6.1a}
+Let $A\in M_n(\C)$. The following are equivalent:
+(i) $A$ is positive semi-definite;
+(ii) $A$ is self-adjoint and all its eigenvalues are $\ge0$;
+(iii) $A=\sum_k\lambda_k\ketbra{u_k}{u_k}$ for an orthonormal basis $(u_k)$ and $\lambda_k\ge0$.
+Similarly, $A$ is positive definite iff it is self-adjoint with all eigenvalues $>0$.
+\end{addedthm}
+\begin{proof}
+(i)$\Rightarrow$(ii): $\ip{x}{Ax}\in\R$ for all $x$, so the sesquilinear form
+$s(x,y)=\ip{x}{(A-A^*)y}$ satisfies $s(x,x)=\ip{x}{Ax}-\conj{\ip{x}{Ax}}=0$ for all $x$.
+The polarization identity (proof of Proposition~\ref{prop:unitary}) holds for every
+sesquilinear form: $s(x,y)=\frac14\sum_{k=0}^3i^{-k}s(x+i^ky,x+i^ky)=0$. Hence $A=A^*$.
+If $Ax=\lambda x$, $\|x\|=1$, then $\lambda=\ip{x}{Ax}\ge0$.
+(ii)$\Rightarrow$(iii) is Theorem~\ref{thm:spectral}: $A=UDU^*=\sum_k\lambda_k\ketbra{u_k}{u_k}$
+with $u_k$ the columns of $U$.
+(iii)$\Rightarrow$(i): $\ip{x}{Ax}=\sum_k\lambda_k|\ip{u_k}{x}|^2\ge0$.
+The positive definite case is identical, using $\sum_k\lambda_k|\ip{u_k}{x}|^2>0$ for
+$x\ne0$ iff all $\lambda_k>0$ (Parseval). Note that over $\R$ (i) does \emph{not} imply
+symmetry, e.g.\ $\begin{psmallmatrix}0&1\\-1&0\end{psmallmatrix}$; over $\C$ it does.
+\end{proof}
+
+Let $(\Omega,\PP)$ be a probability space. We recall from Definition~\ref{def:expect} that
+the expectation $\E$ has the properties that it is linear on the space of bounded functions
+$\Omega\to\C$, that $\E(1)=1$ and that $\E(X)\ge0$ whenever $X\ge0$. Let now $n\in\N$. Note
+that the space $M_n(\C)$ is linear, contains an element $1_n$ (that is, the diagonal matrix
+with $1$ entries on the diagonal), and carries the positivity notion ``positive
+semi-definite'' from Definition~\ref{def:psd}. We are thus able to define a generalized
+version of expectation on the space $M_n(\C)$.
+
+\begin{definition}
+Let $\Phi:M_n(\C)\to\C$ be a function. Then $\Phi$ is called a \emph{state} if
+\begin{enumerate}
+\item $\Phi$ is linear,
+\item $\Phi(1_n)=1$,
+\item $\Phi(A)\geqslant0$ whenever $A$ is positive semi-definite.
+\end{enumerate}
+\end{definition}
+
+If $\Phi$ is a state, it is in particular a (bounded) linear form (Remark~\ref{rem:finitedim}).
+Since $M_n(\C)$ is moreover a Hilbert space by means of the Hilbert--Schmidt scalar product,
+$\Phi$ has a special shape guaranteed by Riesz' Theorem~\ref{thm:Riesz}! This is the content
+of the next proposition.
+
+\begin{proposition}\label{prop:density}
+Let $\Phi$ be a state on $M_n(\C)$. Then there exists a unique matrix $A\in M_n(\C)$ such
+that $\Phi(B)=\tr(AB)$ for any $B\in M_n(\C)$. The matrix $A$ is normalized by $\tr(A)=1$
+and is positive semi-definite.
+
+Conversely, any such matrix $A$ defines a state $\Phi$ by the formula $\Phi(B)=\tr(AB)$. The
+correspondence of normalized positive semi-definite matrices $A$ and states $\Phi$ is bijective.
+
+$A$ is called the \textbf{\emph{density matrix}} of the state $\Phi$.
+\end{proposition}
+
+\begin{proof}
+We first show the more difficult first part. Since $\Phi:M_n(\C)\to\C$ is a (bounded)
+linear form on a Hilbert space, by Riesz' Theorem~\ref{thm:Riesz} there exists some
+$A_0\in M_n(\C)$ such that $\Phi(B)=\ip{A_0}{B}=\tr(A_0^*B)$ for any $B\in M_n(\C)$. It
+suffices to put $A=A_0^*$. We have $\tr(A)=\tr(A1_n)=\Phi(1_n)=1$. It remains to show that
+$A$ is positive \emph{semi-}definite. Let $x\in\C^n$ be arbitrary. We associate the bounded
+linear operator $T_x:\C^n\to\C^n$, $T_x(y)=\ip{x}{y}x$ (which is in fact equal to
+$\ketbra{x}{x}$ from Example~\ref{ex:ketbra}). Then $T_x$ (or its associated matrix) is
+positive semi-definite. Indeed, for any $y\in\C^n$, we have
+\[
+\ip{y}{T_x(y)}=\ip{y}{\ip{x}{y}x}=\ip{x}{y}\ip{y}{x}=|\ip{x}{y}|^2\ge0 .
+\]
+Now, the matrix of $T_x$ is equal to $(x_i\conj{x_j})_{ij}$ (compare Exercises 1.24 and 4.2):
+indeed $(T_x)_{ij}=\ip{e_i}{T_xe_j}=\ip{x}{e_j}\,x_i=x_i\conj{x_j}$. Thus, with $A=(a_{ij})_{ij}$,
+we have
+\[
+0\le\Phi(T_x)=\tr(AT_x)=\tr\Big(\Big(\sum_ja_{ij}x_j\conj{x_k}\Big)_{ik}\Big)
+=\sum_i\sum_ja_{ij}x_j\conj{x_i}=\ip{x}{Ax}.
+\]
+Since $x$ was arbitrary, $A$ is positive semi-definite.
+
+\emph{Uniqueness.} If $\tr(AB)=\tr(A'B)$ for all $B$, take $B=(A-A')^*$:
+$\|(A-A')^*\|_{HS}^2=\tr((A-A')(A-A')^*)=0$, so $A=A'$.
+
+\emph{Converse.} Let $A$ be positive semi-definite with $\tr A=1$ and $\Phi(B)=\tr(AB)$.
+$\Phi$ is linear and $\Phi(1_n)=\tr A=1$. By Lemma~6.1a, $A=\sum_k\lambda_k T_{u_k}$ with
+$\lambda_k\ge0$ and $(u_k)$ orthonormal. For any $u$ and $B$,
+$\tr(T_uB)=\sum_{i,j}u_i\conj{u_j}b_{ji}=\ip{u}{Bu}$. Hence for $B$ positive semi-definite,
+$\Phi(B)=\sum_k\lambda_k\ip{u_k}{Bu_k}\ge0$. So $\Phi$ is a state.
+
+\emph{Bijectivity.} The map $A\mapsto\tr(A\,\cdot)$ from normalized positive semi-definite
+matrices to states is well defined (converse), surjective (first part) and injective
+(uniqueness).
+\end{proof}
+
+\begin{correction}[(proof of Prop.~6.3)]
+(a) ``It remains to show that $A$ is positive \emph{definite}'' must read
+``positive \emph{semi}-definite'': this is what the proposition claims and what the
+argument gives; density matrices are in general not positive definite (see below).
+(b) The original states that the matrix of $T_x$ is $(\conj{x_i}x_j)_{ij}$. This is wrong:
+it is $(x_i\conj{x_j})_{ij}$, i.e.\ $xx^*$ (column times conjugated row), consistent with
+Exercise~4.2 and with Example~8.4 where the original itself uses
+$(\phi(t)_i\conj{\phi(s)_j})_{ij}$ for $\ketbra{\phi(t)}{\phi(s)}$. With the wrong matrix the
+original obtains $\tr(AT_x)=\sum_{i,j}a_{ij}\conj{x_j}x_i$, which is $\ip{\conj x}{A\conj x}$
+rather than $\ip{x}{Ax}$ (the conclusion survives only because $\conj x$ also runs through
+all of $\C^n$; this is presumably the reason for the ``(!)'' in ``We infer(!)'').
+(c) The uniqueness and the converse were not proved; see above.
+\end{correction}
+
+The above proof contains a positive semi-definite operator $T_x$. If $\|x\|_{\C^n}=1$, we
+have $\tr(T_x)=\sum_i|x_i|^2=1$, and thus, by Proposition~\ref{prop:density}, $T_x$ defines a
+state on $M_n(\C)$, $\Phi(B)=\tr(T_xB)=\ip{x}{Bx}$. Such a state is called \textbf{\emph{pure}}.
+Note that $T_x$ has rank one, hence for $n\ge2$ it is \emph{not} positive definite.
+
+\begin{exercise}\label{exo:mixed}
+More generally, let $x_1,\dots,x_N\in\C^n$ be normalized vectors. Let
+$\lambda_1,\dots,\lambda_N\geqslant0$ such that $\sum_{k=1}^N\lambda_k=1$. Check that
+$\sum_{k=1}^N\lambda_kT_{x_k}$ defines a density matrix. If the $x_k$ span an at least
+two-dimensional subspace and all $\lambda_k>0$, the corresponding state is called
+\textbf{\emph{mixed}}.
+\end{exercise}
+\begin{correction}[(Ex.~6.4)]
+The original upper summation limit is $n$ (the dimension) instead of $N$ (the number of vectors).
+\end{correction}
+\begin{solution}
+Let $\rho=\sum_{k=1}^N\lambda_kT_{x_k}$. It is positive semi-definite:
+$\ip{y}{\rho y}=\sum_k\lambda_k|\ip{x_k}{y}|^2\ge0$. And
+$\tr\rho=\sum_k\lambda_k\tr T_{x_k}=\sum_k\lambda_k\|x_k\|^2=\sum_k\lambda_k=1$. By
+Proposition~\ref{prop:density} it is a density matrix.
+
+\emph{Why ``mixed'' is not pure.} Let all $\lambda_k>0$. If $\rho y=0$, then
+$0=\ip{y}{\rho y}=\sum_k\lambda_k|\ip{x_k}{y}|^2$, so $y\perp x_k$ for all $k$; conversely,
+if $y\perp x_k$ for all $k$, then $\rho y=\sum_k\lambda_k\ip{x_k}{y}x_k=0$. Hence
+$\Ker\rho=\spn\{x_k\}^\perp$ and $\rank\rho=\dim\spn\{x_1,\dots,x_N\}\ge2$, whereas a pure
+density matrix $T_x$ has rank $1$. Since the density matrix of a state is unique, a mixed
+state is not pure.
+
+\emph{Useful criterion (purity).} For a density matrix $\rho$ with eigenvalues
+$p_k\ge0$, $\sum p_k=1$: $\tr(\rho^2)=\sum_kp_k^2\le1$, with equality iff one $p_k=1$ and
+the others vanish, i.e.\ iff $\rho$ is pure.
+\end{solution}
+
+\begin{exercise}\label{exo:65}
+Let
+\[
+A=\begin{pmatrix}2&1&-1\\1&5&1\\-1&1&1\end{pmatrix},\qquad x=(1,2,0),\quad y=(1,-1,-1).
+\]
+\begin{enumerate}
+\item Show that $A=T_x+T_y$, where $T_x,T_y$ refer to the above notation, that is,
+$T_x:\C^3\to\C^3$, $T_x(z)=\ip{x}{z}x$.
+\item Deduce that $A$ is positive \emph{semi}-definite (but not positive definite) and that
+$\Phi:M_3(\C)\to\C$, $B\mapsto\frac18\tr(AB)$ defines a mixed state.
+\item Calculate
+\[
+\Phi\left(\begin{pmatrix}3&2&0\\0&-1&-1\\1&0&0\end{pmatrix}\right).
+\]
+\end{enumerate}
+\end{exercise}
+
+\begin{correction}[(Ex.~6.5) -- three errors]
+(a) The original matrix is
+$A_{\rm orig}=\begin{psmallmatrix}2&-1&-1\\-1&5&1\\-1&1&1\end{psmallmatrix}$. But
+$T_x=xx^T=\begin{psmallmatrix}1&2&0\\2&4&0\\0&0&0\end{psmallmatrix}$ and
+$T_y=yy^T=\begin{psmallmatrix}1&-1&-1\\-1&1&1\\-1&1&1\end{psmallmatrix}$, so
+$T_x+T_y=\begin{psmallmatrix}2&1&-1\\1&5&1\\-1&1&1\end{psmallmatrix}$: the entries
+$a_{12}=a_{21}$ have the wrong sign. (One checks that no choice $x=(x_1,x_2,0)$, $y\in\R^3$
+gives $A_{\rm orig}$: the conditions $y_3^2=1$, $y_1y_3=-1$, $y_2y_3=1$, $x_1^2+y_1^2=2$,
+$x_2^2+y_2^2=5$ force $|x_1|=1,|x_2|=2$, while $a_{12}=x_1x_2+y_1y_2=-1$ forces $x_1x_2=0$.)
+
+(b) ``Deduce that $A$ is positive definite'' is false for $A=T_x+T_y$: a sum of two rank-one
+matrices in $\C^3$ has rank $\le2$, so it has a non-trivial kernel. Here
+$\det A=0$ and $A(-2,1,-3)^T=0$. $A$ is positive \emph{semi}-definite.
+(Curiously, the misprinted $A_{\rm orig}$ \emph{is} positive definite: its leading minors
+are $2,9,4>0$.)
+
+(c) ``$\Phi:M_3(\C)\to M_3(\C)$, $B\mapsto\tr(AB)$'': a state takes values in $\C$, and
+$\tr A=8\ne1$, so $\tr(A\,\cdot)$ is not normalized. The state is
+$\Phi(B)=\frac18\tr(AB)$, with density matrix $\rho=\frac18A$.
+\end{correction}
+
+\begin{solution}
+1. Since $x,y$ are real, $T_x$ has matrix $(x_ix_j)_{ij}$ and $T_y$ has matrix $(y_iy_j)_{ij}$,
+computed in the correction above; their sum is $A$.
+
+2. $T_x,T_y$ are positive semi-definite (proof of Prop.~\ref{prop:density}), hence so is
+$A$: $\ip{z}{Az}=|\ip{x}{z}|^2+|\ip{y}{z}|^2\ge0$. It is not positive definite: for
+$z=x\times y=(-2,1,-3)$, which is orthogonal to $x$ and $y$, $Az=0$. Its eigenvalues are
+$0$ and $4\pm\sqrt2$. Now $\|x\|^2=5$, $\|y\|^2=3$, $\tr A=8$, and with
+$\hat x=x/\sqrt5$, $\hat y=y/\sqrt3$,
+\[
+\rho=\tfrac18A=\tfrac58\,T_{\hat x}+\tfrac38\,T_{\hat y},
+\]
+which is of the form of Exercise~\ref{exo:mixed} with $\lambda_1=\frac58$,
+$\lambda_2=\frac38>0$ and $\hat x,\hat y$ linearly independent. Hence
+$\Phi(B)=\tr(\rho B)$ is a \emph{mixed} state (and $\rank\rho=2$).
+
+3. Using $\tr(T_xM)=\ip{x}{Mx}$ (proof of Prop.~\ref{prop:density}), with $M$ the given
+matrix: $Mx=(7,-2,1)$, $\ip{x}{Mx}=7-4+0=3$; $My=(1,2,1)$, $\ip{y}{My}=1-2-1=-2$. Thus
+\[
+\Phi(M)=\tfrac18\big(\ip{x}{Mx}+\ip{y}{My}\big)=\tfrac18(3-2)=\tfrac18 .
+\]
+(For comparison: with the misprinted $A_{\rm orig}$, which is also a valid --- full rank,
+hence mixed --- density matrix after division by its trace $8$, one would get
+$\frac18\tr(A_{\rm orig}M)=-\frac38$. Without the normalization one would get
+$\tr(AM)=1$.)
+\end{solution}
+
+\begin{proposition}\label{prop:bloch}
+The density matrices on $M_2(\C)$ are exactly the matrices of the form
+$A=\frac12(1_2+a_x\sigma_x+a_y\sigma_y+a_z\sigma_z)$ with $a_x,a_y,a_z\in\R$ and
+$\|a\|\le1$, where $a=(a_x,a_y,a_z)$. The pure states correspond to vectors $a\in\R^3$ such
+that $\|a\|=1$, the mixed states to vectors such that $\|a\|<1$.
+$\{a\in\R^3:\|a\|\le1\}$ is called the \emph{Bloch ball}, $\{a\in\R^3:\|a\|=1\}$ is called
+the \emph{Bloch sphere}.
+\end{proposition}
+
+\begin{addition}[(proof of Proposition~6.6)]
+Let $A$ be a density matrix. By Exercise~4.17, $A=\frac12(c_01+a_x\sigma_x+a_y\sigma_y+a_z\sigma_z)$
+for some $c_0,a_j\in\C$, with $c_0=\ip{1}{A}=\tr A=1$ and $a_j=\ip{\sigma_j}{A}=\tr(\sigma_jA)$.
+Since $A$ is self-adjoint (Lemma~6.1a) and the $\sigma_j$ are self-adjoint,
+$\conj{a_j}=\conj{\tr(\sigma_jA)}=\tr((\sigma_jA)^*)=\tr(A\sigma_j)=a_j$, so $a_j\in\R$.
+Conversely, every such matrix is self-adjoint with trace $1$. It remains to see when it is
+positive semi-definite. Put $a\cdot\sigma=a_x\sigma_x+a_y\sigma_y+a_z\sigma_z$. Using
+$\sigma_j^2=1$ and $\sigma_j\sigma_k+\sigma_k\sigma_j=0$ for $j\ne k$ (from the products in
+Exercise~4.17), $(a\cdot\sigma)^2=\|a\|^21$. So the eigenvalues of $a\cdot\sigma$ are in
+$\{\pm\|a\|\}$, and since $\tr(a\cdot\sigma)=0$, they are $+\|a\|$ and $-\|a\|$. Hence
+the eigenvalues of $A$ are $\frac{1\pm\|a\|}2$, and $A\ge0$ iff $\|a\|\le1$ (Lemma~6.1a).
+
+$A$ is pure iff $A=T_x$ for a unit vector $x$ iff $\rank A=1$ (a positive semi-definite
+rank-one matrix with trace $1$ is $\lambda T_x$ with $\lambda=1$) iff one eigenvalue
+vanishes iff $\|a\|=1$. Otherwise ($\|a\|<1$) both eigenvalues are $>0$, $A$ has rank $2$
+and the state is mixed. (Equivalently $\tr A^2=\frac{1+\|a\|^2}2$.)
+
+\emph{Pure states as points on the sphere.} Every unit vector of $\C^2$ is, up to a phase,
+$x=(\cos\frac\theta2,\,e^{i\varphi}\sin\frac\theta2)$ with $\theta\in[0,\pi]$,
+$\varphi\in[0,2\pi)$, and a direct computation gives $T_x=\frac12(1+a\cdot\sigma)$ with
+$a=(\sin\theta\cos\varphi,\sin\theta\sin\varphi,\cos\theta)$. For instance
+$\ket0=(1,0)\leftrightarrow a=(0,0,1)$ (north pole), $\ket1\leftrightarrow(0,0,-1)$, and the
+maximally mixed state $\frac121_2\leftrightarrow a=0$ (centre).
+\end{addition}
+%======================================================================
+\section{Metric spaces}
+
+\begin{definition}
+Let $X$ be a non-empty set and $d:X\times X\to[0,\infty)$ be a function. Then $d$ is
+called a \emph{metric} (or distance) on $X$ and $(X,d)$ (or simply $X$) is called a
+\emph{metric space} provided that
+\begin{enumerate}
+\item $d(x,y)=0\iff x=y$ (definiteness),
+\item $d(x,y)=d(y,x)$ for all $x,y\in X$ (symmetry),
+\item $d(x,z)\le d(x,y)+d(y,z)$ for all $x,y,z\in X$ (triangle inequality).
+\end{enumerate}
+\end{definition}
+
+\begin{definition}
+Let $(X,d)$ be a metric space. Let $r>0$ and $x_0\in X$.
+\begin{enumerate}
+\item The set $B(x_0,r)=\{y\in X:\ d(x_0,y)<r\}$ is called \emph{open ball} in $X$ with
+center $x_0$ and radius $r$.
+\item The set $\conj B(x_0,r)=\{y\in X:\ d(x_0,y)\le r\}$ is called \emph{closed ball} in
+$X$ with center $x_0$ and radius $r$.
+\end{enumerate}
+\end{definition}
+\begin{correction}[(Def.~7.2)]
+The original allows $r\ge0$; for $r=0$ the open ball is empty and the closed ball is
+$\{x_0\}$. This is harmless but unusual: balls are normally taken with $r>0$.
+\end{correction}
+
+\begin{exercise}
+Let $(X,d)$ be a metric space. Let $x,y,z\in X$. Show the reverse triangle inequality
+\[
+|d(x,y)-d(y,z)|\le d(x,z).
+\]
+\end{exercise}
+\begin{solution}
+By the triangle inequality and symmetry, $d(x,y)\le d(x,z)+d(z,y)=d(x,z)+d(y,z)$, i.e.\
+$d(x,y)-d(y,z)\le d(x,z)$. Exchanging the roles of $x$ and $z$:
+$d(z,y)\le d(z,x)+d(x,y)$, i.e.\ $d(y,z)-d(x,y)\le d(x,z)$. Both together give
+$|d(x,y)-d(y,z)|\le d(x,z)$.
+\end{solution}
+
+\begin{example}
+Let $X$ be a Hilbert space (or more generally a normed space). Then $d(x,y)=\|x-y\|$ defines
+a metric on $X$. With this example in mind, it is instructive to note that the concept of a
+metric space is a generalization of the concept of a normed space (in particular of a
+Hilbert space).
+\end{example}
+\begin{proof}
+$d(x,y)=0\iff x-y=0$; $d(y,x)=\|-(x-y)\|=|-1|\,\|x-y\|=d(x,y)$;
+$\|x-z\|=\|(x-y)+(y-z)\|\le\|x-y\|+\|y-z\|$.
+\end{proof}
+
+\begin{example}\label{ex:sncf}
+Let $X=\R^2$ with Euclidean norm $|\cdot|$. Define
+\[
+d(x,y)=\begin{cases}|x-y|&:\ x,y \text{ are collinear with } 0\\ |x|+|y|&:\ \text{otherwise}\end{cases}.
+\]
+Then $d$ defines a metric on $X$, the \emph{SNCF metric} (or ``French railway metric'':
+to travel between two cities not on the same line through Paris $=0$, one has to change
+trains in Paris). Open balls $B(0,r)$ are the usual open discs in $\R^2$. Open balls
+$B(x_0,r)$ for $0<r\le|x_0|$ are open segments lying on the line joining $x_0$ to $0$.
+\end{example}
+
+\begin{correction}[(Ex.~7.5)]
+``$x,y$ are colinear'' must be understood as ``$x$, $y$ and $0$ lie on a common line'', i.e.\
+$x$ and $y$ are linearly dependent (any two points are collinear in the usual sense!).
+``Open circles'' should be ``open discs''. The statement on balls also holds for
+$r=|x_0|$. The metric axioms were not verified; see below.
+\end{correction}
+
+\begin{addition}[(proofs for Example~7.5)]
+Note first that always $|x-y|\le d(x,y)\le|x|+|y|$.
+\emph{Definiteness:} if $x,y$ are collinear with $0$, $d(x,y)=|x-y|$; otherwise $x,y\ne0$
+(the vector $0$ is collinear with everything) and $d(x,y)=|x|+|y|>0$.
+\emph{Symmetry} is clear.
+\emph{Triangle inequality} $d(x,z)\le d(x,y)+d(y,z)$:
+\begin{itemize}
+\item If $x,z$ are collinear with $0$: $d(x,z)=|x-z|\le|x-y|+|y-z|\le d(x,y)+d(y,z)$.
+\item Otherwise $d(x,z)=|x|+|z|$ and $x,z\ne0$. If $y=0$:
+$d(x,0)+d(0,z)=|x|+|z|$. If $y\ne0$, $y$ cannot be collinear with both $x$ and $z$ (they
+would both lie on the line $\R y$). Say $y$ is not collinear with $x$: then
+$d(x,y)+d(y,z)\ge|x|+|y|+|y-z|\ge|x|+|y|+(|z|-|y|)=|x|+|z|$. The case where $y$ is not
+collinear with $z$ is symmetric.
+\end{itemize}
+\emph{Balls.} $B(0,r)=\{y:|y|<r\}$ since $0$ is collinear with every $y$. For $x_0\ne0$
+and $y$ not on the line $\R x_0$: $d(x_0,y)=|x_0|+|y|\ge|x_0|$. Hence for $r\le|x_0|$,
+$B(x_0,r)=\{y\in\R x_0:\ |y-x_0|<r\}$, an open segment of length $2r$ centred at $x_0$
+on the line through $0$ and $x_0$ (not containing $0$). For $r>|x_0|$ one obtains this
+segment together with the Euclidean disc $\{y:|y|<r-|x_0|\}$.
+(The metric is thus very different from the Euclidean one, although it induces the
+same distances along lines through $0$.)
+\end{addition}
+
+%======================================================================
+\section{Reproducing kernels}
+
+\begin{definition}\label{def:psdkernel}
+Let $X$ be a non-empty set. Let $k:X\times X\to\C$ be a function. Then $k$ is called
+\emph{positive semi-definite} if for all $n\in\N$, $x_1,\dots,x_n\in X$ and
+$c_1,\dots,c_n\in\C$,
+\[
+\sum_{i,j=1}^nc_i\conj{c_j}\,k(x_i,x_j)\ge0 .
+\]
+Moreover, $k$ is called \emph{positive definite} if the above sum is always strictly
+positive, provided that the $x_i$ are pairwise distinct and not all $c_1,\dots,c_n$ are
+equal to $0$.
+\end{definition}
+
+\begin{correction}[(Def.~8.1)]
+For positive \emph{definiteness} one must require the points $x_1,\dots,x_n$ to be pairwise
+distinct; otherwise no kernel could be positive definite (take $x_1=x_2$, $c_1=1$,
+$c_2=-1$: the sum is $0$).
+\end{correction}
+
+\begin{addedthm}{Lemma 8.1a}
+Let $k$ be positive semi-definite. Then for all $x,y\in X$:
+$k(x,x)\ge0$, $k(y,x)=\conj{k(x,y)}$ (Hermitian symmetry), and
+$|k(x,y)|^2\le k(x,x)k(y,y)$.
+\end{addedthm}
+\begin{proof}
+$n=1$ gives $|c|^2k(x,x)\ge0$. With $n=2$, $x_1=x$, $x_2=y$:
+$q=|c_1|^2k(x,x)+|c_2|^2k(y,y)+c_1\conj{c_2}k(x,y)+c_2\conj{c_1}k(y,x)\ge0$, in particular
+real. With $c_1=c_2=1$: $k(x,y)+k(y,x)\in\R$. With $c_1=1$, $c_2=i$:
+$-ik(x,y)+ik(y,x)\in\R$, i.e.\ $k(y,x)-k(x,y)\in i\R$. The first says
+$\Imag k(y,x)=-\Imag k(x,y)$, the second $\Real k(y,x)=\Real k(x,y)$; so
+$k(y,x)=\conj{k(x,y)}$. Finally, the $2\times2$ matrix
+$\begin{psmallmatrix}k(x,x)&k(y,x)\\k(x,y)&k(y,y)\end{psmallmatrix}$ is positive
+semi-definite (this is $q\ge0$), so its determinant (product of its eigenvalues $\ge0$,
+Lemma~6.1a) is $k(x,x)k(y,y)-|k(x,y)|^2\ge0$.
+\end{proof}
+
+\begin{example}\label{ex:feature}
+Let $X$ be a non-empty set, $H$ be a Hilbert space and $A:X\to H$ be any mapping. Then
+$k(x,y)=\ip{A(y)}{A(x)}$ defines a positive semi-definite function. Indeed, if
+$x_1,\dots,x_n\in X$ and $c_1,\dots,c_n\in\C$, we have
+\begin{align*}
+\sum_{i,j=1}^nc_i\conj{c_j}k(x_i,x_j)&=\sum_{i,j=1}^nc_i\conj{c_j}\ip{A(x_j)}{A(x_i)}
+=\Big\langle\sum_{j=1}^nc_jA(x_j),\sum_{i=1}^nc_iA(x_i)\Big\rangle\\
+&=\Big\|\sum_{i=1}^nc_iA(x_i)\Big\|^2\ge0 .
+\end{align*}
+\end{example}
+
+In fact, we will see a converse to the above example in the final theorem of this lecture
+(Theorem~8.7 below). Let us turn to an example of a positive semi-definite function arising
+in quantum mechanics: the quantum kernel.
+
+\begin{definition}\label{def:qkernel}
+Let $X$ be a set (of configurations), $\C^n$ be a finite-dimensional Hilbert space and
+$\phi:X\to\C^n$ be a representation of the configurations, so that we must have that
+$\|\phi(x)\|_{\C^n}=1$ for all $x\in X$. Then the associated \emph{data-encoding feature map} is
+\[
+\rho:X\to M_n(\C),\qquad\rho(x)=\ketbra{\phi(x)}{\phi(x)}
+\]
+(see Example~\ref{ex:ketbra} and the proof of Proposition~\ref{prop:density}). Thus, $\rho$
+takes values in the pure states of $M_n(\C)$. Moreover,
+\[
+k:X\times X\to\C,\qquad k(x,y)=\tr(\rho(y)\rho(x))\overset{!}{=}\ip{\rho(y)}{\rho(x)}_{\text{Hilbert--Schmidt}}
+\]
+is called the \emph{quantum kernel}. It is a positive semi-definite function according to
+Example~\ref{ex:feature}.
+\end{definition}
+
+\begin{addition}[(the ``$\overset{!}{=}$'' and a closed formula)]
+$\ip{\rho(y)}{\rho(x)}_{HS}=\tr(\rho(y)^*\rho(x))=\tr(\rho(y)\rho(x))$ because
+$\rho(y)=T_{\phi(y)}$ is self-adjoint. Example~\ref{ex:feature} applies with $H=M_n(\C)$,
+$A=\rho$. Moreover, using $\ketbra uv\,\ketbra wz=\ip vw\,\ketbra uz$ and
+$\tr\ketbra uv=\sum_iu_i\conj{v_i}=\ip vu$, we obtain for every quantum kernel
+\[
+k(x,y)=\ip{\phi(y)}{\phi(x)}\tr\ketbra{\phi(y)}{\phi(x)}=\ip{\phi(y)}{\phi(x)}\ip{\phi(x)}{\phi(y)}
+=|\ip{\phi(x)}{\phi(y)}|^2\in[0,1],
+\]
+the \emph{fidelity} between the encoded states; it does not depend on global phases of
+$\phi(x)$, as it should be physically. This is exactly what a quantum computer estimates
+(e.g.\ by the swap test or by measuring $U(y)^*U(x)\ket0$ and counting the outcome $\ket0$).
+\end{addition}
+
+\begin{example}\label{ex:qkernel}
+Let us calculate the quantum kernel in an example. Let $n=2$ and for $t\in\R$
+\[
+U(t)=e^{-i\frac t2\sigma_x}=\begin{pmatrix}\cosh(-i\frac t2)&\sinh(-i\frac t2)\\\sinh(-i\frac t2)&\cosh(-i\frac t2)\end{pmatrix}
+=\begin{pmatrix}\cos\frac t2&-i\sin\frac t2\\-i\sin\frac t2&\cos\frac t2\end{pmatrix}
+\]
+be the matrix exponential from Exercise~\ref{exo:expsx}. The columns of $U(t)$ are
+normalized and orthogonal to each other, so $U(t)$ is indeed unitary according to
+Exercise~\ref{exo:unitcols}. Let then $\phi:\R\to\C^2$,
+$t\mapsto U(t)(1,0)=\big(\cos\frac t2,-i\sin\frac t2\big)$. As $U(t)$ is unitary,
+$\|\phi(t)\|=1$ $(t\in\R)$, so that $\phi$ is a valid representation of configurations.
+Moreover, the associated quantum kernel is
+\begin{align*}
+k(s,t)&=\tr(\rho(t)\rho(s))=\tr\big(\ketbra{\phi(t)}{\phi(t)}\cdot\ketbra{\phi(s)}{\phi(s)}\big)
+=\tr\big(\ket{\phi(t)}\ip{\phi(t)}{\phi(s)}\bra{\phi(s)}\big)\\
+&=\ip{\phi(t)}{\phi(s)}\tr\big((\phi(t)_i\conj{\phi(s)_j})_{ij}\big)
+=\ip{\phi(t)}{\phi(s)}\big(\phi(t)_1\conj{\phi(s)_1}+\phi(t)_2\conj{\phi(s)_2}\big)\\
+&=|\ip{\phi(t)}{\phi(s)}|^2=\Big(\cos\frac t2\cos\frac s2+\sin\frac t2\sin\frac s2\Big)^2
+=\Big(\cos\frac{t-s}2\Big)^2 .
+\end{align*}
+We deduce from Definition~\ref{def:qkernel} that the function
+$k(s,t)=\big(\cos\frac{t-s}2\big)^2$ is positive semi-definite $\R\times\R\to\C$.
+\end{example}
+
+\begin{addition}[(details and remarks on Example~8.4)]
+\emph{Step $\ip{\phi(t)}{\phi(s)}$:}
+$\conj{\cos\frac t2}\cos\frac s2+\conj{(-i\sin\frac t2)}(-i\sin\frac s2)
+=\cos\frac t2\cos\frac s2+(i)(-i)\sin\frac t2\sin\frac s2=\cos\frac{t-s}2$.
+\emph{Physical meaning:} $\phi(t)$ is the qubit $\ket0$ rotated by the angle $t$ about the
+$x$-axis of the Bloch sphere; its Bloch vector is $(0,-\sin t,\cos t)$.
+\emph{Direct check of positivity:} $k(s,t)=\frac{1+\cos(t-s)}2
+=\frac12+\frac12\cos t\cos s+\frac12\sin t\sin s$ is of the form of Example~\ref{ex:feature}
+with $A(t)=\frac1{\sqrt2}(1,\cos t,\sin t)\in\R^3$.
+\emph{Not positive definite:} $k(s,t)=1$ if $t-s\in2\pi\Z$, so for $x_1=0$, $x_2=2\pi$,
+$c=(1,-1)$ the sum in Def.~8.1 vanishes. (Indeed $\phi(2\pi)=-\phi(0)$: same state.)
+\end{addition}
+
+Quantum kernels, or more generally positive semi-definite kernels, can be used to
+construct special Hilbert spaces, the reproducing kernel Hilbert spaces (RKHS).
+
+\begin{definition}
+Let $X$ be a non-empty set. A \emph{reproducing kernel Hilbert space (RKHS)} over $X$ is by
+definition a Hilbert space consisting of functions over $X$ (with the usual pointwise
+addition and scalar multiplication) such that for any $x\in X$, the point evaluation
+$H\to\C$, $f\mapsto f(x)$ is a bounded form (it is always linear).
+\end{definition}
+
+\begin{example}\label{ex:rkhs}
+Let $k:X\times X\to\C$ be a positive semi-definite kernel. Let $H_0$ be the linear subspace
+of all the functions from $X$ to $\C$ which is generated by the functions
+$\{k_x:\ x\in X\}$, where $k_x(y)=k(x,y)$. If $f=\sum_jc_jk_{x_j}$ and $g=\sum_ld_lk_{y_l}$
+belong to $H_0$ (finite sums), then
+\begin{equation}\label{eq:81}
+\sum_l\conj{d_l}f(y_l)=\sum_{j,l}c_j\conj{d_l}\,k(x_j,y_l)=\sum_jc_j\conj{g(x_j)},
+\end{equation}
+so that this quantity does not depend on the chosen representations of $f,g$ (which may be
+not unique). Indeed, the left-hand side depends only on $f$ (and the chosen representation of
+$g$), the right-hand side only on $g$ (and the representation of $f$). We denote this
+quantity by $\ip{g}{f}$. Then
+\[
+\ip ff=\sum_{j,l}c_j\conj{c_l}\,k(x_j,x_l)\ge0
+\]
+by the assumption that $k$ is positive semi-definite. It is clear from \eqref{eq:81} that the
+form $\ip\cdot\cdot$ is linear in its second argument and antilinear in its first. An
+immediate consequence of \eqref{eq:81} (take only one index in $l$, $d_1=1$ and $y_1=x$) is
+the \emph{reproducing property}
+\[
+\ip{k_x}{f}=f(x)\qquad(f\in H_0,\ x\in X).
+\]
+This implies
+\begin{equation}\label{eq:82}
+\ip{k_x}{k_y}=k(y,x).
+\end{equation}
+Moreover, in a similar manner to Proposition~\ref{prop:CS} (precisely: by Lemma~1.7a), one can show
+\[
+|f(x)|^2=|\ip{k_x}{f}|^2\le\ip ff\cdot k(x,x),
+\]
+so that $\ip ff=0$ if and only if $f$ is identically zero. Therefore, $\ip\cdot\cdot$ is a
+scalar product. One can complete $H_0$ (i.e.\ enlarge $H_0$ by limits of Cauchy sequences in
+$H_0$) to obtain a Hilbert space $H\supseteq H_0$ with the same scalar product. Moreover,
+$H$ is again a linear subspace of the functions from $X$ to $\C$.
+
+To sum up, there is a Hilbert space $H\subseteq\C^X$ and a mapping $x\mapsto k_x$ from $X$ to
+$H$ such that $k(y,x)=\ip{k_x}{k_y}$ for $x,y\in X$ according to \eqref{eq:82}. Thus, every
+positive semi-definite kernel $k$ arises in the form of Example~\ref{ex:feature} (with
+$A(x)=k_x$)! Finally, $H$ is a RKHS. Indeed, the point evaluation in any $x\in X$ is given by
+$f(x)=\ip{k_x}{f}$, which is continuous by (the easy direction of) Riesz' Theorem~\ref{thm:Riesz}.
+\end{example}
+
+\begin{correction}[(Ex.~8.6) -- gaps in the argument]
+(a) The second equality in \eqref{eq:81},
+$\sum_{j,l}c_j\conj{d_l}k(x_j,y_l)=\sum_jc_j\conj{g(x_j)}$, needs
+$\conj{g(x_j)}=\sum_l\conj{d_l}\,\conj{k(y_l,x_j)}=\sum_l\conj{d_l}\,k(x_j,y_l)$, i.e.\ the
+Hermitian symmetry $\conj{k(y,x)}=k(x,y)$. This is true for every positive semi-definite
+kernel, but has to be proved (Lemma~8.1a). The same symmetry shows
+$\ip gf=\conj{\ip fg}$.
+(b) Cauchy--Schwarz (Prop.~1.7) was proved for scalar products, i.e.\ assuming
+definiteness, which is precisely what one wants to deduce here. One needs the version for
+semi-definite forms (Lemma~1.7a), applied with $\ip{k_x}{k_x}=k(x,x)$.
+(c) The facts that the abstract completion of $H_0$ can be realized as a space of
+\emph{functions} on $X$ (with the reproducing property extended) is the non-trivial part
+of the Moore--Aronszajn theorem; it is proved below.
+\end{correction}
+
+\begin{addedthm}{Theorem 8.7 (Moore--Aronszajn)}
+Let $k:X\times X\to\C$ be positive semi-definite. Then there is a unique Hilbert space $H$ of
+functions $X\to\C$ such that $k_x\in H$ for all $x\in X$ and $f(x)=\ip{k_x}{f}_H$ for all
+$f\in H$, $x\in X$. $H$ is a RKHS, $H_0$ is dense in $H$, and $k(x,y)=\ip{k_y}{k_x}_H$, i.e.\
+$k$ is of the form of Example~\ref{ex:feature} with feature map $A(x)=k_x$.
+\end{addedthm}
+\begin{proof}
+Let $H_0$ with $\ip\cdot\cdot$ be as in Example~\ref{ex:rkhs} (a scalar product space).
+
+\emph{Step 1: Cauchy sequences converge pointwise.} If $(f_n)$ is Cauchy in $H_0$, then
+$|f_n(x)-f_m(x)|=|\ip{k_x}{f_n-f_m}|\le\sqrt{k(x,x)}\,\|f_n-f_m\|$, so $f(x):=\lim_nf_n(x)$
+exists for every $x$. Let $H$ be the set of all functions $f:X\to\C$ obtained in this way.
+$H$ is a vector space containing $H_0$ (constant sequences).
+
+\emph{Step 2: a Cauchy sequence tending pointwise to $0$ tends to $0$ in norm.} Let $(g_n)$
+be Cauchy in $H_0$ with $g_n(x)\to0$ for all $x$. It is bounded, $\|g_n\|\le M$. Given
+$\epsilon>0$ choose $N$ with $\|g_n-g_N\|\le\epsilon$ for $n\ge N$, and write
+$g_N=\sum_jc_jk_{x_j}$ (finite sum). Then for $n\ge N$,
+\[
+\|g_n\|^2=\ip{g_n-g_N}{g_n}+\ip{g_N}{g_n}\le\epsilon M+\Big|\sum_j\conj{c_j}\,g_n(x_j)\Big|
+\xrightarrow[n\to\infty]{}\epsilon M .
+\]
+Hence $\limsup\|g_n\|^2\le\epsilon M$ for every $\epsilon>0$, i.e.\ $\|g_n\|\to0$.
+
+\emph{Step 3: scalar product on $H$.} For $f,g\in H$ with approximating Cauchy sequences
+$(f_n),(g_n)$ in $H_0$, the limit $\ip fg_H:=\lim_n\ip{f_n}{g_n}$ exists, since
+$|\ip{f_n}{g_n}-\ip{f_m}{g_m}|\le\|f_n-f_m\|\|g_n\|+\|f_m\|\|g_n-g_m\|$. It does not depend on
+the chosen sequences: if $(f'_n)$ also converges pointwise to $f$, then $(f_n-f'_n)$ is Cauchy
+and tends pointwise to $0$, hence $\|f_n-f'_n\|\to0$ by Step 2. Sesquilinearity, conjugate
+symmetry and positivity pass to the limit. \emph{Reproducing property:}
+$\ip{k_x}f_H=\lim_n\ip{k_x}{f_n}=\lim_nf_n(x)=f(x)$. \emph{Definiteness:} if $\ip ff_H=0$, then
+$|f(x)|^2=|\ip{k_x}f_H|^2\le k(x,x)\ip ff_H=0$ (Cauchy--Schwarz in $H$), so $f=0$.
+
+\emph{Step 4: $H_0$ is dense and $H$ is complete.} If $f_n\to f$ pointwise as above, then
+$f-f_m$ is approximated by the Cauchy sequence $(f_n-f_m)_n$, so
+$\|f-f_m\|_H^2=\lim_n\|f_n-f_m\|^2$, which is $\le\epsilon^2$ for $m$ large: $f_m\to f$ in
+$H$. Now let $(h_m)$ be Cauchy in $H$; pick $g_m\in H_0$ with $\|h_m-g_m\|_H\le\frac1m$.
+Then $(g_m)$ is Cauchy in $H_0$, so it converges pointwise to some $g\in H$, and
+$g_m\to g$ in $H$; hence $h_m\to g$ in $H$.
+
+\emph{Step 5: RKHS and uniqueness.} Point evaluations $f\mapsto\ip{k_x}f_H$ are bounded
+(Exercise~1.20), so $H$ is a RKHS; and $\ip{k_y}{k_x}_H=k_x(y)=k(x,y)$. If $H'$ is another Hilbert space of functions with the
+stated properties, then $H_0\subseteq H'$ with the same scalar product (by the reproducing
+property, $\ip{k_x}{k_y}_{H'}=k(y,x)$), hence $H\subseteq H'$ isometrically (norm limits in
+$H'$ are pointwise limits, by the reproducing property). If $f\in H'$ is orthogonal to $H$,
+then $f(x)=\ip{k_x}{f}_{H'}=0$ for all $x$; hence $H'=H$.
+\end{proof}
+
+\begin{addeddef}{Example 8.8 (the RKHS of the quantum kernel of Example~8.4)}
+For $k(s,t)=\cos^2\frac{t-s}2=\frac12+\frac12\cos s\cos t+\frac12\sin s\sin t$ we have
+$k_s=\frac12\cdot1+\frac{\cos s}2\cos+\frac{\sin s}2\sin$, so $H_0\subseteq V:=\spn\{1,\cos,\sin\}$.
+Since $k_0=\frac12(1+\cos)$, $k_\pi=\frac12(1-\cos)$, $k_{\pi/2}=\frac12(1+\sin)$, in fact
+$H_0=V$, which is $3$-dimensional, hence complete: $H=V$. On $V$ define
+$\ip{\alpha+\beta\cos+\gamma\sin}{\alpha'+\beta'\cos+\gamma'\sin}
+:=2(\conj\alpha\alpha'+\conj\beta\beta'+\conj\gamma\gamma')$. Then
+$\ip{k_s}{f}=2\big(\frac12\alpha+\frac{\cos s}2\beta+\frac{\sin s}2\gamma\big)=f(s)$ for
+$f=\alpha+\beta\cos+\gamma\sin$: this is the reproducing property, so by uniqueness in
+Theorem~8.7 this is the RKHS norm: $\|\alpha+\beta\cos+\gamma\sin\|_H^2=2(|\alpha|^2+|\beta|^2+|\gamma|^2)$.
+In machine-learning terms: a kernel method (SVM, kernel ridge regression) with this quantum
+kernel can only learn functions of the form $\alpha+\beta\cos t+\gamma\sin t$ --- the
+expressivity of a quantum kernel is governed by its (here 3-dimensional) RKHS.
+\end{addeddef}
+
+\end{document}
