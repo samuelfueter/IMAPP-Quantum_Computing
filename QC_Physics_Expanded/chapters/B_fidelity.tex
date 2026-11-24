@@ -1,0 +1,120 @@
+\chapter{Fidelity, Uhlmann's theorem and the quantum metric}\label{app:fidelity}
+
+How close are two quantum states? The question is central for experiments (how good is a prepared state or a gate?), for error correction (how much does an error damage the state?) and for quantum metrology
+(how well can a parameter encoded in a state be estimated?). This appendix completes the section announced but left empty in the original notes.
+
+\section{Distinguishability of pure states}
+For pure states the natural measure is the \emph{fidelity} $F(\psi,\phi)=|\braket\psi\phi|^2$: the probability that $\ket\phi$ passes a test ``is it $\ket\psi$?'' (the projective measurement $\{\proj\psi,I-\proj\psi\}$). It is $1$ for equal states (up to phase)
+and $0$ for orthogonal ones. For qubits, $F=\cos^2(\Theta/2)$ where $\Theta$ is the angle between the Bloch vectors (\cref{eq:overlapbloch}). The angle $\arccos\sqrt F$ is a distance on the space of rays (the Fubini--Study distance, see below).
+
+\section{Trace distance and the Helstrom bound}
+The \emph{trace distance} between density matrices is
+\begin{equation}
+  D(\hat\rho,\hat\sigma)=\frac12\norm{\hat\rho-\hat\sigma}_1=\frac12\tr\abs{\hat\rho-\hat\sigma}=\frac12\sum_k|\lambda_k|,
+\end{equation}
+where $\lambda_k$ are the eigenvalues of the Hermitian operator $\hat\rho-\hat\sigma$. For qubits, $D=\frac12|\vec r-\vec s|$: half the Euclidean distance in the Bloch ball.
+\begin{theorem}[Helstrom, 1969]
+If a system is prepared in $\hat\rho$ or $\hat\sigma$ with equal probabilities, the best possible measurement identifies the state correctly with probability
+\begin{equation}
+  P_{\rm succ}=\frac12\left(1+D(\hat\rho,\hat\sigma)\right).
+\end{equation}
+\end{theorem}
+\begin{proof}
+A two-outcome measurement is a POVM $\{E,I-E\}$, $0\le E\le I$, where $E$ means ``guess $\hat\rho$''. Then $P_{\rm succ}=\frac12\tr(E\hat\rho)+\frac12\tr((I-E)\hat\sigma)=\frac12+\frac12\tr(E(\hat\rho-\hat\sigma))$. Writing
+$\hat\rho-\hat\sigma=Q_+-Q_-$ with $Q_\pm\ge0$ supported on the positive and negative eigenspaces, $\tr(E(\hat\rho-\hat\sigma))\le\tr(EQ_+)\le\tr Q_+=D$, since $\tr(\hat\rho-\hat\sigma)=0$ implies $\tr Q_+=\tr Q_-=D$. Equality holds for $E$ the projector onto the
+positive eigenspace.
+\end{proof}
+The trace distance is therefore the operational measure of distinguishability. It is contractive: $D(\mathcal E(\hat\rho),\mathcal E(\hat\sigma))\le D(\hat\rho,\hat\sigma)$ for any channel $\mathcal E$: no physical processing can make states more distinguishable.
+For pure states, $D=\sqrt{1-|\braket\psi\phi|^2}$.
+
+\section{Fidelity of mixed states and Uhlmann's theorem}
+\begin{definition}
+The fidelity of two density matrices is
+\begin{equation}
+  F(\hat\rho,\hat\sigma)=\left(\tr\sqrt{\sqrt{\hat\rho}\,\hat\sigma\sqrt{\hat\rho}}\right)^2=\norm{\sqrt{\hat\rho}\sqrt{\hat\sigma}}_1^2 .
+\end{equation}
+\end{definition}
+(Some authors use the square root of this quantity.) When $\hat\sigma=\proj\phi$ is pure, $\sqrt{\hat\rho}\proj\phi\sqrt{\hat\rho}=\proj{\tilde\phi}$ with $\ket{\tilde\phi}=\sqrt{\hat\rho}\ket\phi$, whose square root is $\proj{\tilde\phi}/\norm{\tilde\phi}$, so
+$F=\norm{\tilde\phi}^2=\mel\phi{\hat\rho}\phi$: the probability that $\hat\rho$ passes the test ``is it $\ket\phi$?''. This is the quantity measured in experiments as the ``fidelity of the prepared state''. For commuting states (classical probability
+distributions $p_i$, $q_i$) it reduces to the Bhattacharyya overlap $(\sum_i\sqrt{p_iq_i})^2$.
+
+\begin{theorem}[Uhlmann, 1976]
+\begin{equation}
+  F(\hat\rho,\hat\sigma)=\max_{\ket{\psi_\rho},\ket{\psi_\sigma}}\abs{\braket{\psi_\rho}{\psi_\sigma}}^2,
+\end{equation}
+where the maximum is over all purifications of $\hat\rho$ and $\hat\sigma$ on the same space $A\otimes R$ (and it suffices to vary one of them).
+\end{theorem}
+\begin{proof}
+By \cref{app:purification}, all purifications have the form $\ket{\psi_\rho}=(\sqrt{\hat\rho}\otimes U)\ket\Omega$, $\ket{\psi_\sigma}=(\sqrt{\hat\sigma}\otimes V)\ket\Omega$, with $\ket\Omega=\sum_i\ket i\ket i$ and unitaries $U,V$ on $R$. Using the ``transpose trick''
+$(I\otimes W)\ket\Omega=(W^T\otimes I)\ket\Omega$ and $\mel\Omega{X\otimes I}\Omega=\tr X$,
+\begin{equation}
+  \braket{\psi_\rho}{\psi_\sigma}=\mel\Omega{\sqrt{\hat\rho}\sqrt{\hat\sigma}\otimes U^\dagger V}\Omega=\tr\left(\sqrt{\hat\rho}\sqrt{\hat\sigma}\,W\right),\qquad W=(U^\dagger V)^T .
+\end{equation}
+For any matrix $X$ with polar decomposition $X=|X^\dagger|V_0$, we have $|\tr(XW)|\le\tr|X|$ for all unitaries $W$, with equality for $W=V_0^\dagger$ (Cauchy--Schwarz for the Hilbert--Schmidt product:
+$|\tr(|X^\dagger|^{1/2}\,|X^\dagger|^{1/2}V_0W)|\le\sqrt{\tr|X^\dagger|}\sqrt{\tr(W^\dagger V_0^\dagger|X^\dagger|V_0W)}=\tr|X|$). With $X=\sqrt{\hat\rho}\sqrt{\hat\sigma}$, $\tr|X|=\tr\sqrt{X^\dagger X}$, and the operators $X^\dagger X=\sqrt{\hat\sigma}\hat\rho\sqrt{\hat\sigma}$ and
+$XX^\dagger=\sqrt{\hat\rho}\hat\sigma\sqrt{\hat\rho}$ have the same non-zero eigenvalues. Hence $\max|\braket{\psi_\rho}{\psi_\sigma}|=\tr\sqrt{\sqrt{\hat\rho}\hat\sigma\sqrt{\hat\rho}}$.
+\end{proof}
+Uhlmann's theorem makes many properties of the fidelity obvious:
+\begin{itemize}
+  \item $0\le F\le1$, and $F=1$ iff $\hat\rho=\hat\sigma$; it is symmetric, $F(\hat\rho,\hat\sigma)=F(\hat\sigma,\hat\rho)$, which is not evident from the definition.
+  \item It is invariant under unitaries, $F(U\hat\rho U^\dagger,U\hat\sigma U^\dagger)=F(\hat\rho,\hat\sigma)$.
+  \item It can only increase under a quantum channel (monotonicity): purify the channel by a unitary on a larger space (\cref{ch:open}); the purifications of the outputs include the images of the purifications of the inputs, over which the maximum is taken.
+  \item It is related to the trace distance by the Fuchs--van de Graaf inequalities $1-\sqrt F\le D\le\sqrt{1-F}$.
+\end{itemize}
+For two qubits with Bloch vectors $\vec r$ and $\vec s$, a direct computation gives
+\begin{equation}
+  F(\hat\rho,\hat\sigma)=\frac12\left[1+\vec r\cdot\vec s+\sqrt{(1-|\vec r|^2)(1-|\vec s|^2)}\right].
+\end{equation}
+
+\paragraph{Gate fidelity.} To characterize a gate, one compares the implemented channel $\mathcal E$ with the ideal unitary $U$. The \emph{average gate fidelity} $\bar F=\int\dd\psi\,\mel\psi{U^\dagger\mathcal E(\proj\psi)U}\psi$, averaged over all pure states,
+is related to the \emph{process} (entanglement) fidelity $F_{\rm pro}$, the fidelity of the Choi state $(\mathcal E\otimes I)(\proj{\Phi})$ with $(U\otimes I)\ket\Phi$, by $\bar F=\frac{dF_{\rm pro}+1}{d+1}$ for dimension $d$. For a depolarizing channel
+$\mathcal E(\hat\rho)=(1-p)\hat\rho+pI/d$, $\bar F=1-p\frac{d-1}d$. The ``99.9\% two-qubit gate fidelities'' quoted for hardware are average gate fidelities, usually measured by \emph{randomized benchmarking}: sequences of random Clifford gates of increasing length,
+whose survival probability decays exponentially at a rate given by the average error, independently of state-preparation and measurement errors.
+
+\section{The quantum metric}
+\subsection{Fubini--Study metric}
+For two neighbouring pure states $\ket{\psi(\vec\lambda)}$ and $\ket{\psi(\vec\lambda+\dd\vec\lambda)}$ depending on parameters $\vec\lambda$, expand the infidelity to second order. Using the normalization, $1-|\braket{\psi}{\psi+\dd\psi}|^2=\dd s^2$ with
+\begin{equation}
+  \dd s^2=\sum_{\mu\nu}g_{\mu\nu}\dd\lambda_\mu\dd\lambda_\nu,\qquad
+  g_{\mu\nu}=\operatorname{Re}\left[\braket{\partial_\mu\psi}{\partial_\nu\psi}-\braket{\partial_\mu\psi}\psi\braket\psi{\partial_\nu\psi}\right].
+\end{equation}
+The subtraction makes $g$ independent of the phase convention (it is invariant under $\ket\psi\to\e^{\ii\chi(\vec\lambda)}\ket\psi$). This is the \emph{Fubini--Study metric}, the natural Riemannian metric on the space of quantum states.
+For a qubit, $\ket\psi=(\cos\frac\theta2,\e^{\ii\varphi}\sin\frac\theta2)$ gives $\braket{\partial_\theta\psi}{\partial_\theta\psi}=\frac14$, $\braket\psi{\partial_\theta\psi}=0$, $\braket{\partial_\varphi\psi}{\partial_\varphi\psi}=\sin^2\frac\theta2$,
+$\braket\psi{\partial_\varphi\psi}=\ii\sin^2\frac\theta2$, hence
+\begin{equation}
+  \dd s^2=\frac14\left(\dd\theta^2+\sin^2\theta\,\dd\varphi^2\right):
+\end{equation}
+the space of pure qubit states, with the Fubini--Study metric, is exactly a sphere of radius $1/2$, the Bloch sphere. The geodesic distance between two states is $\arccos|\braket\psi\phi|=\Theta/2$.
+
+\subsection{Quantum geometric tensor and Berry phase}
+The full Hermitian tensor $Q_{\mu\nu}=\braket{\partial_\mu\psi}{\partial_\nu\psi}-\braket{\partial_\mu\psi}\psi\braket\psi{\partial_\nu\psi}$ is the \emph{quantum geometric tensor}. Its real part is the metric $g_{\mu\nu}$; its imaginary part is
+$-\frac12$ the \emph{Berry curvature} $\Omega_{\mu\nu}=\partial_\mu\mathcal A_\nu-\partial_\nu\mathcal A_\mu$, with the Berry connection $\mathcal A_\mu=\ii\braket\psi{\partial_\mu\psi}$. When the parameters are slowly varied around a closed loop $C$, an eigenstate of a
+Hamiltonian $H(\vec\lambda)$ acquires, in addition to the dynamical phase, the geometric \emph{Berry phase} (1984)
+\begin{equation}
+  \gamma_C=\oint_C\mathcal A\cdot\dd\vec\lambda=\iint_S\Omega\,\dd S .
+\end{equation}
+(It is the term $m=n$ dropped in the derivation of the adiabatic theorem in \cref{ch:annealing}.) For the qubit, $\operatorname{Im}Q_{\theta\varphi}=\frac14\sin\theta$ gives a Berry curvature $\Omega_{\theta\varphi}=-\frac12\sin\theta$: a spin $\frac12$ that follows a magnetic
+field around a loop acquires a phase equal to $\mp\frac12$ the solid angle enclosed by the field direction. The metric and the curvature are the two halves of quantum geometry; the integral of the Berry curvature over a closed surface is $2\pi$ times an
+integer, the Chern number, which underlies topological phases (quantum Hall effect, topological insulators and topological photonics). The quantum metric is measurable, for example from the response to periodic modulations or from the
+anomalous trajectories of wave packets, and has been measured for photons in microcavities.
+
+\subsection{Mixed states: Bures metric and quantum Fisher information}
+For mixed states, the Bures distance $d_B^2=2(1-\sqrt F)$ defines, to second order, the Bures metric $\dd s_B^2=\frac14F_Q\,\dd\lambda^2$ for a single parameter. The quantity $F_Q$ is the \emph{quantum Fisher information}; for pure states $F_Q=4g_{\lambda\lambda}$.
+It sets the ultimate precision of the estimation of $\lambda$ from $\nu$ repetitions of a measurement (quantum Cramér--Rao bound):
+\begin{equation}
+  \Delta\lambda\ge\frac1{\sqrt{\nu F_Q}} .
+\end{equation}
+The interpretation is geometric: a parameter can be estimated precisely if the states move fast (in the Fubini--Study sense) when it changes. For a phase $\lambda$ imprinted by $\e^{-\ii\lambda G}$, $F_Q=4\Delta G^2$. With $n$ independent qubits and
+$G=\frac12\sum_iZ_i$, $\Delta G^2\le n/4$ and $\Delta\lambda\ge1/\sqrt{\nu n}$ (the standard quantum limit). With the entangled GHZ state $(\ket{0\dots0}+\ket{1\dots1})/\sqrt2$, $\Delta G^2=n^2/4$ and $\Delta\lambda\ge1/(n\sqrt\nu)$ (the
+\emph{Heisenberg limit}): entanglement improves metrology by a factor $\sqrt n$, the principle behind quantum-enhanced atomic clocks and interferometers. Phase estimation (\cref{ch:shor}) reaches the same scaling.
+
+\section{Exercises}
+\begin{exercise}
+Compute $F$ and $D$ for $\hat\rho=\proj0$ and $\hat\sigma=I/2$, and check the Fuchs--van de Graaf inequalities.
+\end{exercise}
+\begin{exercise}
+Show that the fidelity of a Werner state $\hat\rho_W$ (\cref{ex:werner}) with the singlet is $F=\frac{1+3p}4$. Deduce that $F>1/2$ iff $p>1/3$, i.e.\ iff the state is entangled.
+\end{exercise}
+\begin{exercise}
+Compute the Berry phase of the ground state of $H=-\vec B\cdot\vec\sigma$ when $\vec B$ rotates once around the $z$ axis at fixed polar angle $\theta$. (Answer: $\pm\pi(1-\cos\theta)$, half the solid angle.)
+\end{exercise}

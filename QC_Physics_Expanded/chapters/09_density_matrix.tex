@@ -1,0 +1,196 @@
+\chapter{The density matrix}\label{ch:density}
+
+\section{Why we need it}
+For an entangled system, the wave function of an isolated subsystem does not exist. Consider two systems $A$ and $B$, initially independent:
+\begin{equation}
+  t=0:\qquad\ket{\psi(0)}=\ket{\psi_A(0)}\otimes\ket{\psi_B(0)}.
+\end{equation}
+Because of the interaction between $A$ and $B$, at later times in general $\ket{\psi(t)}\neq\ket{\psi_A(t)}\otimes\ket{\psi_B(t)}$, for example
+\begin{equation}
+  \ket{\psi(t)}=\frac1{\sqrt2}\left(\ket{01}-\ket{10}\right).
+\end{equation}
+We cannot write $\ket{\psi_A}=\ket0-\ket1$, nor $\ket{\psi_A}=\ket0+\ket1$, because we ``do not know'' where to put the minus sign. More formally, the relative phase between
+$\ket0$ and $\ket1$ is not defined for $A$ alone, but only for the whole system $AB$. A second reason is classical ignorance: a source may emit $\ket0$ or $\ket1$ at
+random (an unpolarized beam, a thermal atom). Both situations are described by the density matrix, which generalizes the state vector, $\ket\psi\to\hat\rho$.
+
+\section{Definition}
+\subsection{Pure states}
+Start from a pure state $\ket\psi=\sum_nc_n\ket n$, $\sum_n|c_n|^2=1$. The mean value of an observable $\hat A$ is
+\begin{equation}
+  \mel\psi{\hat A}\psi=\sum_{n,m}c_nc_m^*\mel m{\hat A}n.
+\end{equation}
+We define the density operator
+\begin{equation}
+  \hat\rho=\proj\psi=\sum_{n,m}c_nc_m^*\ketbra nm,
+\end{equation}
+with matrix elements $\rho_{nm}=\mel n{\hat\rho}m=\braket n\psi\braket\psi m=c_nc_m^*$. The mean value becomes
+\begin{equation}\label{eq:meantrace}
+  \mel\psi{\hat A}\psi=\sum_{n,m}\rho_{nm}\mel m{\hat A}n=\sum_n\mel n{\hat\rho\hat A}n=\tr(\hat\rho\hat A)=\tr(\hat A\hat\rho).
+\end{equation}
+The diagonal terms $\rho_{nn}=|c_n|^2=p_n$ are the probabilities of the basis states (\emph{populations}). The off-diagonal terms $\rho_{nm}=c_nc_m^*$ describe the
+phase relations between them (\emph{coherences}). The density matrix contains no unphysical global phase: $\e^{\ii\gamma}\ket\psi$ gives the same $\hat\rho$.
+
+\subsection{Mixed states}
+If the system is in the state $\ket{\psi_i}$ with probability $p_i$ (an \emph{ensemble} $\{p_i,\ket{\psi_i}\}$), the mean value of $\hat A$ is
+$\sum_ip_i\mel{\psi_i}{\hat A}{\psi_i}=\tr(\hat\rho\hat A)$ with
+\begin{equation}
+  \hat\rho=\sum_ip_i\proj{\psi_i}.
+\end{equation}
+The probability of an outcome $m$ of a projective measurement is $p(m)=\tr(P_m\hat\rho)$, and the state after the measurement is $P_m\hat\rho P_m/p(m)$.
+\emph{All} measurable predictions depend only on $\hat\rho$: two ensembles with the same density matrix cannot be distinguished by any experiment
+(\cref{app:hjw}). For example, an equal mixture of $\ket0$ and $\ket1$ and an equal mixture of $\ket+$ and $\ket-$ both give $\hat\rho=I/2$.
+
+\begin{theorem}[Characterization]
+An operator $\hat\rho$ is the density operator of some ensemble if and only if (i) $\tr\hat\rho=1$ and (ii) $\hat\rho\ge0$ (positive semi-definite:
+$\mel\phi{\hat\rho}\phi\ge0$ for all $\ket\phi$). In particular $\hat\rho$ is Hermitian, and its eigenvalues are probabilities.
+\end{theorem}
+\begin{proof}
+If $\hat\rho=\sum p_i\proj{\psi_i}$, then $\tr\hat\rho=\sum p_i=1$ and $\mel\phi{\hat\rho}\phi=\sum p_i|\braket\phi{\psi_i}|^2\ge0$. Conversely, a positive operator is
+Hermitian and has a spectral decomposition $\hat\rho=\sum_k\lambda_k\proj k$ with $\lambda_k\ge0$, $\sum\lambda_k=1$: it is the ensemble $\{\lambda_k,\ket k\}$.
+\end{proof}
+
+\subsection{Purity}
+\begin{proposition}[Purity criterion]
+For any density matrix $\tr(\hat\rho^2)\le1$, with equality if and only if $\hat\rho=\proj\psi$ is pure. The minimum, for dimension $d$, is $1/d$, reached by the maximally mixed state $I/d$.
+\end{proposition}
+\begin{proof}
+In the eigenbasis, $\tr\hat\rho^2=\sum_k\lambda_k^2\le(\max_k\lambda_k)\sum_k\lambda_k\le1$, with equality iff one eigenvalue is $1$ and all others $0$, i.e.\ $\hat\rho$ is a
+rank-one projector. The minimum of $\sum\lambda_k^2$ under $\sum\lambda_k=1$ is at $\lambda_k=1/d$ (Cauchy--Schwarz: $1=(\sum\lambda_k)^2\le d\sum\lambda_k^2$).
+\end{proof}
+
+\subsection{The Bloch ball}
+For a qubit, the decomposition on Pauli matrices gives, with $\tr\hat\rho=1$ and $\hat\rho$ Hermitian,
+\begin{equation}\label{eq:blochball}
+  \hat\rho=\frac{I+\vec r\cdot\vec\sigma}2=\frac12\begin{pmatrix}1+r_z&r_x-\ii r_y\\ r_x+\ii r_y&1-r_z\end{pmatrix},\qquad\vec r=\tr(\hat\rho\vec\sigma)=\expval{\vec\sigma}.
+\end{equation}
+The eigenvalues are $(1\pm|\vec r|)/2$, so positivity requires $|\vec r|\le1$: density matrices fill the \emph{Bloch ball}. The purity is
+$\tr\hat\rho^2=\frac{1+|\vec r|^2}2$: pure states are on the surface, mixed states inside, and $I/2$ is the centre. Decoherence (\cref{ch:open}) shrinks the Bloch vector.
+The Bloch equation \cref{eq:precession} remains valid for mixed states, since it is linear in $\vec r$.
+
+\section{Entanglement and the reduced density matrix}\label{sec:reduced}
+Consider the entangled state of two qubits $A$ and $B$ ($A$ is the ``system of interest'' and $B$ the ``environment''):
+\begin{equation}
+  \ket\psi=\frac1{\sqrt2}\left(\ket{01}+\ket{10}\right),\qquad\hat\rho=\proj\psi=\frac12\left(\ket{01}+\ket{10}\right)\left(\bra{01}+\bra{10}\right).
+\end{equation}
+In the basis $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$,
+\begin{equation}
+  \hat\rho=\frac12\begin{pmatrix}0&0&0&0\\0&1&1&0\\0&1&1&0\\0&0&0&0\end{pmatrix}.
+\end{equation}
+As discussed above, subsystem $A$ alone has no wave function. It does, however, have a density matrix, obtained by \emph{tracing out} subsystem $B$:
+\begin{equation}
+  \hat\rho_A=\tr_B\hat\rho=\mel{0_B}{\hat\rho}{0_B}+\mel{1_B}{\hat\rho}{1_B}=\frac12\begin{pmatrix}1&0\\0&1\end{pmatrix}
+\end{equation}
+in the basis $\{\ket0,\ket1\}$. The off-diagonal terms (coherences) of $\hat\rho_A$ have disappeared: they would involve the overlap $\braket{0_B}{1_B}=0$ of the orthogonal states of $B$
+with which $\ket0_A$ and $\ket1_A$ are correlated. \emph{This is precisely the mechanism of decoherence.} The coherence is not destroyed, but transferred to the correlations between
+the system and its environment, and it is no longer accessible from the system alone.
+
+\subsection{The partial trace}
+The partial trace is defined on product operators by
+\begin{equation}
+  \tr_B\left(\ketbra{a_1}{a_2}\otimes\ketbra{b_1}{b_2}\right)=\ketbra{a_1}{a_2}\,\tr\left(\ketbra{b_1}{b_2}\right),
+\end{equation}
+and extended by linearity. The trace of an outer product is
+\begin{equation}
+  \tr\ketbra xy=\sum_n\braket nx\braket yn=\sum_n\braket yn\braket nx=\braket yx,
+\end{equation}
+where we used the completeness relation $\sum_n\proj n=I$. Hence
+\begin{equation}\label{eq:ptracerule}
+  \tr_B\left(\ketbra{a_1}{a_2}\otimes\ketbra{b_1}{b_2}\right)=\ketbra{a_1}{a_2}\braket{b_2}{b_1}.
+\end{equation}
+In components, $(\rho_A)_{ij}=\sum_\mu\rho_{i\mu,j\mu}$: sum the diagonal of each block over the index of $B$.
+
+\begin{proposition}[Why the partial trace]
+$\hat\rho_A=\tr_B\hat\rho$ is the unique operator such that $\tr(\hat\rho_A\hat O_A)=\tr\left(\hat\rho\,(\hat O_A\otimes I_B)\right)$ for every observable $\hat O_A$ of $A$.
+It therefore gives all the predictions for measurements on $A$ alone.
+\end{proposition}
+\begin{proof}
+Write $\hat\rho=\sum\rho_{i\mu,j\nu}\ketbra ij\otimes\ketbra\mu\nu$. Then $\tr(\hat\rho\,\hat O_A\otimes I)=\sum\rho_{i\mu,j\nu}\mel j{\hat O_A}i\delta_{\mu\nu}=\tr(\hat\rho_A\hat O_A)$.
+Uniqueness: if $\tr(X\hat O)=0$ for all Hermitian $\hat O$, then $X=0$.
+\end{proof}
+\begin{corollary}[No signalling]
+A unitary $U_B$ or a measurement performed by Bob on $B$ does not change $\hat\rho_A$. For a unitary: $\tr_B[(I\otimes U_B)\hat\rho(I\otimes U_B^\dagger)]=\tr_B\hat\rho$, by
+cyclicity of the trace over $B$. For a measurement with unknown outcome: $\sum_m\tr_B[(I\otimes P_m)\hat\rho(I\otimes P_m)]=\tr_B\hat\rho$ using $\sum_mP_m=I$.
+Nothing Bob does can be detected by Alice without classical communication.
+\end{corollary}
+
+\begin{example}
+For the Bell state $\ket\psi=(\ket{00}+\ket{11})/\sqrt2$,
+\begin{equation}
+  \hat\rho=\frac12\left(\ketbra{00}{00}+\ketbra{11}{11}+\ketbra{00}{11}+\ketbra{11}{00}\right).
+\end{equation}
+Tracing out the second qubit term by term with \cref{eq:ptracerule},
+\begin{equation}
+  \hat\rho'=\tr_B\hat\rho=\frac12\left(\proj0\braket00+\ketbra10\braket01+\ketbra01\braket10+\proj1\braket11\right)=\frac{\proj0+\proj1}2=\frac I2.
+\end{equation}
+This is a mixed state, since $\tr[(I/2)^2]=1/2<1$. A maximally entangled pure state of two qubits has maximally mixed reduced states.
+\end{example}
+
+\subsection{Entanglement entropy}
+The \emph{von Neumann entropy} $S(\hat\rho)=-\tr(\hat\rho\log_2\hat\rho)=-\sum_k\lambda_k\log_2\lambda_k$ measures how mixed a state is: $0$ for pure states, $\log_2d$
+for $I/d$. For a pure state of $AB$, $S(\hat\rho_A)=S(\hat\rho_B)$ (\cref{app:schmidt}) and this common value, the \emph{entanglement entropy}, is the standard measure of
+entanglement: $0$ for product states, $1$ ebit for a Bell state. It counts how many Bell pairs can be distilled from many copies of the state by local operations and
+classical communication (Bennett et al., 1996).
+
+\section{Equation of motion}
+In the pure case, the time evolution of the density matrix follows from the Schrödinger equation:
+\begin{equation}
+  \frac{\partial\hat\rho}{\partial t}=\left(\frac{\partial}{\partial t}\ket\psi\right)\bra\psi+\ket\psi\left(\frac{\partial}{\partial t}\bra\psi\right)
+  =\frac1{\ii\hbar}\left(\hat H\proj\psi-\proj\psi\hat H\right)=\frac1{\ii\hbar}[\hat H,\hat\rho].
+\end{equation}
+By linearity the same \emph{von Neumann equation} holds for mixtures. Its solution is $\hat\rho(t)=U\hat\rho(0)U^\dagger$. In the eigenbasis of $\hat H$,
+$\rho_{nm}(t)=\rho_{nm}(0)\e^{-\ii(E_n-E_m)t/\hbar}$: populations are constant and coherences rotate at the Bohr frequencies. Unitary evolution conserves $\tr\hat\rho^2$
+and the entropy: pure states stay pure. Decoherence requires coupling to an environment (\cref{ch:open}).
+
+\section{Thermal states}\label{sec:thermal}
+A system in contact with a reservoir at temperature $T$ reaches thermal equilibrium. Its density matrix commutes with $\hat H$ and is diagonal in the energy basis:
+\begin{equation}
+  \rho_{nm}=p_n\delta_{nm},\qquad p_n=\frac{\e^{-\beta E_n}}Z,\quad Z=\sum_n\e^{-\beta E_n},\quad\beta=\frac1{k_BT},
+\end{equation}
+i.e.\ $\hat\rho=\e^{-\beta\hat H}/Z$.
+\begin{origin}[: the Gibbs state from maximum entropy]
+Among all states with a given mean energy $\tr(\hat\rho\hat H)=E$, the Gibbs state maximizes the entropy $S=-k_B\tr\hat\rho\ln\hat\rho$. With Lagrange multipliers for the
+normalization and the energy, $\delta[S/k_B-\beta(\tr\hat\rho\hat H-E)-\mu(\tr\hat\rho-1)]=0$ gives $-\ln\hat\rho-1-\beta\hat H-\mu=0$, i.e.\ $\hat\rho\propto\e^{-\beta\hat H}$.
+The multiplier $\beta$ is identified with $1/k_BT$ through $\partial S/\partial E=1/T$. The same state is obtained as the reduced state of a small system weakly coupled to a large
+reservoir (canonical ensemble), and as the steady state of the master equations of \cref{ch:open}.
+\end{origin}
+For a qubit with $H=-\frac{\hbar\omega}2Z$ (ground state $\ket0$), $\expval Z=\tanh(\beta\hbar\omega/2)$, and the excited-state population is
+$p_1=1/(1+\e^{\beta\hbar\omega})$. For a superconducting qubit at $\omega/2\pi=5$\,GHz and $T=20$\,mK, $\hbar\omega/k_BT=12$ and $p_1\approx6\times10^{-6}$: the qubit is
+reset by simply waiting. At $T=300$\,K, $p_1\approx1/2$: this is why superconducting qubits need dilution refrigerators, and why room-temperature NMR uses
+pseudo-pure states (\cref{sec:nmr}).
+
+\subsection{The harmonic oscillator}\label{sec:oscillator}
+\begin{origin}[: quantization of the harmonic oscillator]
+The harmonic oscillator, $H=\frac{\hat p^2}{2m}+\frac12m\omega^2\hat x^2$ with $[\hat x,\hat p]=\ii\hbar$, describes any system close to a minimum of its potential
+energy: a vibrating molecule or ion in a trap, an LC circuit (\cref{sec:lc}), a mode of the electromagnetic field. Define
+\begin{equation}
+  \hat a=\sqrt{\frac{m\omega}{2\hbar}}\left(\hat x+\frac{\ii\hat p}{m\omega}\right),\qquad \hat a^\dagger=\sqrt{\frac{m\omega}{2\hbar}}\left(\hat x-\frac{\ii\hat p}{m\omega}\right).
+\end{equation}
+Then $[\hat a,\hat a^\dagger]=1$ and $H=\hbar\omega(\hat a^\dagger\hat a+\frac12)$. With $\hat N=\hat a^\dagger\hat a$, $[\hat N,\hat a]=-\hat a$: if $\hat N\ket n=n\ket n$, then
+$\hat a\ket n$ is an eigenvector with eigenvalue $n-1$. Since $\norm{\hat a\ket n}^2=n\ge0$, the lowering must stop at a state $\ket0$ with $\hat a\ket0=0$, so $n=0,1,2,\dots$, and
+\begin{equation}
+  E_n=\hbar\omega\left(n+\tfrac12\right),\qquad\hat a\ket n=\sqrt n\ket{n-1},\qquad\hat a^\dagger\ket n=\sqrt{n+1}\ket{n+1}.
+\end{equation}
+In dimensionless units ($\hbar=m=\omega=1$), $\hat x=(\hat a+\hat a^\dagger)/\sqrt2$ and $\hat p=-\ii(\hat a-\hat a^\dagger)/\sqrt2$. The levels are \emph{equally spaced}: this is
+why a harmonic oscillator alone is not a qubit (\cref{ch:implementations}). The quantum $\ket n$ is called a phonon (vibration) or a photon (light, microwaves).
+\end{origin}
+For the harmonic oscillator, measuring the energies from the ground state ($E_n=\hbar\omega n$),
+\begin{equation}\label{eq:thermalHO}
+  \hat\rho=\sum_n\left(1-\e^{-\beta\hbar\omega}\right)\e^{-\beta\hbar\omega n}\proj n,
+\end{equation}
+where the prefactor ensures $\sum_np_n=1$ (geometric series). The mean occupation is the Bose--Einstein (Planck) distribution
+\begin{equation}
+  \bar n=\sum_nnp_n=\frac1{\e^{\beta\hbar\omega}-1},\qquad p_n=\frac{\bar n^n}{(\bar n+1)^{n+1}}.
+\end{equation}
+(Proof: $\sum_nnx^n(1-x)=x/(1-x)$ with $x=\e^{-\beta\hbar\omega}$; and $x=\bar n/(\bar n+1)$, $1-x=1/(\bar n+1)$.)
+
+\section{Exercises}
+\begin{exercise}
+Show that $\hat\rho=\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$ is pure, find its state vector and Bloch vector. Show that $\frac14\begin{pmatrix}3&1\\1&1\end{pmatrix}$ is
+mixed, and compute its purity and entropy.
+\end{exercise}
+\begin{exercise}
+Compute the reduced density matrices and the entanglement entropy of $\cos\alpha\ket{00}+\sin\alpha\ket{11}$. For which $\alpha$ is the entanglement maximal?
+\end{exercise}
+\begin{exercise}
+Show that the thermal state of a qubit has Bloch vector $\vec r=\tanh(\beta|\vec h|)\,\vec h/|\vec h|$ for $H=-\vec h\cdot\vec\sigma$.
+\end{exercise}

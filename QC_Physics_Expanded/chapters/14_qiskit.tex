@@ -1,0 +1,284 @@
+\chapter{Programming quantum computers with Qiskit}\label{ch:qiskit}
+
+\section{General remarks}
+It is instructive to compare present-day quantum computers with the first general-purpose electronic computer, ENIAC (1945).\footnote{Before electronic computers, calculations relied on
+analog devices such as the slide rule, used from the 17th century up to the 1970s.} ENIAC worked in decimal arithmetic and needed 36 vacuum tubes to store a single decimal digit. Its memory
+consisted of 20 accumulators, the equivalent of modern registers, each holding a signed 10-digit number. Some of them were combined for more complex operations: four accumulators were used
+for multiplication and five for division. Since $10^{10}\approx2^{33}$, one accumulator corresponds roughly to a 32-bit binary register, and the whole machine stored only a few hundred bits.
+Even so, the accumulators alone required of the order of $20\times10\times36\approx10^4$ vacuum tubes.
+
+Current quantum processors have a comparable number of (noisy) qubits. In terms of programming, quantum computing is therefore still at the stage of ENIAC, or even before it: a computer is in
+effect designed with a specific hardware wiring for each problem. Programming is done at the lowest level, gate by gate, even though some higher-level codes are already available.
+
+Several software frameworks exist for programming quantum computers (Qiskit, Cirq, PennyLane, Q\#, CUDA-Q, \dots). We use Qiskit, an open-source Python library developed by IBM. It can run
+circuits both on simulators and on real quantum hardware. The examples below have been tested with Qiskit 2.x and Qiskit Aer 0.18.
+
+\section{Building a circuit}
+A circuit is built from registers:
+\begin{lstlisting}
+from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit
+
+qreg = QuantumRegister(2, 'q')    # one quantum register with 2 qubits q0, q1
+creg = ClassicalRegister(2, 'c')  # one classical register with 2 bits
+qc = QuantumCircuit(qreg, creg)   # a circuit acting on these registers
+
+qc.h(qreg[0])                     # Hadamard gate on q0
+qc.cx(qreg[0], qreg[1])           # controlled-X (CNOT): control q0, target q1
+qc.draw('mpl')                    # draw the circuit with matplotlib
+\end{lstlisting}
+The method \texttt{cx} adds a controlled-$X$ gate, i.e.\ the CNOT gate, with \texttt{qreg[0]} as control and \texttt{qreg[1]} as target. This circuit prepares the Bell state
+$\ket{\Phi^+}$ (\cref{ch:entanglement}). The option \texttt{'mpl'} of the \texttt{draw} method produces a figure using the Python plotting library matplotlib.
+
+\paragraph{Exercise: matrices by hand.} Before using a simulator, it is useful to compute the matrices of small circuits by hand, for example with the symbolic library SymPy. Given the CNOT
+matrix \texttt{Cx\_sp}, construct the matrices \texttt{H\_sp}, \texttt{I\_sp}, \texttt{IH\_sp} $=I\otimes H$, and $U=(I\otimes H)\,\CNOT\,(I\otimes H)$:
+\begin{lstlisting}
+import sympy as sp
+from sympy.physics.quantum import TensorProduct
+
+H_sp = sp.Matrix([[1, 1], [1, -1]]) / sp.sqrt(2)
+I_sp = sp.eye(2)
+Cx_sp = sp.Matrix([[1, 0, 0, 0], [0, 1, 0, 0],
+                   [0, 0, 0, 1], [0, 0, 1, 0]])
+IH_sp = TensorProduct(I_sp, H_sp)
+U_sp = sp.simplify(IH_sp * Cx_sp * IH_sp)
+\end{lstlisting}
+The result is $U=\diag(1,1,1,-1)$, the controlled-$Z$ gate. Since $HXH=Z$, the Hadamard gates on the target convert the controlled-$X$ into a controlled-$Z$. By hand: $I\otimes H$ is
+block diagonal with two blocks $H$, and $\CNOT=\diag(I,X)$, so $U=\diag(HIH,HXH)=\diag(I,Z)$.
+
+\section{Simulators}
+Aer is the Qiskit package for high-performance simulation of quantum circuits, including noisy ones. It provides several simulator backends:
+\begin{lstlisting}
+from qiskit_aer import Aer
+simulator = Aer.get_backend('qasm_simulator')
+\end{lstlisting}
+\begin{itemize}
+  \item \texttt{qasm\_simulator}: simulates measurements shot by shot, as a real device would. It is ideal by default, but noise models can be added.
+  \item \texttt{statevector\_simulator}: returns the ideal final state vector.
+  \item \texttt{unitary\_simulator}: returns the ideal unitary matrix of the whole circuit.
+\end{itemize}
+In recent versions all three are special cases of the general \texttt{AerSimulator}, whose simulation method can be \texttt{'statevector'} (on CPU or GPU), \texttt{'density\_matrix'} (also on
+GPU), \texttt{'unitary'}, \texttt{'matrix\_product\_state'}, \texttt{'stabilizer'}, and others.
+
+\begin{keypoint}[: the cost of classical simulation]
+A state vector of $n$ qubits has $2^n$ complex amplitudes, i.e.\ $16\times2^n$ bytes in double precision: 16\,GB for $n=30$, 16\,PB for $n=50$. A density matrix needs the square of
+that. Brute-force simulation is therefore limited to about 45--50 qubits on the largest supercomputers. Matrix-product-state and stabilizer simulators can handle many more qubits for weakly
+entangled or Clifford circuits, in agreement with the remark at the end of \cref{sec:parallelism}.
+\end{keypoint}
+
+\section{Transpiling and running a circuit}
+Before running, the circuit is \emph{transpiled}. Transpilation translates it into the gates actually available on the backend, maps the logical qubits onto physical qubits respecting the
+connectivity (adding SWAPs if needed), and optimizes it. Unlike compilation, which translates a program to a lower level of abstraction, this is a conversion at the same level, from a circuit
+to an equivalent circuit:
+\begin{lstlisting}
+from qiskit import transpile
+from qiskit.visualization import plot_histogram
+
+qc.barrier()            # visual separator; also blocks optimizations across it
+qc.measure(qreg, creg)  # measure the qubits into the classical bits
+
+qc_t = transpile(qc, simulator,
+                 basis_gates=['id', 'rz', 'sx', 'x', 'cx'])
+job = simulator.run(qc_t, shots=10000)
+counts = job.result().get_counts(qc_t)
+plot_histogram(counts)
+\end{lstlisting}
+A barrier is a visual marker in the circuit drawing. It also prevents the transpiler from moving or merging gates across it. The result \texttt{counts} is a Python dictionary that gives the number
+of times each outcome was obtained. For the Bell state prepared above, it is approximately \texttt{\{'00': 5000, '11': 5000\}}. The statistical fluctuation of each count is $\sqrt{Np(1-p)}=50$.
+The basis gates \texttt{rz}, \texttt{sx}$=\sqrt X$, \texttt{x} suffice for any single-qubit gate (Euler decomposition, \cref{thm:euler}), e.g.\ $H=\e^{\ii\pi/4}R_z(\pi/2)\sqrt XR_z(\pi/2)$.
+
+\section{State vector and unitary matrix}
+With the state-vector simulator, applied to a circuit without the final measurements, the state of the circuit can be retrieved and displayed as a \LaTeX{} formula:
+\begin{lstlisting}
+from qiskit.visualization import array_to_latex
+
+simulator = Aer.get_backend('statevector_simulator')
+psi = simulator.run(qc_t).result().get_statevector(qc_t)
+array_to_latex(psi)
+\end{lstlisting}
+Similarly, the unitary simulator gives the matrix of the whole circuit, which can be checked numerically, for example its determinant:
+\begin{lstlisting}
+import numpy as np
+from numpy import linalg as LA
+
+simulator = Aer.get_backend('unitary_simulator')
+U = simulator.run(qc_t).result().get_unitary(qc_t, decimals=3)
+U = np.asarray(U)      # convert to a NumPy array
+print(LA.det(U))       # |det U| = 1, since U is unitary
+\end{lstlisting}
+
+\section{Qubit ordering: big-endians and little-endians}\label{sec:endian}
+Qiskit orders the qubits from right to left: in a basis state $\ket{q_{n-1}\dots q_1q_0}$, qubit $q_0$ is the least significant bit. This is the opposite of the convention used in these notes.
+As a result, the matrices returned by Qiskit may appear with the roles of the qubits exchanged.
+
+\paragraph{A little history.} In Jonathan Swift's \emph{Gulliver's Travels} (1726), the empire of Lilliput is torn by a bitter conflict about how a boiled egg should be opened. Traditionally, eggs
+were broken at the larger end. However, the Emperor's grandfather cut his finger while doing so as a child, and his father then ordered all his subjects, under heavy penalties, to break their eggs
+at the smaller end. The resistance of the Big-Endians led to several rebellions. The exiled rebels found refuge in the neighbouring empire of Blefuscu, and a long war followed. Swift's satire
+targets the religious quarrels of his time. The point is that the dispute is passionate, but the choice itself is completely arbitrary.
+
+In 1980, the computer scientist Danny Cohen borrowed Swift's terms in a famous note, \emph{On Holy Wars and a Plea for Peace} \cite{Cohen1981}. Cohen was writing about the order in which computers
+store and transmit the bytes of a number. A 32-bit integer such as \texttt{0x12345678} occupies four bytes, and there are two natural ways to arrange them at increasing addresses:
+\begin{center}
+\begin{tabular}{@{}lcccc@{}}\toprule
+Address & $n$ & $n+1$ & $n+2$ & $n+3$\\ \midrule
+Big-endian & 12 & 34 & 56 & 78\\ Little-endian & 78 & 56 & 34 & 12\\ \bottomrule
+\end{tabular}
+\end{center}
+A big-endian machine stores the most significant byte first, the way we write numbers on paper. A little-endian machine stores the least significant byte first. Little-endian ordering simplifies some
+arithmetic operations, since addition proceeds from the least significant digit; big-endian ordering is easier for humans to read in a memory dump. As in Lilliput, neither is fundamentally better,
+and both have been used: the Intel x86 family and, in practice, the ARM processors of today's smartphones and Apple silicon Macs are little-endian; the Motorola 68000, the IBM mainframes and the
+PowerPC of classic Macintosh computers are big-endian (when Apple moved to Intel processors in 2006, it had to deal with the byte order of existing files and programs); ARM, PowerPC and MIPS are
+bi-endian. The Internet protocols transmit numbers in big-endian order (the \emph{network byte order}). Many file formats therefore announce their byte order: a TIFF image starts with
+\texttt{II} (Intel) or \texttt{MM} (Motorola), and a UTF-16 text file may begin with a byte-order mark.
+
+\paragraph{Endianness of qubits.} Exactly the same ambiguity arises for qubits. A basis state of $n$ qubits is a string of bits, which can also be read as an integer $k$, the index of the corresponding
+component of the state vector. The question is which qubit is the most significant bit of $k$.
+\begin{itemize}
+  \item \emph{Big-endian} (most textbooks, including Nielsen and Chuang \cite{NielsenChuang}, and these notes):
+  \begin{equation}
+    \ket{q_0q_1\dots q_{n-1}}=\ket{q_0}\otimes\ket{q_1}\otimes\dots\otimes\ket{q_{n-1}},\qquad k=\sum_{i=0}^{n-1}q_i2^{n-1-i}.
+  \end{equation}
+  \item \emph{Little-endian} (Qiskit):
+  \begin{equation}
+    \ket{q_{n-1}\dots q_1q_0}=\ket{q_{n-1}}\otimes\dots\otimes\ket{q_1}\otimes\ket{q_0},\qquad k=\sum_{i=0}^{n-1}q_i2^i .
+  \end{equation}
+  Qubit $q_i$ then has the weight $2^i$, as bit $i$ of an ordinary binary integer. This makes arithmetic circuits natural (and is consistent with the operation \texttt{1 << i} used in the
+  Deutsch--Jozsa example), but it reverses the order of the tensor product.
+\end{itemize}
+\emph{Example 1: a single flipped qubit.} Apply an $X$ gate to qubit $q_0$ of a three-qubit register initially in $\ket{000}$:
+\begin{lstlisting}
+from qiskit import QuantumCircuit
+from qiskit.quantum_info import Statevector
+
+qc = QuantumCircuit(3)
+qc.x(0)
+print(Statevector(qc).probabilities_dict())   # {'001': 1.0}
+\end{lstlisting}
+Qiskit reports the outcome \texttt{'001'}, with $q_0$ as the rightmost bit, and the non-zero component of the state vector has index $k=1$. In the big-endian convention, the same state is written
+$\ket{100}$ and has index $k=4$.
+
+\emph{Example 2: the CNOT matrix.} For a CNOT with control $q_0$ and target $q_1$:
+\begin{equation}
+  \underbrace{\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}}_{\text{big-endian (these notes)}}\qquad
+  \underbrace{\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&0&1&0\\0&1&0&0\end{pmatrix}}_{\text{little-endian (Qiskit)}}
+\end{equation}
+In the Qiskit matrix, the control $q_0$ is the least significant bit, so the gate exchanges the basis states with indices $1=\ket{01}$ and $3=\ket{11}$ instead of 2 and 3. Both matrices describe
+the same physical gate; only the labelling of the basis has changed. Formally, the two matrices are related by the SWAP permutation: $M_{\rm Qiskit}=\mathrm{SWAP}\,M\,\mathrm{SWAP}$.
+
+\emph{Converting.} To compare Qiskit results with calculations done by hand, reverse the order of the qubits, with \texttt{QuantumCircuit.reverse\_bits()} or the method \texttt{reverse\_qargs()} of
+the \texttt{Statevector} and \texttt{Operator} classes. For example, \texttt{Operator(qc.reverse\_bits())} gives the CNOT matrix in the big-endian form above. As in Lilliput, there is no right end
+at which to break the egg. What matters is to know which convention a given book, article or program uses, and to convert carefully.
+
+\section{Noisy simulation and fake backends}
+To test a program under realistic conditions without access to a real quantum computer, Qiskit provides \emph{fake backends}: simulators that reproduce the qubit connectivity, the basis gates and the
+noise of specific IBM devices, for example \texttt{FakeManilaV2} or \texttt{FakeMarrakesh} from \texttt{qiskit\_ibm\_runtime.fake\_provider}. The noise model contains, for each qubit and gate,
+depolarizing errors, thermal relaxation with the measured $T_1$, $T_2$ (\cref{ch:open}), and readout errors.
+
+\begin{keypoint}[: a back-of-the-envelope error estimate]
+If a transpiled circuit has $N_1$ single-qubit gates with error $\varepsilon_1$, $N_2$ two-qubit gates with error $\varepsilon_2$ and $n$ measurements with error $\varepsilon_m$, the probability
+that no error occurs is roughly
+\begin{equation}
+  P_{\rm success}\approx(1-\varepsilon_1)^{N_1}(1-\varepsilon_2)^{N_2}(1-\varepsilon_m)^{n}\approx\e^{-N_1\varepsilon_1-N_2\varepsilon_2-n\varepsilon_m}.
+\end{equation}
+With $\varepsilon_2\sim5\times10^{-3}$, a circuit becomes useless after a few hundred two-qubit gates. This is the first estimate to make when answering ``can it work in our case?''.
+\end{keypoint}
+
+\section{Higher-level tools}
+Besides individual gates, Qiskit offers many higher-level building blocks:
+\begin{itemize}
+  \item \texttt{qiskit.circuit.library}: a library of ready-made circuits. It contains standard and generalized gates, arithmetic operations, Boolean logic, data-encoding circuits for quantum
+  machine learning (e.g.\ the Pauli expansion \texttt{PauliFeatureMap} for supervised learning), state preparation (\texttt{Initialize}), phase and bit-flip oracles, the Grover operator,
+  the QFT, and Hamiltonian evolution gates (\texttt{HamiltonianGate}, \texttt{PauliEvolutionGate}, which implements Trotter formulas \cref{eq:trotter}).
+  \item \texttt{qiskit.quantum\_info}: utilities for quantum information. It covers quantum states and operators (e.g.\ the \texttt{Statevector} and \texttt{DensityMatrix} classes), partial traces,
+  entropies, distances between states, fidelity (\cref{app:fidelity}), quantum channels (Kraus representation), and purity.
+\end{itemize}
+
+\section{The half adder}\label{sec:halfadder}
+\subsection{The classical half adder}
+The simplest arithmetic operation is the addition of two bits $x$ and $y$. The result can be $0$, $1$ or $2=10_2$, so it needs two output bits: the sum $S$ (weight 1) and the carry $C$ (weight 2):
+\begin{center}
+\begin{tabular}{@{}cc|cc@{}}\toprule
+$x$&$y$&$C$&$S$\\ \midrule 0&0&0&0\\0&1&0&1\\1&0&0&1\\1&1&1&0\\ \bottomrule
+\end{tabular}
+\end{center}
+The sum is the exclusive OR of the inputs and the carry is their AND:
+\begin{equation}
+  S=x\oplus y,\qquad C=x\wedge y.
+\end{equation}
+The circuit that implements these two functions is called a \emph{half adder}. It is only ``half'' of what is needed to add multi-bit numbers. When adding two binary numbers column by column,
+each column must add three bits: the two digits and the carry coming from the previous column. A circuit that adds three bits is called a \emph{full adder}. It can be built from two half adders:
+the first adds $x$ and $y$, the second adds the incoming carry to their sum, and the two partial carries are combined with an OR gate.
+
+Adders are among the most important circuits of a classical computer. The arithmetic logic unit (ALU) of every processor is built around them. Through two's complement arithmetic, the same
+adder also performs subtraction. Multiplication reduces to repeated shifts and additions, and adders are used constantly to compute memory addresses and increment the program counter.
+
+\subsection{A quantum half adder}
+A quantum circuit must be reversible. The classical half adder is not: the outputs $(C,S)=(0,1)$ do not tell us whether the input was $(0,1)$ or $(1,0)$. We therefore keep the inputs and write the
+results into two additional qubits $s_0$ (sum) and $s_1$ (carry), both initialized to $\ket0$:
+\begin{equation}
+  \ket x\ket y\ket0\ket0\longrightarrow\ket x\ket y\ket{x\oplus y}\ket{x\wedge y}.
+\end{equation}
+\begin{itemize}
+  \item The XOR is obtained with two CNOT gates targeting $s_0$: the first adds $x$, the second adds $y$ modulo 2, giving $s_0=x\oplus y$.
+  \item The AND is obtained with a Toffoli gate (\texttt{ccx}), which flips the target $s_1$ only if both controls are $1$, giving $s_1=x\wedge y$.
+\end{itemize}
+\begin{lstlisting}
+from qiskit import QuantumRegister, QuantumCircuit, transpile
+from qiskit_aer import Aer
+
+x = QuantumRegister(1, 'x')
+y = QuantumRegister(1, 'y')
+s = QuantumRegister(2, 's')   # s[0]: sum, s[1]: carry
+qc = QuantumCircuit(x, y, s)
+
+qc.h(x)                       # superposition of inputs 0 and 1
+qc.h(y)
+qc.barrier()
+qc.cx(x, s[0])                # s0 = x
+qc.cx(y, s[0])                # s0 = x XOR y
+qc.ccx(x, y, s[1])            # s1 = x AND y
+qc.barrier()
+qc.measure_all()
+
+simulator = Aer.get_backend('qasm_simulator')
+counts = simulator.run(transpile(qc, simulator), shots=1000).result().get_counts()
+\end{lstlisting}
+\begin{figure}[h]\centering
+\begin{quantikz}
+\lstick{$x$} & \gate{H} & \slice{} & \ctrl{2} & \qw & \ctrl{3} & \slice{} & \meter{}\\
+\lstick{$y$} & \gate{H} & \qw & \qw & \ctrl{1} & \ctrl{2} & \qw & \meter{}\\
+\lstick{$s_0$} & \qw & \qw & \targ{} & \targ{} & \qw & \qw & \meter{}\\
+\lstick{$s_1$} & \qw & \qw & \qw & \qw & \targ{} & \qw & \meter{}
+\end{quantikz}
+\caption{Quantum half adder. The Hadamard gates prepare the inputs in a superposition of all four values. Two CNOT gates compute the sum $s_0=x\oplus y$, and a Toffoli gate computes the carry $s_1=x\wedge y$.}
+\label{fig:halfadder}
+\end{figure}
+Instead of a single input value, the Hadamard gates prepare the superposition of all four inputs. The circuit then evaluates the four additions simultaneously:
+\begin{equation}
+  \frac12\left(\ket{00}+\ket{01}+\ket{10}+\ket{11}\right)_{xy}\ket{00}_s\longrightarrow\frac12\sum_{x,y=0}^1\ket x\ket y\ket{x\oplus y}\ket{x\wedge y}.
+\end{equation}
+A run on the ideal simulator gives, for 1000 shots, approximately \texttt{\{'0000': 250, '0110': 250, '0101': 250, '1011': 250\}}. In Qiskit's little-endian convention the bit strings read
+$s_1s_0yx$. For example, \texttt{'1011'} means $x=1$, $y=1$, sum $s_0=0$ and carry $s_1=1$, i.e.\ $1+1=10_2$. All four lines of the truth table appear, each with probability $1/4$. This illustrates
+both the power and the limitation of quantum parallelism: the four additions are performed by a single run, but a measurement reveals only one of them, chosen at random. Useful quantum algorithms
+must use interference to concentrate the probability on the desired answer before measuring.
+
+\paragraph{Running on (simulated) hardware.} With a fake backend reproducing a real IBM processor, for example \texttt{FakeMarrakesh}, a few percent of the shots give outcomes that are not in the truth
+table, such as \texttt{'1111'} or \texttt{'0111'}. The reason becomes clear after transpilation. The device has only one native two-qubit gate and limited connectivity, so the Toffoli gate alone is
+decomposed into six two-qubit gates plus single-qubit rotations (\cref{sec:toffoli}), and SWAPs are added to bring the qubits together. The three logical gates of \cref{fig:halfadder} become about
+15 two-qubit gates and nearly 60 single-qubit operations. With $\varepsilon_2\approx3\times10^{-3}$ and $\varepsilon_1\approx3\times10^{-4}$, the estimate of the previous section gives
+$1-P_{\rm success}\approx15\times0.003+60\times0.0003\approx6\%$, in agreement with the observed error rate.
+
+\subsection{Towards multi-bit addition: the ripple-carry adder}
+To add two $n$-bit numbers $a$ and $b$, $n$ adders are chained as in addition by hand. The carry produced by the adder of bit $i$ is passed as an input to the adder of bit $i+1$, so the carry
+``ripples'' from the least to the most significant bit. This \emph{ripple-carry adder} handles the incoming carries and adds numbers of arbitrary size, which a half adder cannot do. Its cost grows
+only linearly with $n$.
+
+Quantum versions of the ripple-carry adder were among the first quantum arithmetic circuits to be designed \cite{VBE1996}. They are better than a naive chain of half adders in an important respect:
+the number of qubits. A naive reversible construction must keep every intermediate result, which consumes many ancilla qubits. The circuit of Cuccaro et al.\ \cite{Cuccaro2004} computes the sum in
+place, $\ket a\ket b\to\ket a\ket{a+b}$, using a single ancilla qubit, by uncomputing the intermediate carries once they are no longer needed. Since qubits are the scarcest resource of present-day
+quantum computers, this economy is essential. Both circuits are available in Qiskit as \texttt{VBERippleCarryAdder} and \texttt{CDKMRippleCarryAdder}, together with the single-bit
+\texttt{HalfAdderGate} and \texttt{FullAdderGate}.
+
+In classical processors, the ripple-carry adder is the simplest but also the slowest multi-bit adder, because the last bit must wait for the carry to propagate through all the previous ones. Faster
+designs, such as carry-lookahead adders, compute the carries in parallel. The same idea leads to quantum adders of logarithmic depth, and to adders based on the quantum Fourier transform
+(\texttt{DraperQFTAdder}): in the Fourier basis, adding $a$ is a set of single-qubit phase rotations (\cref{ch:shor}). Adders are the building blocks of modular exponentiation, the most expensive part
+of Shor's algorithm.

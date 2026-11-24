@@ -1,0 +1,89 @@
+\documentclass[11pt,a4paper,openany]{book}
+
+\input{preamble}
+
+\title{\textbf{Quantum Computing: the Physics}\\[0.6em]
+\large Expanded lecture notes, with derivations, proofs and physical models\\[0.3em]
+\normalsize Based on the lecture course of D.\,D.~Solnyshkov (IMAPP master, UCA)}
+\author{Expanded edition}
+\date{\today}
+
+\begin{document}
+\frontmatter
+\maketitle
+
+\chapter*{How to read these notes}
+\addcontentsline{toc}{chapter}{How to read these notes}
+These notes follow the structure of the physics part of the \emph{Quantum Computing} course
+(D.\,D.~Solnyshkov). Every topic of the original notes is kept. Each one is expanded in four ways:
+\begin{enumerate}
+  \item \textbf{Where it comes from.} When a Hamiltonian, an equation of motion or a physical system appears,
+  we say where it comes from and derive it from simpler principles whenever this can be done in a few pages.
+  These parts are marked by a box \emph{``Physical origin''}.
+  \item \textbf{Proofs and derivations.} Statements that the original notes give without proof
+  (for example the projector $P_\pm=(I\pm\vec n\cdot\vec\sigma)/2$, the Tsirelson bound, the steady state of the
+  damped oscillator, the Grover rotation angle, the QFT circuit, the Uhlmann theorem) are proved here.
+  \item \textbf{Missing material.} Sections that were empty or only announced in the original notes
+  (Ekert's protocol, fidelity and Uhlmann's theorem, universal gate sets, the quantum Fourier transform
+  and phase estimation) are written out. Topics needed to make the story complete are added:
+  superdense coding, Simon's algorithm, Kraus operators, quantum channels, stabilizer codes, the
+  transmon, the Jaynes--Cummings model, and others.
+  \item \textbf{Worked examples and exercises.} Each chapter ends with exercises, most with solutions or hints.
+\end{enumerate}
+Material that goes beyond what is needed for the exam is marked with a star ($\star$) in the section title.
+
+\paragraph{Conventions.}
+We write $\hbar$ explicitly in physical models. In the quantum-information chapters we often set $\hbar=1$.
+The computational basis of one qubit is $\ket0=(1,0)^T$, $\ket1=(0,1)^T$. Multi-qubit states are written in
+the \emph{big-endian} order $\ket{q_0q_1\dots q_{n-1}}=\ket{q_0}\otimes\ket{q_1}\otimes\dots$ (the first qubit is the most significant bit),
+except when we explicitly discuss Qiskit, which uses the opposite convention (\cref{sec:endian}).
+Pauli matrices are written $X,Y,Z$ or $\sigma_x,\sigma_y,\sigma_z$ interchangeably.
+The mathematical background (Hilbert spaces, tensor products, operator exponentials, the Trotter product formula,
+density matrices) is treated rigorously in the companion mathematics notes (C.~Kriegler); here we use
+it at the level of a physicist.
+
+\tableofcontents
+
+\mainmatter
+\part{One qubit}
+\input{chapters/01_intro}
+\input{chapters/02_qm_basics}
+\input{chapters/03_two_level}
+\input{chapters/04_bloch}
+\input{chapters/05_measurement}
+\input{chapters/06_single_qubit_applications}
+
+\part{Many qubits, mixed states and decoherence}
+\input{chapters/07_entanglement}
+\input{chapters/08_bell}
+\input{chapters/09_density_matrix}
+\input{chapters/10_open_systems}
+\input{chapters/11_entanglement_criteria}
+\input{chapters/12_teleportation}
+
+\part{Gates and algorithms}
+\input{chapters/13_gates}
+\input{chapters/14_qiskit}
+\input{chapters/15_oracle_algorithms}
+\input{chapters/16_grover}
+\input{chapters/17_qft_shor}
+\input{chapters/18_complexity}
+\input{chapters/19_qec}
+
+\part{Optimization, annealing and learning}
+\input{chapters/20_annealing}
+\input{chapters/21_qml}
+
+\part{Physical implementations}
+\input{chapters/22_implementations}
+
+\appendix
+\part{Appendices}
+\input{chapters/A_schmidt}
+\input{chapters/B_fidelity}
+\input{chapters/C_math}
+
+\backmatter
+\input{references}
+
+\end{document}

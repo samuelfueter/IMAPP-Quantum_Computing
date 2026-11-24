@@ -1,0 +1,115 @@
+\chapter{The Schmidt decomposition and purification}\label{app:schmidt}
+
+\section{Derivation}
+Consider a pure state of a bipartite system, $\ket\psi_{AB}\in\Ha_A\otimes\Ha_B$. In arbitrary orthonormal bases $\{\ket i_A\}$ and $\{\ket\mu_B\}$ of the two subsystems, any such state can be written
+\begin{equation}
+  \ket\psi_{AB}=\sum_{i,\mu}\psi_{i\mu}\ket i_A\otimes\ket\mu_B .
+\end{equation}
+Grouping the terms with the same $\ket i_A$, we can also write
+\begin{equation}
+  \ket\psi_{AB}=\sum_i\ket i_A\otimes\ket{\tilde\imath}_B,\qquad\text{with}\qquad\ket{\tilde\imath}_B=\sum_\mu\psi_{i\mu}\ket\mu_B .
+\end{equation}
+In general the states $\ket{\tilde\imath}_B$ are neither orthogonal nor normalized. Let us show that they are orthogonal if the basis of $A$ is suitably chosen. We choose the basis $\{\ket i_A\}$ in which the reduced density matrix of $A$ is diagonal:
+\begin{equation}
+  \hat\rho_A=\sum_ip_i\proj i .
+\end{equation}
+On the other hand, by definition of the reduced density matrix,
+\begin{equation}
+  \hat\rho_A=\tr_B\proj\psi=\tr_B\Big(\sum_{i,j}\ketbra ij\otimes\ketbra{\tilde\imath}{\tilde\jmath}\Big)=\sum_{i,j}\braket{\tilde\jmath}{\tilde\imath}\ketbra ij,
+\end{equation}
+because, using the completeness relation $\sum_k\proj k=I$ in $\Ha_B$, $\tr_B\ketbra{\tilde\imath}{\tilde\jmath}=\sum_k\braket k{\tilde\imath}\braket{\tilde\jmath}k=\braket{\tilde\jmath}{\tilde\imath}$. Comparing the two expressions of $\hat\rho_A$,
+\begin{equation}
+  \braket{\tilde\jmath}{\tilde\imath}_B=p_i\delta_{ij}:
+\end{equation}
+the states $\ket{\tilde\imath}_B$ are orthogonal. We can therefore normalize them, $\ket{i'}_B=p_i^{-1/2}\ket{\tilde\imath}_B$ (for $p_i\neq0$), and obtain
+\begin{equation}\label{eq:schmidt}
+  \ket\psi_{AB}=\sum_i\sqrt{p_i}\ket i_A\otimes\ket{i'}_B .
+\end{equation}
+This is the \emph{Schmidt decomposition}: any pure state of a bipartite system can be written as a single sum over pairs of orthonormal states $\ket i_A$, $\ket{i'}_B$ of the two subsystems, with non-negative coefficients $\sqrt{p_i}$, the
+\emph{Schmidt coefficients}. The bases depend on the state. Compared with the general expansion, which has $d_Ad_B$ terms, the Schmidt form has at most $\min(d_A,d_B)$ terms.
+
+\paragraph{Singular value decomposition.} In fixed bases $\{\ket a_A\}$ and $\{\ket\mu_B\}$, the Schmidt decomposition reads
+\begin{equation}
+  \psi_{a\mu}=\sum_i(U_A)_{ai}\sqrt{p_i}\,(U_B^T)_{i\mu},
+\end{equation}
+where the unitary matrices $U_A$ and $U_B$ transform the fixed bases into the Schmidt bases. This is the singular value decomposition (SVD) $\Psi=U_A\Sigma U_B^T$ of the matrix $\Psi=(\psi_{a\mu})$ of coefficients. Conversely, the SVD theorem
+(any complex matrix is $U\Sigma V^\dagger$ with $U,V$ unitary and $\Sigma\ge0$ diagonal) gives a second proof of the Schmidt decomposition. The Schmidt coefficients are the singular values of $\Psi$, which gives a practical way to compute them
+numerically (\texttt{numpy.linalg.svd}). The reduced density matrices are $\hat\rho_A=\Psi\Psi^\dagger$ and $\hat\rho_B=(\Psi^\dagger\Psi)^T$ in these bases.
+
+\section{Consequences}
+\paragraph{Equal spectra.} Tracing out $A$ instead of $B$ gives
+\begin{equation}
+  \hat\rho_B=\tr_A\proj\psi=\sum_ip_i\proj{i'}.
+\end{equation}
+The reduced density matrices $\hat\rho_A$ and $\hat\rho_B$ therefore have the same non-zero eigenvalues $p_i$, even if the two subsystems have different dimensions. In particular they have the same purity and the same von Neumann entropy,
+which justifies the definition of the entanglement entropy $S(\hat\rho_A)=S(\hat\rho_B)=-\sum_ip_i\log_2p_i$.
+
+\paragraph{Schmidt number and entanglement.} The number of non-zero Schmidt coefficients is the \emph{Schmidt number} (the rank of $\Psi$). A state is entangled if and only if its Schmidt number is greater than 1. For a separable state,
+$\ket\psi_{AB}=\ket\varphi_A\otimes\ket\chi_B$, there is a single term, and the reduced density matrices $\hat\rho_A=\proj\varphi$, $\hat\rho_B=\proj\chi$ describe pure states. Otherwise, they are mixed, and subsystem $A$ alone has no wave function.
+For example, the Bell state $(\ket{00}+\ket{11})/\sqrt2$ is already in Schmidt form, with two coefficients $1/\sqrt2$: its Schmidt number is 2, and $\hat\rho_A=\hat\rho_B=I/2$, in agreement with the partial trace computed in \cref{sec:reduced}.
+For two qubits, $\det\Psi=\sqrt{p_1p_2}\det U_A\det U_B$, so $|\det\Psi|=\sqrt{p_1p_2}$, which explains the criterion of \cref{prop:det} and the concurrence $C=2\sqrt{p_1p_2}$.
+
+\paragraph{Entanglement cannot be created locally.} A unitary operation $U_A\otimes U_B$ acting separately on the two subsystems only rotates the Schmidt bases,
+\begin{equation}
+  (U_A\otimes U_B)\ket\psi_{AB}=\sum_i\sqrt{p_i}\left(U_A\ket i_A\right)\otimes\left(U_B\ket{i'}_B\right),
+\end{equation}
+and leaves the Schmidt coefficients unchanged. In particular, local operations cannot increase the Schmidt number. Entanglement can only be created by an interaction between the subsystems, such as a CNOT gate. (More generally, entanglement cannot
+increase on average under local operations and classical communication; Nielsen's theorem (1999) states that $\ket\psi$ can be converted into $\ket\phi$ by LOCC iff the Schmidt coefficients of $\ket\psi$ are majorized by those of $\ket\phi$.)
+
+\section{Purification}\label{app:purification}
+Conversely, any mixed state can be seen as part of a larger pure state. Suppose that $\hat\rho_A$ does not describe a pure state. We can introduce a fictitious \emph{reference system} $R$ such that the joint state of $A$ and $R$ is pure and
+\begin{equation}
+  \hat\rho_A=\tr_R\proj{AR}.
+\end{equation}
+\begin{proof}
+Write $\hat\rho_A$ in its orthonormal eigenbasis, $\hat\rho_A=\sum_ip_i\proj{i^A}$. Let $R$ have the same state space as $A$, with an orthonormal basis $\{\ket{i^R}\}$, and define
+\begin{equation}
+  \ket{AR}=\sum_i\sqrt{p_i}\ket{i^A}\ket{i^R}.
+\end{equation}
+Then
+\begin{equation}
+  \tr_R\proj{AR}=\sum_{i,j}\sqrt{p_ip_j}\ketbra{i^A}{j^A}\tr\left(\ketbra{i^R}{j^R}\right)=\sum_{i,j}\sqrt{p_ip_j}\ketbra{i^A}{j^A}\delta_{ij}=\sum_ip_i\proj{i^A}=\hat\rho_A.\qedhere
+\end{equation}
+\end{proof}
+The state $\ket{AR}$ is written directly in Schmidt form, which shows the close relation between purification and the Schmidt decomposition. Physically, purification says that mixedness can always be attributed to entanglement with
+something else (the ``church of the larger Hilbert space''). A compact formula: with the unnormalized maximally entangled vector $\ket\Omega=\sum_i\ket i\ket i$, every purification of $\hat\rho$ is $(\sqrt{\hat\rho}\otimes V)\ket\Omega$
+for some unitary (or isometry) $V$ on $R$. This is used in the proof of Uhlmann's theorem (\cref{app:fidelity}).
+
+\section{The Hughston--Jozsa--Wootters theorem}\label{app:hjw}
+A given density matrix can be realized by many different ensembles of pure states \cite{HJW1993}:
+\begin{equation}
+  \hat\rho_A=\sum_ip_i\proj{\varphi_i}=\sum_\mu q_\mu\proj{\psi_\mu},
+\end{equation}
+where neither the $\ket{\varphi_i}$ nor the $\ket{\psi_\mu}$ need to be orthogonal. Each ensemble corresponds to a purification,
+\begin{equation}
+  \ket{\Phi_1}_{AB}=\sum_i\sqrt{p_i}\ket{\varphi_i}_A\ket{\alpha_i}_B,\qquad\ket{\Phi_2}_{AB}=\sum_\mu\sqrt{q_\mu}\ket{\psi_\mu}_A\ket{\beta_\mu}_B,
+\end{equation}
+where $\{\ket{\alpha_i}\}$ and $\{\ket{\beta_\mu}\}$ are orthonormal states of a system $B$ of sufficiently large dimension. (Check: $\tr_B\proj{\Phi_1}=\sum_{ij}\sqrt{p_ip_j}\ketbra{\varphi_i}{\varphi_j}\braket{\alpha_j}{\alpha_i}=\hat\rho_A$.)
+\begin{theorem}[HJW]
+Two purifications of the same $\hat\rho_A$ on the same space $B$ are related by a unitary change of basis in $B$ alone:
+\begin{equation}
+  \ket{\Phi_1}_{AB}=(I_A\otimes U_B)\ket{\Phi_2}_{AB}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Both states give the same reduced density matrix $\hat\rho_A$, so their Schmidt decompositions can be written with the same coefficients and the same eigenbasis $\{\ket k_A\}$ of $\hat\rho_A$ (if some eigenvalues are degenerate, we choose the same basis
+of each eigenspace for both; this is possible because \cref{eq:schmidt} holds for any eigenbasis of $\hat\rho_A$):
+\begin{equation}
+  \ket{\Phi_1}_{AB}=\sum_k\sqrt{\lambda_k}\ket k_A\ket{k_1}_B,\qquad\ket{\Phi_2}_{AB}=\sum_k\sqrt{\lambda_k}\ket k_A\ket{k_2}_B .
+\end{equation}
+The linear map defined by $\ket{k_1}_B=U_B\ket{k_2}_B$ maps one orthonormal set onto another; it can be extended to a unitary on the whole of $\Ha_B$, which maps one state onto the other.
+\end{proof}
+An equivalent algebraic form (\cite{NielsenChuang}, Thm.~2.6): $\sum_ip_i\proj{\varphi_i}=\sum_\mu q_\mu\proj{\psi_\mu}$ iff $\sqrt{p_i}\ket{\varphi_i}=\sum_\mu u_{i\mu}\sqrt{q_\mu}\ket{\psi_\mu}$ for some unitary matrix $u$ (padding the
+smaller ensemble with zero-probability states).
+
+The physical meaning is remarkable. If $A$ and $B$ share the state $\ket{\Phi_1}$, then by choosing in which basis to measure $B$, an observer can decide which ensemble describes $A$: measuring $B$ in the basis $\{\ket{\alpha_i}\}$ leaves $A$ in
+$\ket{\varphi_i}$ with probability $p_i$; measuring in the basis $\{U_B\ket{\beta_\mu}\}$ leaves $A$ in $\ket{\psi_\mu}$ with probability $q_\mu$. Since both ensembles give the same $\hat\rho_A$, an observer of $A$ alone cannot tell which choice was made,
+and no information is transmitted. This is the precise content of ``steering'' (Schrödinger, 1935) and of the EPR argument (\cref{ch:bell}), and again of the no-signalling principle.
+
+\section{Exercises}
+\begin{exercise}
+Find the Schmidt decomposition of $\frac12(\ket{00}+\ket{01}+\ket{10}-\ket{11})$. (Hint: compute the SVD of $\frac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}$.) Is the state entangled?
+\end{exercise}
+\begin{exercise}
+Show that the two ensembles $\{\frac12,\ket0;\frac12,\ket1\}$ and $\{\frac12,\ket+;\frac12,\ket-\}$ are related by the unitary $u=H$ in the HJW theorem, and find the corresponding measurements on $B$ for the purification $\ket{\Phi^+}$.
+\end{exercise}

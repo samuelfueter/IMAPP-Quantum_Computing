@@ -1,0 +1,185 @@
+\chapter{Basics of quantum mechanics}\label{ch:qm}
+
+\section{The postulates}
+Quantum computing uses only a small part of quantum mechanics, but it uses it in a very precise way.
+It is therefore worth stating the rules explicitly. We consider systems with a finite number of levels.
+
+\begin{enumerate}[label=\textbf{P\arabic*.}]
+  \item \textbf{States.} The state of an isolated system is a unit vector $\ket\psi$ of a complex Hilbert space $\Ha$
+  (here $\Ha=\C^d$). Two vectors that differ by a global phase, $\ket\psi$ and $\e^{\ii\gamma}\ket\psi$, describe the same physical state.
+  \item \textbf{Observables.} A measurable quantity is represented by a Hermitian operator $A=A^\dagger$. Its eigenvalues are real
+  and are the possible outcomes of the measurement.
+  \item \textbf{Born rule.} If $A=\sum_m a_m P_m$ is the spectral decomposition, the probability of obtaining $a_m$ is
+  $p(m)=\mel\psi{P_m}\psi$ and the state just after the measurement is $P_m\ket\psi/\sqrt{p(m)}$ (\cref{ch:measurement}).
+  \item \textbf{Dynamics.} The time evolution of an isolated system is given by the Schrödinger equation
+  \begin{equation}\label{eq:schrodinger}
+    \ii\hbar\frac{\partial}{\partial t}\ket{\psi(t)}=\hat H\ket{\psi(t)},
+  \end{equation}
+  where the Hamiltonian $\hat H$ is the observable associated with the energy.
+  \item \textbf{Composite systems.} The state space of a system made of two parts $A$ and $B$ is the tensor product $\Ha_A\otimes\Ha_B$
+  (\cref{ch:entanglement}).
+\end{enumerate}
+
+\begin{origin}[: why the Schrödinger equation?]
+The Schrödinger equation can be derived from two requirements.
+\begin{enumerate}
+  \item \emph{Conservation of probability.} The norm of the state must be preserved, so the evolution from time $0$ to $t$
+  is a linear map $U(t)$ with $U^\dagger U=I$: a unitary operator. (Linearity is the superposition principle.)
+  \item \emph{Time homogeneity and continuity.} For a system with time-independent properties, evolving for $t_1$ and then $t_2$
+  is the same as evolving for $t_1+t_2$: $U(t_1+t_2)=U(t_2)U(t_1)$, with $U(0)=I$, and $U(t)$ depends continuously on $t$.
+\end{enumerate}
+A continuous one-parameter group of unitaries has the form $U(t)=\e^{-\ii Kt}$ with $K$ Hermitian (Stone's theorem; in finite
+dimension this is elementary: differentiate at $t=0$, $U(\dd t)\approx I-\ii K\dd t$, and $U^\dagger U=I$ to first order gives $K^\dagger=K$).
+Differentiating, $\ii\,\dd\ket{\psi}/\dd t=K\ket\psi$. Identifying the generator of time translations with the energy divided by $\hbar$,
+$K=\hat H/\hbar$, as suggested by the Planck--Einstein relation $E=\hbar\omega$ for a plane wave $\e^{-\ii\omega t}$, gives
+\cref{eq:schrodinger}. In wave mechanics, with $\hat H=\hat p^2/2m+V(\hat x)$ and $\hat p=-\ii\hbar\,\partial_x$, this is the
+familiar $\ii\hbar\,\partial_t\psi=-\frac{\hbar^2}{2m}\partial_x^2\psi+V\psi$.
+\end{origin}
+
+\section{Stationary states and the time-evolution operator}
+If the Hamiltonian does not depend on time, the variables can be separated. Writing $\psi(x,t)=\phi(x)f(t)$ in
+$\ii\hbar\,\partial_t\psi=\hat H\psi$ and dividing by $\phi f$ gives $\ii\hbar\,\dot f/f=(\hat H\phi)/\phi$. The left side depends only
+on $t$, the right side only on $x$, so both equal a constant $E$. Hence $f(t)=\e^{-\ii Et/\hbar}$ and $\phi$ satisfies the stationary
+Schrödinger equation
+\begin{equation}\label{eq:stationary}
+  \hat H\psi_n(x)=E_n\psi_n(x).
+\end{equation}
+Since $\hat H$ is Hermitian, its eigenvectors form an orthonormal basis, and the general solution is the superposition
+\begin{equation}\label{eq:superposition}
+  \psi(x,t)=\sum_n c_n\psi_n(x)\,\e^{-\ii E_nt/\hbar},\qquad c_n=\braket{\psi_n}{\psi(0)},
+\end{equation}
+where the coefficients are fixed by the initial condition. The probabilities $|c_n|^2$ do not change in time, but the relative
+phases $\e^{-\ii(E_n-E_m)t/\hbar}$ between components do. This is the origin of all quantum oscillations: \emph{the observable dynamics
+is governed by the energy differences $E_n-E_m$, the Bohr frequencies.}
+
+An equivalent description uses the time-evolution operator. Since \cref{eq:schrodinger} is a linear first-order equation with constant
+coefficients, $\partial_t\psi=-(\ii\hat H/\hbar)\psi$, its solution is
+\begin{equation}\label{eq:U}
+  \ket{\psi(t)}=\hat U(t)\ket{\psi(0)},\qquad \hat U(t)=\e^{-\ii\hat Ht/\hbar}.
+\end{equation}
+
+\subsection{The matrix exponential}
+The exponential of a square matrix $X$ is defined by the series
+\begin{equation}
+  \e^X=\sum_{k=0}^\infty\frac{X^k}{k!},
+\end{equation}
+which converges for any $X$ since $\norm{X^k}\le\norm X^k$. It satisfies $\frac{\dd}{\dd t}\e^{tX}=X\e^{tX}$, which is why \cref{eq:U}
+solves the Schrödinger equation. Its main properties are:
+\begin{itemize}
+  \item $\e^{X}\e^{Y}=\e^{X+Y}$ \emph{if} $[X,Y]=0$. In general this is false; see the Baker--Campbell--Hausdorff formula below.
+  \item $(\e^X)^{-1}=\e^{-X}$, and $(\e^{X})^\dagger=\e^{X^\dagger}$. Hence if $H$ is Hermitian, $\e^{-\ii Ht}$ is unitary:
+  $(\e^{-\ii Ht})^\dagger\e^{-\ii Ht}=\e^{\ii Ht}\e^{-\ii Ht}=I$.
+  \item $\det\e^X=\e^{\tr X}$ (prove it with the diagonalization below, or with the Jordan form).
+  \item If $X=PDP^{-1}$, then $X^k=PD^kP^{-1}$ (all inner $P^{-1}P$ cancel), and therefore $\e^X=P\e^DP^{-1}$.
+\end{itemize}
+The series is useful for proofs, but a better way to compute the exponential is to diagonalize $X$. For a Hermitian Hamiltonian,
+$H=PDP^{-1}$ with $D=\diag(E_1,E_2,\dots)$ and $P$ unitary ($P^{-1}=P^\dagger$); the columns of $P$ are the normalized eigenvectors.
+Then
+\begin{equation}\label{eq:Udiag}
+  U(t)=P\begin{pmatrix}\e^{-\ii E_1t/\hbar}&0&\cdots\\0&\e^{-\ii E_2t/\hbar}&\cdots\\ \vdots&\vdots&\ddots\end{pmatrix}P^{-1},
+  \qquad \psi(t)=U(t)\psi(0).
+\end{equation}
+Reading it from right to left: $P^{-1}$ expresses the initial state in the eigenbasis (it computes the $c_n$), the diagonal matrix
+attaches the phases, and $P$ returns to the original basis. This is exactly \cref{eq:superposition}.
+
+Another useful formula is the \emph{spectral} form
+\begin{equation}\label{eq:spectralU}
+  U(t)=\sum_n\e^{-\ii E_nt/\hbar}\proj{\psi_n},
+\end{equation}
+which follows from $H=\sum_nE_n\proj{\psi_n}$ and $f(H)=\sum_n f(E_n)\proj{\psi_n}$ for any function $f$.
+
+\subsection{Useful identities}
+\begin{proposition}[Exponential of an involution]\label{prop:involution}
+If $A^2=I$ (for example any Pauli matrix, or $\vec n\cdot\vec\sigma$ with $|\vec n|=1$), then
+\begin{equation}
+  \e^{-\ii\theta A}=\cos\theta\,I-\ii\sin\theta\,A.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Split the series into even and odd powers, using $A^{2k}=I$ and $A^{2k+1}=A$:
+$\e^{-\ii\theta A}=\sum_k\frac{(-\ii\theta)^{2k}}{(2k)!}I+\sum_k\frac{(-\ii\theta)^{2k+1}}{(2k+1)!}A
+=\cos\theta\,I-\ii\sin\theta\,A$.
+\end{proof}
+
+\begin{proposition}[Hadamard lemma and BCH]\label{prop:bch}
+For any matrices $A,B$,
+\begin{equation}
+  \e^{A}B\e^{-A}=B+[A,B]+\frac1{2!}[A,[A,B]]+\frac1{3!}[A,[A,[A,B]]]+\cdots
+\end{equation}
+and, if $[A,B]$ commutes with both $A$ and $B$, $\e^{A}\e^{B}=\e^{A+B+\frac12[A,B]}$.
+\end{proposition}
+\begin{proof}
+Let $f(s)=\e^{sA}B\e^{-sA}$. Then $f'(s)=\e^{sA}[A,B]\e^{-sA}$, $f''(s)=\e^{sA}[A,[A,B]]\e^{-sA}$, etc. The Taylor series of $f$ at $s=0$,
+evaluated at $s=1$, gives the first formula. For the second, let $g(s)=\e^{sA}\e^{sB}$. Then
+$g'(s)=(A+\e^{sA}B\e^{-sA})g(s)=(A+B+s[A,B])g(s)$, because the series stops at the first commutator. Since all operators in the
+bracket commute with each other, $g(s)=\e^{s(A+B)+\frac{s^2}2[A,B]}$.
+\end{proof}
+
+When $A$ and $B$ do not commute, $\e^{(A+B)t}\neq\e^{At}\e^{Bt}$, but the Lie--Trotter product formula holds:
+\begin{equation}\label{eq:trotter}
+  \e^{A+B}=\lim_{n\to\infty}\left(\e^{A/n}\e^{B/n}\right)^n,\qquad
+  \e^{(A+B)\delta}=\e^{A\delta}\e^{B\delta}+\order(\delta^2).
+\end{equation}
+This is the basis of \emph{digital quantum simulation}: the evolution under a Hamiltonian $H=\sum_k H_k$, where each $H_k$ acts on only a
+few qubits, is approximated by a product of short evolutions under each $H_k$, each implemented by a few gates (Lloyd 1996). The rigorous
+proof is in the mathematics notes.
+
+\section{Time-dependent Hamiltonians and the pictures of quantum mechanics}
+Quantum gates are implemented by time-dependent fields, so we also need the case $H=H(t)$. The evolution operator still exists, defined by
+$\ii\hbar\,\partial_tU(t,t_0)=H(t)U(t,t_0)$, $U(t_0,t_0)=I$, and is unitary, but in general it is \emph{not} $\e^{-\ii\int H\dd t/\hbar}$
+because $H(t)$ and $H(t')$ need not commute. Splitting $[t_0,t]$ into small steps,
+\begin{equation}
+  U(t,t_0)=\lim_{N\to\infty}\e^{-\ii H(t_N)\delta t/\hbar}\cdots\e^{-\ii H(t_1)\delta t/\hbar}\equiv
+  \mathcal T\exp\left(-\frac\ii\hbar\int_{t_0}^tH(t')\dd t'\right),
+\end{equation}
+the \emph{time-ordered exponential}, with later times to the left.
+
+\paragraph{Heisenberg picture.} Mean values $\expval{A}(t)=\mel{\psi(0)}{U^\dagger AU}{\psi(0)}$ can be computed either by evolving the
+state (Schrödinger picture) or by evolving the operator, $A_H(t)=U^\dagger(t)AU(t)$ (Heisenberg picture). Differentiating,
+\begin{equation}\label{eq:heisenberg}
+  \frac{\dd A_H}{\dd t}=\frac\ii\hbar[H,A_H]\qquad\text{(time-independent $H$, no explicit $t$-dependence of $A$)}.
+\end{equation}
+Taking the mean value gives the \emph{Ehrenfest theorem} $\dd\expval A/\dd t=\frac\ii\hbar\expval{[H,A]}$. In particular, an observable that
+commutes with $H$ is conserved. This equation is the starting point of the Bloch-vector equation of \cref{ch:bloch}.
+
+\paragraph{Interaction picture.} When $H=H_0+V(t)$ with $H_0$ simple, one removes the ``trivial'' evolution under $H_0$ by writing
+$\ket{\psi(t)}=\e^{-\ii H_0t/\hbar}\ket{\psi_I(t)}$. Substituting into \cref{eq:schrodinger},
+\begin{equation}\label{eq:interaction}
+  \ii\hbar\,\partial_t\ket{\psi_I}=V_I(t)\ket{\psi_I},\qquad V_I(t)=\e^{\ii H_0t/\hbar}V(t)\e^{-\ii H_0t/\hbar}.
+\end{equation}
+More generally, any time-dependent unitary change of frame $\ket{\tilde\psi}=R(t)\ket\psi$ gives a new Hamiltonian
+\begin{equation}\label{eq:frame}
+  \tilde H=RHR^\dagger+\ii\hbar\,\dot RR^\dagger.
+\end{equation}
+(Proof: $\ii\hbar\,\partial_t(R\psi)=\ii\hbar\dot R\psi+R H\psi=(\ii\hbar\dot RR^\dagger+RHR^\dagger)R\psi$.) The extra term
+$\ii\hbar\dot RR^\dagger$ is the quantum analogue of the fictitious forces in a rotating frame. We use \cref{eq:frame} to derive the
+rotating-wave approximation in \cref{sec:rabi}.
+
+\section{Commutators and the uncertainty relation}
+\begin{theorem}[Robertson uncertainty relation]
+For any state $\ket\psi$ and observables $A$, $B$, with $\Delta A^2=\expval{A^2}-\expval{A}^2$,
+\begin{equation}
+  \Delta A\,\Delta B\ \ge\ \tfrac12\abs{\expval{[A,B]}}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Let $a=A-\expval A$, $b=B-\expval B$, $\ket f=a\ket\psi$, $\ket g=b\ket\psi$. By Cauchy--Schwarz,
+$\Delta A^2\Delta B^2=\braket ff\braket gg\ge|\braket fg|^2\ge(\operatorname{Im}\braket fg)^2$. Now
+$\braket fg-\braket gf=\expval{ab-ba}=\expval{[A,B]}$, so $\operatorname{Im}\braket fg=\expval{[A,B]}/(2\ii)$.
+\end{proof}
+For the position and momentum, $[x,p]=\ii\hbar$ gives $\Delta x\Delta p\ge\hbar/2$. For a spin $1/2$, $[\sigma_x,\sigma_y]=2\ii\sigma_z$ gives
+$\Delta\sigma_x\Delta\sigma_y\ge|\expval{\sigma_z}|$: a qubit cannot have well-defined values of two orthogonal spin components.
+This is precisely what makes the two bases of the BB84 protocol (\cref{sec:bb84}) incompatible.
+
+\section{Exercises}
+\begin{exercise}
+Show that $\det\e^X=\e^{\tr X}$ for a diagonalizable $X$. Deduce that $\e^{-\ii Ht}$ has determinant of modulus one when $H$ is Hermitian.
+\end{exercise}
+\begin{exercise}
+Using \cref{prop:bch}, show that $\e^{\ii\theta Z/2}X\e^{-\ii\theta Z/2}=\cos\theta\,X-\sin\theta\,Y$. Interpret it as a rotation of the
+$x$ axis about the $z$ axis.
+\end{exercise}
+\begin{exercise}
+Show that the error of the first-order Trotter formula is $\e^{(A+B)\delta}-\e^{A\delta}\e^{B\delta}=-\tfrac{\delta^2}{2}[A,B]+\order(\delta^3)$,
+and that the symmetric formula $\e^{A\delta/2}\e^{B\delta}\e^{A\delta/2}$ has an error $\order(\delta^3)$.
+\end{exercise}

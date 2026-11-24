@@ -1,0 +1,59 @@
+\chapter{Formula sheet}\label{app:formulas}
+
+\section*{Pauli matrices and rotations}
+\begin{align*}
+  &\sigma_j\sigma_k=\delta_{jk}I+\ii\varepsilon_{jkl}\sigma_l,\qquad(\vec a\cdot\vec\sigma)(\vec b\cdot\vec\sigma)=\vec a\cdot\vec b\,I+\ii(\vec a\times\vec b)\cdot\vec\sigma,\\
+  &\e^{-\ii\alpha\vec n\cdot\vec\sigma/2}=\cos\tfrac\alpha2\,I-\ii\sin\tfrac\alpha2\,\vec n\cdot\vec\sigma,\qquad HXH=Z,\quad HZH=X,\quad HYH=-Y,\\
+  &\hat\rho=\tfrac12(I+\vec r\cdot\vec\sigma),\qquad\tr\hat\rho^2=\tfrac12(1+|\vec r|^2),\qquad P_\pm^{(\vec n)}=\tfrac12(I\pm\vec n\cdot\vec\sigma).
+\end{align*}
+
+\section*{Tensor products}
+\begin{align*}
+  &(A\otimes B)(C\otimes D)=AC\otimes BD,\qquad\tr(A\otimes B)=\tr A\tr B,\\ &\tr_B(\ketbra{a_1}{a_2}\otimes\ketbra{b_1}{b_2})=\ketbra{a_1}{a_2}\braket{b_2}{b_1},\\
+  &\CNOT=\proj0\otimes I+\proj1\otimes X,\qquad\mathrm{CZ}=\proj0\otimes I+\proj1\otimes Z,\\ &\vec\sigma_1\cdot\vec\sigma_2=2\,\mathrm{SWAP}-I.
+\end{align*}
+
+\section*{Bell states}
+\[
+  \ket{\Phi^\pm}=\tfrac1{\sqrt2}(\ket{00}\pm\ket{11}),\quad\ket{\Psi^\pm}=\tfrac1{\sqrt2}(\ket{01}\pm\ket{10}),\quad
+  \mel{\Psi^-}{(\vec a\cdot\vec\sigma)\otimes(\vec b\cdot\vec\sigma)}{\Psi^-}=-\vec a\cdot\vec b .
+\]
+
+\section*{Hadamard and Fourier transforms}
+\[
+  H^{\otimes n}\ket x=\frac1{\sqrt{2^n}}\sum_z(-1)^{x\cdot z}\ket z,\qquad U_{\rm QFT}\ket x=\frac1{\sqrt Q}\sum_y\e^{2\pi\ii xy/Q}\ket y,\]
+\[
+  \sum_{y=0}^{Q-1}\e^{2\pi\ii ky/Q}=Q\,\delta_{k\equiv0\ (\mathrm{mod}\ Q)} .
+\]
+
+\section*{Harmonic oscillator and thermal states}
+\[
+  \hat a\ket n=\sqrt n\ket{n-1},\quad\hat a^\dagger\ket n=\sqrt{n+1}\ket{n+1},\quad\bar n=\frac1{\e^{\hbar\omega/k_BT}-1},\quad p_n=\frac{\bar n^n}{(\bar n+1)^{n+1}} .
+\]
+
+\section*{Master equation}
+\[
+  \dot{\hat\rho}=-\tfrac\ii\hbar[H,\hat\rho]+\sum_k\left(L_k\hat\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\hat\rho\}\right),\qquad\frac1{T_2}=\frac1{2T_1}+\frac1{T_\varphi},\]
+\[
+  \frac{\dd\expval A}{\dd t}=\tfrac\ii\hbar\expval{[H,A]}+\sum_k\expval{L_k^\dagger AL_k-\tfrac12\{L_k^\dagger L_k,A\}}.
+\]
+
+\section*{Algorithms}
+\begin{align*}
+  &\text{Grover: }\sin\tfrac\theta2=\sqrt{M/N},\quad P_k=\sin^2\tfrac{(2k+1)\theta}2,\quad k_{\rm opt}\approx\tfrac\pi4\sqrt{N/M}.\\
+  &\text{Shor: }a^r\equiv1\ (\mathrm{mod}\ N),\quad\text{factors }\gcdf(a^{r/2}\pm1,N),\quad N^2\le Q<2N^2,\quad y/Q\approx k/r.\\
+  &\text{Phase estimation: }P(\text{best }t\text{-bit estimate})\ge4/\pi^2.\\
+  &\text{Adiabatic: }t_f\gg\hbar\max\norm{\dd H/\dd s}/\delta_{\min}^2,\qquad\text{Landau--Zener: }P=\exp(-2\pi V^2/\hbar|\alpha|).\\
+  &\text{QUBO}\to\text{Ising: }x_i=\tfrac{1-s_i}2,\quad J_{ij}=\tfrac{Q_{ij}}4,\quad h_i=-\tfrac{Q_{ii}}2-\tfrac14\textstyle\sum_{j\neq i}Q_{ij}.
+\end{align*}
+
+\section*{Euclid's algorithm and continued fractions}
+$\gcdf(a,b)=\gcdf(b,a\bmod b)$, $\gcdf(a,0)=a$; e.g.\ $\gcdf(12,15)=\gcdf(15,12)=\gcdf(12,3)=\gcdf(3,0)=3$. The continued fraction of $x\in(0,1)$ is obtained by iterating $a_k=\lfloor1/x_k\rfloor$, $x_{k+1}=1/x_k-a_k$; the
+convergents $p_k/q_k$ satisfy $p_k=a_kp_{k-1}+p_{k-2}$, $q_k=a_kq_{k-1}+q_{k-2}$ (with the convention $x=[0;a_1,a_2,\dots]$, $p_{-1}=1,q_{-1}=0,p_0=0,q_0=1$). If $|x-p/q|<1/(2q^2)$, then $p/q$ is a convergent of $x$.
+
+\section*{Physical constants and scales}
+\[
+  h=6.626\times10^{-34}\,\mathrm{J\,s},\quad k_B=1.381\times10^{-23}\,\mathrm{J/K},\quad\Phi_0=\frac h{2e}=2.07\times10^{-15}\,\mathrm{Wb},\]
+\[
+  h\times1\,\mathrm{GHz}=k_B\times48\,\mathrm{mK}=4.14\,\mu\mathrm{eV}.
+\]

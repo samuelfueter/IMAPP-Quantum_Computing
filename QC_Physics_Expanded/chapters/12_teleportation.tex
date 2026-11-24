@@ -1,0 +1,101 @@
+\chapter{Quantum teleportation and dense coding}\label{ch:teleportation}
+
+Entanglement is a resource that can be consumed to perform communication tasks impossible classically. The two fundamental protocols are teleportation
+(1 Bell pair + 2 bits $\Rightarrow$ 1 qubit) and superdense coding (1 Bell pair + 1 qubit $\Rightarrow$ 2 bits).
+
+\section{Quantum teleportation}
+Quantum teleportation \cite{Bennett1993} transfers an unknown quantum state from one place to another. It uses a previously shared entangled pair and two bits of classical
+communication; the quantum system itself is not transmitted. Suppose Alice wants to send Bob the state of qubit $C$:
+\begin{equation}
+  \ket\psi_C=\alpha\ket0_C+\beta\ket1_C.
+\end{equation}
+She does not know $\alpha$ and $\beta$. Even if she did, a single copy of the state would not allow her to measure them, and the no-cloning theorem forbids making copies.
+Sending classical information about $\alpha,\beta$ would in any case require infinitely many bits.
+
+\paragraph{Bell basis.} The protocol relies on the Bell states \cref{eq:bellstates},
+\begin{equation}
+  \ket{\Phi^\pm}_{AB}=\frac1{\sqrt2}\left(\ket0_A\ket0_B\pm\ket1_A\ket1_B\right),\qquad\ket{\Psi^\pm}_{AB}=\frac1{\sqrt2}\left(\ket0_A\ket1_B\pm\ket1_A\ket0_B\right).
+\end{equation}
+Conversely, the product basis states can be expressed in the Bell basis (add and subtract the definitions):
+\begin{align}
+  \ket0\ket0&=\tfrac1{\sqrt2}\left(\ket{\Phi^+}+\ket{\Phi^-}\right),&\ket1\ket1&=\tfrac1{\sqrt2}\left(\ket{\Phi^+}-\ket{\Phi^-}\right),\nonumber\\
+  \ket0\ket1&=\tfrac1{\sqrt2}\left(\ket{\Psi^+}+\ket{\Psi^-}\right),&\ket1\ket0&=\tfrac1{\sqrt2}\left(\ket{\Psi^+}-\ket{\Psi^-}\right).\label{eq:prodtobell}
+\end{align}
+
+\paragraph{The protocol.} Alice and Bob share the pair $\ket{\Phi^+}_{AB}$. Alice holds qubits $A$ and $C$, Bob holds qubit $B$. The state of the three qubits is
+\begin{align}
+  \ket{\Phi^+}_{AB}\otimes\ket\psi_C&=\frac1{\sqrt2}\left(\ket0_A\ket0_B+\ket1_A\ket1_B\right)\otimes\left(\alpha\ket0_C+\beta\ket1_C\right)\nonumber\\
+  &=\frac1{\sqrt2}\left(\alpha\ket{00}_{AC}\ket0_B+\beta\ket{01}_{AC}\ket0_B+\alpha\ket{10}_{AC}\ket1_B+\beta\ket{11}_{AC}\ket1_B\right).
+\end{align}
+In the second line we regrouped the qubits $A$ and $C$, which are both in Alice's hands. We now use \cref{eq:prodtobell} to rewrite the pair $AC$ in the Bell basis. Collecting the
+terms multiplying each Bell state (for example, $\ket{\Phi^+}_{AC}$ appears in $\ket{00}_{AC}$ and $\ket{11}_{AC}$ with coefficient $\frac1{\sqrt2}$ each),
+\begin{align}
+  \ket{\Phi^+}_{AB}\otimes\ket\psi_C=\frac12\Big[&\ket{\Phi^+}_{AC}\otimes\left(\alpha\ket0_B+\beta\ket1_B\right)
+  +\ket{\Phi^-}_{AC}\otimes\left(\alpha\ket0_B-\beta\ket1_B\right)\nonumber\\
+  +&\ket{\Psi^+}_{AC}\otimes\left(\beta\ket0_B+\alpha\ket1_B\right)
+  +\ket{\Psi^-}_{AC}\otimes\left(\beta\ket0_B-\alpha\ket1_B\right)\Big].\label{eq:teleport}
+\end{align}
+No physical operation has been performed yet: this is the same state, written in a different basis. Note, however, that the coefficients $\alpha$ and $\beta$ now appear in Bob's qubit.
+
+Alice then performs a measurement of her two qubits $A$ and $C$ in the Bell basis. The state collapses onto one of the four terms of \cref{eq:teleport}, each with probability $1/4$
+(independently of $\alpha,\beta$: Alice learns nothing about the state). For example, if she obtains $\ket{\Phi^+}_{AC}$, the result of the collapse is
+$\ket{\Phi^+}_{AC}\otimes(\alpha\ket0_B+\beta\ket1_B)$, and Bob's qubit is already in the state $\ket\psi$. In the other three cases, Bob's qubit is in a state related to $\ket\psi$ by a
+known unitary operation. Alice sends Bob the result of her measurement (two classical bits), and Bob applies the corresponding correction:
+\begin{center}
+\begin{tabular}{@{}lll@{}}\toprule
+Alice's result & Bob's qubit & Bob's correction\\ \midrule
+$\ket{\Phi^+}$ & $\alpha\ket0+\beta\ket1$ & $I$\\
+$\ket{\Phi^-}$ & $\alpha\ket0-\beta\ket1$ & $Z$\\
+$\ket{\Psi^+}$ & $\beta\ket0+\alpha\ket1$ & $X$\\
+$\ket{\Psi^-}$ & $\beta\ket0-\alpha\ket1$ & $ZX$\\ \bottomrule
+\end{tabular}
+\end{center}
+In the last case, $ZX(\beta\ket0-\alpha\ket1)=Z(\beta\ket1-\alpha\ket0)=-(\alpha\ket0+\beta\ket1)$, which differs from $\ket\psi$ only by an irrelevant global phase. In all four cases Bob ends up
+with the state $\ket\psi$.
+
+\paragraph{Circuit.} On a quantum computer, the Bell measurement is done by the inverse of the Bell-state preparation circuit (CNOT then $H$) followed by a computational-basis measurement,
+and the corrections can be applied as classically controlled gates (qubits $A$ and $B$ start in $\ket{\Phi^+}$):
+\begin{center}
+\begin{quantikz}
+\lstick{$C:\ \ket\psi$} & \ctrl{1} & \gate{H} & \meter{} & \cw & \cwbend{2} \\
+\lstick{$A$} & \targ{} & \qw & \meter{} & \cwbend{1} & \\
+\lstick{$B$} & \qw & \qw & \qw & \gate{X} & \gate{Z} & \qw\ \rstick{$\ket\psi$}
+\end{quantikz}
+\end{center}
+The measured bits $(m_C,m_A)$ select the correction $Z^{m_C}X^{m_A}$. (Check: $\ket{\Psi^-}_{AC}$ is mapped by CNOT$_{C\to A}$ and $H_C$ to $m_C=m_A=1$.) The classical
+communication can even be replaced by quantum gates (``deferred measurement''): a CNOT from $A$ to $B$ and a CZ from $C$ to $B$.
+
+\paragraph{Remarks.}
+\begin{itemize}
+  \item \emph{No faster-than-light communication.} Until Bob receives Alice's two bits, his qubit is in an equal mixture of the four states of the table:
+  $\frac14\sum_k\sigma_k\proj\psi\sigma_k=\frac I2$, the maximally mixed state, independently of $\ket\psi$ (this is the identity used for the depolarizing channel).
+  \item \emph{No cloning.} After Alice's measurement, qubit $C$ is left in a Bell state with $A$ and no longer carries any information about $\alpha$ and $\beta$. The original state is destroyed.
+  \item \emph{Experiments.} Teleportation of photon polarization was first demonstrated in 1997 \cite{Bouwmeester1997}, later between atoms, ions, superconducting qubits, over 143\,km
+  between Canary islands, and from ground to the Micius satellite (1400\,km, 2017).
+  \item \emph{Teleportation is a computing primitive.} Gate teleportation (Gottesman--Chuang 1999) applies a gate by teleporting through a suitably prepared entangled state; it is the
+  basis of measurement-based quantum computing and of the fault-tolerant implementation of the $T$ gate (magic states).
+\end{itemize}
+
+\section{Entanglement swapping}
+If Alice shares $\ket{\Phi^+}_{A_1B_1}$ with Charlie and Charlie shares $\ket{\Phi^+}_{C_2B_2}$ with Bob, a Bell measurement by Charlie on $B_1,C_2$ ``teleports'' the entanglement:
+$A_1$ and $B_2$, which never interacted, end up in a Bell state (up to a known Pauli correction). The proof is \cref{eq:teleport} with $\ket\psi_C$ replaced by half of a Bell pair.
+Entanglement swapping is the elementary step of \emph{quantum repeaters}, which distribute entanglement over long distances by swapping between short links, combined with
+entanglement purification and quantum memories.
+
+\section{Superdense coding}
+Conversely, a shared Bell pair allows Alice to send \emph{two} classical bits by transmitting a \emph{single} qubit (Bennett and Wiesner, 1992). Alice and Bob share $\ket{\Phi^+}_{AB}$.
+To send the bits $(b_1,b_2)$, Alice applies $Z^{b_1}X^{b_2}$ to her qubit:
+\begin{equation}
+  (I)\ket{\Phi^+}=\ket{\Phi^+},\quad(X)\ket{\Phi^+}=\ket{\Psi^+},\quad(Z)\ket{\Phi^+}=\ket{\Phi^-},\quad(ZX)\ket{\Phi^+}=-\ket{\Psi^-},
+\end{equation}
+and sends her qubit to Bob, who performs a Bell measurement on both qubits and recovers the two bits, since the four Bell states are orthogonal. This does not contradict the
+Holevo bound (one qubit cannot carry more than one bit of accessible information): the second qubit, sent earlier, is also needed.
+
+\section{Exercises}
+\begin{exercise}
+Derive \cref{eq:teleport} explicitly for the $\ket{\Psi^\pm}$ terms.
+\end{exercise}
+\begin{exercise}
+Show that if the shared pair is the Werner state $\hat\rho_W$ instead of $\ket{\Phi^+}$ (with the singlet replaced by $\ket{\Phi^+}$), Bob receives $p\proj\psi+(1-p)I/2$, and that the
+average fidelity $\bar F=\frac{1+p}2$ exceeds the best classical value $2/3$ (measure and send) only if $p>1/3$, which coincides with the entanglement threshold.
+\end{exercise}

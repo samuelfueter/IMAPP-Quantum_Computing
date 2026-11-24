@@ -1,0 +1,274 @@
+\chapter{Physical implementations of qubits}\label{ch:implementations}
+
+\section{Requirements and conflicting constraints}
+To build a quantum computer, a physical system must satisfy a number of requirements, formulated by DiVincenzo \cite{DiVincenzo2000}:
+\begin{enumerate}
+  \item robust qubits, i.e.\ well-defined two-level systems, in a scalable architecture, that keep their quantum coherence long enough;
+  \item the possibility to prepare the qubits in a known initial state (e.g.\ by cooling to the ground state, \cref{sec:thermal}, or by optical pumping);
+  \item the possibility to manipulate them with single-qubit gates;
+  \item a controllable coupling between qubits, to perform two-qubit gates such as the CNOT (together, 3 and 4 give a universal gate set, \cref{sec:universal});
+  \item an efficient, qubit-specific measurement of the final state;
+\end{enumerate}
+and, for quantum communication, (6) the ability to convert stationary qubits into flying qubits (photons) and (7) to transmit them faithfully.
+
+These requirements are partly contradictory. A robust qubit must be well isolated from its environment, so that it does not decohere. At the same time it must be accessible: it must interact strongly with the control fields, with the
+other qubits and with the measuring apparatus. \emph{Every interaction channel used for control is also a channel through which noise can enter.} All physical implementations are compromises between isolation and accessibility.
+
+A useful figure of merit is the ratio
+\begin{equation}
+  n_{\rm op}=\frac{\tau_Q}{\tau_{\rm op}}
+\end{equation}
+between the coherence time $\tau_Q$ of the qubits ($T_2$, \cref{ch:open}) and the time $\tau_{\rm op}$ needed to perform an elementary operation. It gives the number of operations that can be carried out before the quantum information
+is lost, and its inverse is a rough lower bound on the error per gate. \Cref{tab:platforms} gives order-of-magnitude estimates.
+\begin{table}[h]\centering
+\begin{tabular}{@{}lccc@{}}\toprule
+System & $\tau_Q$ (s) & $\tau_{\rm op}$ (s) & $n_{\rm op}$\\ \midrule
+Nuclear spin (NMR) & $10^{-2}$--$10^{8}$ & $10^{-3}$--$10^{-6}$ & $10^{5}$--$10^{14}$\\
+Optical cavity & $10^{-5}$ & $10^{-14}$ & $10^{9}$\\
+Superconducting (transmon) & $10^{-4}$ & $10^{-8}$ & $10^{4}$\\
+Ion trap & $10^{-1}$ & $10^{-14}$ & $10^{13}$\\
+Neutral atoms (Rydberg) & $1$ & $10^{-7}$--$10^{-6}$ & $10^{6}$\\
+Electron spin in Si quantum dot & $10^{-3}$--$10^{-1}$ & $10^{-8}$--$10^{-7}$ & $10^{5}$\\ \bottomrule
+\end{tabular}
+\caption{Coherence time $\tau_Q$, operation time $\tau_{\rm op}$ and number of operations $n_{\rm op}=\tau_Q/\tau_{\rm op}$ (orders of magnitude; first rows adapted from \cite{NielsenChuang}, with added estimates for superconducting qubits,
+neutral atoms and spins). The values of $\tau_{\rm op}$ for optical systems and ion traps are idealized lower limits; practical two-qubit gates are much slower ($\sim10$--$100\,\mu$s for ions).}\label{tab:platforms}
+\end{table}
+
+\paragraph{The harmonic oscillator and the need for nonlinearity.} Many of these systems are built from harmonic oscillators: modes of the electromagnetic field, vibrational modes of trapped ions, or LC circuits. A harmonic oscillator alone is
+not a good qubit. Its levels are equally spaced (\cref{sec:oscillator}), so a field that drives the transition $\ket0\to\ket1$ also drives $\ket1\to\ket2$, and the system leaves the qubit subspace. Moreover, a harmonic oscillator driven by a
+classical field stays in a coherent state, which behaves classically: linear systems cannot produce the non-classical states needed for computation. The two-level truncation of the damped oscillator of \cref{ch:open} is justified only when
+this leakage is suppressed. \emph{A nonlinearity (anharmonicity) is therefore needed}, both to isolate two levels and to make qubits interact. The various implementations differ mainly in how they provide it: atoms are naturally anharmonic;
+superconducting circuits use the Josephson junction; photons need atoms or nonlinear crystals.
+
+\section{Superconducting circuits}\label{sec:transmon}
+The qubits are electrical circuits made of superconducting metals (aluminium, niobium, tantalum) and cooled to about $10$\,mK. They are macroscopic (micrometres to millimetres) yet quantum: superconductivity removes dissipation, and the
+collective variables of the circuit (charge and flux) obey quantum mechanics.
+
+\subsection{Quantization of an LC circuit}\label{sec:lc}
+\begin{origin}[: circuit quantum mechanics]
+Consider an LC circuit and choose as coordinate the node flux $\Phi(t)=\int^tV\dd t'$ (the time integral of the voltage across the capacitor). The energy stored in the capacitor, $\frac12CV^2=\frac12C\dot\Phi^2$, plays the role of a kinetic
+energy, and the energy of the inductor, $\frac{\Phi^2}{2L}$ (since $\Phi=LI$), that of a potential energy. The Lagrangian
+\begin{equation}
+  \mathcal L=\frac C2\dot\Phi^2-\frac{\Phi^2}{2L}
+\end{equation}
+gives the equation of motion $C\ddot\Phi=-\Phi/L$, i.e.\ Kirchhoff's law. The momentum conjugate to $\Phi$ is $\partial\mathcal L/\partial\dot\Phi=C\dot\Phi=Q$, the charge on the capacitor, and the Hamiltonian is
+\begin{equation}
+  H=\frac{Q^2}{2C}+\frac{\Phi^2}{2L}.
+\end{equation}
+Canonical quantization, $[\hat\Phi,\hat Q]=\ii\hbar$, gives a harmonic oscillator (mass $C$, frequency $\omega_r=1/\sqrt{LC}$), with $\hat\Phi=\Phi_{\rm zpf}(\hat a+\hat a^\dagger)$, $\Phi_{\rm zpf}=\sqrt{\hbar Z/2}$, $Z=\sqrt{L/C}$. For
+$\omega_r/2\pi=5$\,GHz, $\hbar\omega_r/k_B=0.24$\,K: at $10$\,mK the circuit is in its quantum ground state ($\bar n\approx10^{-11}$). Microwave resonators (coplanar waveguides) are LC oscillators of this kind.
+\end{origin}
+
+\subsection{The Josephson junction}
+\begin{origin}[: the Josephson relations]
+A Josephson junction is a thin insulating barrier (about 1\,nm of AlO$_x$) between two superconductors. Each superconductor is described by a macroscopic wave function of the Cooper pairs, $\psi_k=\sqrt{n_k}\e^{\ii\theta_k}$ ($k=1,2$).
+Cooper pairs tunnel through the barrier. Following Feynman (Lectures, vol.~III, chap.~21), the two amplitudes obey coupled equations exactly like the double well of \cref{sec:doublewell},
+$\ii\hbar\dot\psi_1=U_1\psi_1+K\psi_2$, $\ii\hbar\dot\psi_2=U_2\psi_2+K\psi_1$, with $U_1-U_2=qV$, $q=2e$. Separating real and imaginary parts and writing $\varphi=\theta_2-\theta_1$, one obtains
+\begin{equation}
+  I=I_c\sin\varphi,\qquad\dot\varphi=\frac{2e}\hbar V,
+\end{equation}
+the \emph{DC and AC Josephson relations} (Josephson, 1962). The second relation means $\varphi=2\pi\Phi/\Phi_0$, with the flux quantum $\Phi_0=h/2e$. The energy stored in the junction is $\int IV\dd t=-E_J\cos\varphi$, with the
+\emph{Josephson energy} $E_J=\hbar I_c/2e$. For small $\varphi$, $I\approx I_c\varphi$ is the relation of an inductor with $L_J=\hbar/(2eI_c)$; for larger $\varphi$ the inductance $L_J/\cos\varphi$ depends on the current:
+\emph{the Josephson junction is a non-linear, non-dissipative inductor}, the only such element available in electronics.
+\end{origin}
+
+\subsection{The transmon}
+Replacing the inductor of the LC circuit by a junction (shunted by a capacitance $C$) gives, with the number of Cooper pairs $\hat n=\hat Q/2e$ and the phase $\hat\varphi$, conjugate variables $[\hat\varphi,\hat n]=\ii$,
+\begin{equation}\label{eq:transmon}
+  H=4E_C(\hat n-n_g)^2-E_J\cos\hat\varphi,\qquad E_C=\frac{e^2}{2C},
+\end{equation}
+where $n_g$ is an offset charge set by a gate voltage or by stray charges. For $E_J\lesssim E_C$ this is the \emph{Cooper-pair box} (Nakamura et al., 1999, the first superconducting qubit): the qubit states are $n=0$ and $n=1$ near $n_g=1/2$,
+coupled by $E_J/2$, a realization of the double-well model. Its energy depends strongly on $n_g$, so charge noise dephases it within nanoseconds.
+
+The \emph{transmon} (``transmission-line shunted plasma oscillation'' qubit) \cite{Koch2007} works in the opposite regime $E_J/E_C\sim50$. The phase is then localized near $\varphi=0$ and we may expand the cosine,
+$-E_J\cos\varphi\approx-E_J+\frac{E_J}2\varphi^2-\frac{E_J}{24}\varphi^4$. The quadratic part is an oscillator with
+\begin{equation}
+  \hbar\omega_p=\sqrt{8E_JE_C},\qquad\hat\varphi=\left(\frac{2E_C}{E_J}\right)^{1/4}(\hat b+\hat b^\dagger),\qquad\hat n=\frac\ii2\left(\frac{E_J}{2E_C}\right)^{1/4}(\hat b^\dagger-\hat b).
+\end{equation}
+(Check: $4E_C\hat n^2+\frac{E_J}2\hat\varphi^2$ has the form $\frac{p^2}{2m}+\frac12m\omega^2x^2$ with ``mass'' $1/8E_C$ and $m\omega^2=E_J$.) The quartic term is a perturbation. Using $\mel m{(\hat b+\hat b^\dagger)^4}m=6m^2+6m+3$ and
+$\frac{E_J}{24}\left(\frac{2E_C}{E_J}\right)=\frac{E_C}{12}$, first-order perturbation theory gives
+\begin{equation}
+  E_m\approx-E_J+\sqrt{8E_JE_C}\left(m+\tfrac12\right)-\frac{E_C}{12}\left(6m^2+6m+3\right).
+\end{equation}
+The transition frequencies are $E_{01}=\sqrt{8E_JE_C}-E_C$ and $E_{12}=\sqrt{8E_JE_C}-2E_C$: the \emph{anharmonicity} is
+\begin{equation}
+  \alpha=E_{12}-E_{01}=-E_C.
+\end{equation}
+Typical values are $E_{01}/h\approx4$--$6$\,GHz and $E_C/h\approx200$--$300$\,MHz. The anharmonicity is what makes the two lowest levels a qubit: a microwave pulse resonant with $E_{01}$ is detuned by $\alpha$ from $E_{12}$, and pulses longer than
+$\sim1/|\alpha|\approx5$\,ns do not cause leakage (the DRAG technique allows even shorter pulses). The transmon is, in essence, the anharmonic oscillator of the beginning of these notes. Its decisive advantage is that the dependence on $n_g$
+(``charge dispersion'') decreases exponentially, as $\e^{-\sqrt{8E_J/E_C}}$, because tunnelling of the phase between $\varphi$ and $\varphi+2\pi$ (which is what feels $n_g$) is exponentially suppressed. At $E_J/E_C=50$ the charge noise is
+reduced by $\sim10^{-9}$ while the anharmonicity is reduced only polynomially.
+
+Replacing the single junction by two junctions in a loop (a SQUID) makes the effective $E_J=2E_J^{(0)}|\cos(\pi\Phi_{\rm ext}/\Phi_0)|$ tunable by an external magnetic flux, and therefore the qubit frequency. This is used for tunable couplers and
+two-qubit gates, at the price of sensitivity to flux noise. \emph{Flux qubits} (used in D-Wave annealers) instead have a double-well potential in $\varphi$, with clockwise and anticlockwise persistent currents as the two states.
+
+\paragraph{Gates and coupling.} Single-qubit gates are microwave pulses (Rabi oscillations, \cref{sec:rabi}), with $20$--$50$\,ns duration. The qubits are coupled through capacitors or inductances (the latter acting like a transformer), or through
+a common microwave resonator, giving the $XY$ or $ZZ$ interactions of \cref{ch:gates}. Two-qubit gates take $30$--$300$\,ns with fidelities up to $99.9\%$.
+
+\subsection{Circuit QED: the Jaynes--Cummings model and dispersive readout}\label{sec:jc}
+\begin{origin}[: the Jaynes--Cummings Hamiltonian]
+Consider a two-level system (an atom, or a transmon) of frequency $\omega_q$ coupled to a single mode of frequency $\omega_r$ of a cavity or resonator. The electric field of the mode at the position of the atom is $\hat E=E_{\rm zpf}(\hat a+\hat a^\dagger)$,
+where $E_{\rm zpf}=\sqrt{\hbar\omega_r/2\varepsilon_0V}$ is the vacuum fluctuation of the field in the mode volume $V$ (obtained by quantizing the mode as an oscillator, \cref{sec:oscillator}, with energy $\int\varepsilon_0E^2\dd V$). The dipole coupling
+$-\hat d\cdot\hat E$ with $\hat d=d(\sigma^++\sigma^-)$ gives
+\begin{equation}
+  H=\hbar\omega_r\hat a^\dagger\hat a+\frac{\hbar\omega_q}2\sigma_z+\hbar g(\sigma^++\sigma^-)(\hat a+\hat a^\dagger),\qquad\hbar g=-dE_{\rm zpf},
+\end{equation}
+with $\sigma_z=\proj e-\proj g$ here. In the interaction picture, $\sigma^+\hat a$ and $\sigma^-\hat a^\dagger$ oscillate at $\omega_q-\omega_r$, while $\sigma^+\hat a^\dagger$ and $\sigma^-\hat a$ oscillate at $\omega_q+\omega_r$. Near resonance and for
+$g\ll\omega$, the fast terms are dropped (rotating-wave approximation, as in \cref{sec:rabi}), which gives the \emph{Jaynes--Cummings Hamiltonian} (1963)
+\begin{equation}\label{eq:jc}
+  H_{\rm JC}=\hbar\omega_r\hat a^\dagger\hat a+\frac{\hbar\omega_q}2\sigma_z+\hbar g\left(\sigma^+\hat a+\sigma^-\hat a^\dagger\right).
+\end{equation}
+The coupling exchanges one excitation between the atom and the field: an absorbed photon excites the atom, an emitted photon de-excites it. For a transmon the same Hamiltonian follows from a capacitive coupling between the charge $\hat n$ of the
+transmon and the voltage of the resonator.
+\end{origin}
+$H_{\rm JC}$ conserves the number of excitations $\hat a^\dagger\hat a+\proj e$, so it is block diagonal in the two-dimensional subspaces $\{\ket{e,n},\ket{g,n+1}\}$, in which it reads (up to a constant)
+\begin{equation}
+  H_n=\hbar\begin{pmatrix}\Delta/2&g\sqrt{n+1}\\g\sqrt{n+1}&-\Delta/2\end{pmatrix},\qquad\Delta=\omega_q-\omega_r.
+\end{equation}
+This is the two-level problem of \cref{ch:twolevel}: the eigenenergies are split by $\hbar\sqrt{\Delta^2+4g^2(n+1)}$.
+\begin{itemize}
+  \item \emph{Resonance} ($\Delta=0$): the eigenstates are the ``dressed states'' $(\ket{e,n}\pm\ket{g,n+1})/\sqrt2$, split by $2\hbar g\sqrt{n+1}$. An excited atom in the empty cavity exchanges its excitation with the field at the
+  \emph{vacuum Rabi frequency} $2g$. Strong coupling requires $g$ larger than the cavity and atom decay rates ($g\gg\kappa,\gamma$). The $\sqrt{n+1}$ dependence makes the spectrum anharmonic: \emph{the atom acts as a giant optical nonlinearity}.
+  \item \emph{Dispersive regime} ($|\Delta|\gg g$): there is no real exchange of excitations, but second-order perturbation theory gives energy shifts. The state $\ket{e,n}$ couples to $\ket{g,n+1}$ (energy difference $\hbar\Delta$), and is shifted
+  by $+\hbar g^2(n+1)/\Delta$; the state $\ket{g,n}$ couples to $\ket{e,n-1}$ (energy difference $-\hbar\Delta$), and is shifted by $-\hbar g^2n/\Delta$. These shifts are reproduced, up to a constant, by
+  \begin{equation}\label{eq:dispersive}
+    H_{\rm disp}=\hbar\left(\omega_r+\chi\sigma_z\right)\hat a^\dagger\hat a+\frac{\hbar(\omega_q+\chi)}2\sigma_z,\qquad\chi=\frac{g^2}\Delta .
+  \end{equation}
+  The resonator frequency depends on the qubit state: $\omega_r\pm\chi$. Sending a microwave pulse through the resonator and measuring the phase of the transmitted or reflected signal measures $\sigma_z$ without exchanging energy with the qubit (a
+  quantum non-demolition measurement). This \emph{dispersive readout} is used in all superconducting quantum computers (with $\chi/2\pi\sim1$\,MHz, measurement times of $100$--$500$\,ns and quantum-limited parametric amplifiers). Historically,
+  the readout was first performed with SQUIDs (superconducting quantum interference devices). The term $\chi\sigma_z\hat a^\dagger\hat a$ can also be read the other way round: each photon in the resonator shifts the qubit frequency by $2\chi$ (AC Stark shift).
+  For a transmon, the multilevel structure modifies $\chi$ to $\chi=\frac{g^2}{\Delta}\frac{\alpha}{\Delta+\alpha}$.
+\end{itemize}
+The circuits are fabricated with lithographic techniques, which makes them easy to scale, and their parameters can be designed at will. The price is a strong coupling to the many degrees of freedom of the solid (two-level defects in amorphous oxides,
+quasiparticles, flux noise), so the main problem is noise and decoherence: $T_1,T_2\sim100\,\mu$s--$1$\,ms today, compared with $1$\,ns in 1999.
+
+\section{Optical cavity quantum electrodynamics}
+The Jaynes--Cummings model was first realized with atoms in optical and microwave cavities (Haroche, Kimble, Rempe; Nobel prize 2012 for Haroche and Wineland). The qubit is a single photon in two modes, and gates are made with phase shifters,
+beam splitters and the atom-induced nonlinearity. The strength of the coupling is set by $g\propto E_{\rm zpf}\propto1/\sqrt V$: small mode volumes and long photon lifetimes (high finesse) are needed. The drawback is an intrinsic conflict.
+A strong light--matter coupling requires the photon to stay in the cavity for a long time, whereas getting the photon in and out of the cavity requires a strong coupling to the outside. Cavity QED is now mostly used for quantum networks
+(atom--photon interfaces) rather than for computing.
+
+\section{Trapped ions}\label{sec:ions}
+\paragraph{Trapping.} By Earnshaw's theorem, no static electric field configuration can trap a charge in three dimensions ($\nabla^2\phi=0$ forbids a minimum). The \emph{Paul trap} uses an oscillating quadrupole field
+$\phi\propto(x^2-y^2)\cos\Omega t$. A particle in a rapidly oscillating field $E_0(\vec r)\cos\Omega t$ performs a fast micromotion whose averaged kinetic energy acts as a \emph{ponderomotive} (pseudo-)potential,
+\begin{equation}
+  U_{\rm eff}(\vec r)=\frac{q^2E_0(\vec r)^2}{4m\Omega^2},
+\end{equation}
+which is minimal where the field vanishes, at the centre of the quadrupole. (Derivation: write $\vec r=\vec R+\vec\xi$ with the fast oscillation $\vec\xi=-\frac{qE_0}{m\Omega^2}\cos\Omega t$; average the force over one period to second order in $\xi$.)
+The ions are confined in vacuum, cooled by lasers to the motional ground state, and form a linear crystal (a chain) because of their Coulomb repulsion. The collective vibrations of the chain are harmonic modes of frequency $\nu\sim1$--$5$\,MHz.
+
+\paragraph{Qubits.} The qubit is encoded in two long-lived internal levels of each ion, typically hyperfine levels of the ground state (where the nuclear spin plays a role, e.g.\ $^{171}$Yb$^+$ at $12.6$\,GHz), or a ground and a metastable level
+(optical qubits, e.g.\ $^{40}$Ca$^+$). Hyperfine qubits have coherence times of seconds to an hour. Single-qubit gates are performed with laser pulses (or microwaves): Rabi oscillations again.
+
+\paragraph{Coupling internal and motional states.} A laser of wave vector $k$ and frequency $\omega$ acting on an ion at position $\hat x=x_0(\hat a+\hat a^\dagger)$, $x_0=\sqrt{\hbar/2m\nu}$, gives in the RWA
+\begin{equation}
+  H=\frac{\hbar\Omega}2\left(\sigma^+\e^{\ii(k\hat x-\omega t)}+\text{h.c.}\right),\qquad k\hat x=\eta(\hat a+\hat a^\dagger),
+\end{equation}
+with the \emph{Lamb--Dicke parameter} $\eta=kx_0\sim0.1$. Expanding $\e^{\ii\eta(\hat a+\hat a^\dagger)}\approx1+\ii\eta(\hat a+\hat a^\dagger)$ and going to the interaction picture with respect to $\hbar\omega_0\sigma_z/2+\hbar\nu\hat a^\dagger\hat a$, the terms
+oscillate at $\omega-\omega_0$ (carrier), $\omega-\omega_0+\nu$ and $\omega-\omega_0-\nu$ (sidebands). Tuning the laser to the \emph{red sideband} $\omega=\omega_0-\nu$ and keeping only the resonant terms,
+\begin{equation}
+  H_{\rm red}=\frac{\ii\hbar\eta\Omega}2\left(\sigma^+\hat a-\sigma^-\hat a^\dagger\right),
+\end{equation}
+which is again a Jaynes--Cummings Hamiltonian, with the phonon playing the role of the photon. The blue sideband $\omega=\omega_0+\nu$ gives the ``anti-JC'' coupling $\sigma^+\hat a^\dagger+\sigma^-\hat a$. The ions interact through their Coulomb
+repulsion, so their collective vibrations, the phonons of the harmonic trap, serve as a \emph{bus} between the qubits: in the Cirac--Zoller gate \cite{CiracZoller1995} (1995), a red-sideband $\pi$ pulse maps the state of the control ion onto the
+common motional mode, a conditional $2\pi$ rotation on the target ion through an auxiliary level gives a phase $-1$ only if both the phonon and the target are excited, and the mapping is reversed: a CZ gate.
+
+\paragraph{Mølmer--Sørensen gate.} Today's ion-trap computers use the Mølmer--Sørensen gate (1999): both ions are illuminated by two frequencies $\omega_0\pm(\nu+\delta)$. The phonons are only virtually excited, and second-order perturbation theory gives the
+effective interaction
+\begin{equation}
+  H_{\rm MS}=\hbar\frac{(\eta\Omega)^2}{\delta}\,\sigma_x^{(1)}\sigma_x^{(2)},
+\end{equation}
+which is insensitive to the temperature of the motion to first order. After the time $t$ with $(\eta\Omega)^2t/\delta=\pi/4$ it produces $\e^{-\ii\frac\pi4X_1X_2}$, which maps $\ket{00}\to(\ket{00}-\ii\ket{11})/\sqrt2$, a maximally entangling gate.
+Because all ions in a chain share the motional modes, any pair can be coupled: ion traps have all-to-all connectivity.
+
+\paragraph{Readout.} State-dependent fluorescence: a laser drives a cycling transition from one qubit state only. An ion in that state scatters millions of photons and appears bright; in the other state it stays dark. Fidelities exceed $99.9\%$.
+
+Ion traps offer excellent coherence times and the best gate fidelities ($99.9\%$ two-qubit, $99.9999\%$ single-qubit). The main drawbacks are the slowness of the gates ($10$--$100\,\mu$s), which becomes more severe as the number of ions grows
+(the motional spectrum becomes crowded), heating of the motional modes, and the difficulty of scaling a single chain beyond $\sim50$ ions. Modular architectures shuttle ions between zones of segmented traps (``quantum CCD'') or connect traps with photons.
+
+\section{Nuclear magnetic resonance}\label{sec:nmr}
+The qubits are the spins of atomic nuclei (${}^1$H, ${}^{13}$C, ${}^{19}$F, \dots) in a molecule placed in a strong magnetic field $B_0\sim10$\,T. Each spin has the Zeeman Hamiltonian $-\hbar\gamma B_0I_z$ (\cref{sec:spin}), with Larmor frequencies of hundreds of MHz,
+shifted slightly by the electronic environment (\emph{chemical shift}): different nuclei of the molecule have different frequencies and can be addressed individually. Gates are performed by radio-frequency pulses, exactly as the Rabi problem of
+\cref{sec:rabi} (in fact NMR is where Rabi oscillations, rotating frames, $T_1$ and $T_2$ (Bloch, 1946) and spin echoes (Hahn, 1950) were invented). The qubits are coupled through the chemical bonds of the molecule: the \emph{$J$-coupling}
+$H_J=2\pi\hbar J_{12}I_z^{(1)}I_z^{(2)}$ ($J\sim10$--$200$\,Hz), mediated by the electrons (hyperfine interaction with the nucleus, transmitted along the bond), which is an Ising interaction and gives the CZ gate of \cref{ch:gates}. The readout detects the voltage induced
+in a coil by the precessing spins (free induction decay). NMR provided the first demonstrations of many quantum algorithms, including Grover's (1998), quantum error correction (1998) \cite{Cory1998} and Shor's algorithm (2001) \cite{Vandersypen2001}.
+
+Its fundamental drawback is that the experiment is performed on a macroscopic ensemble of $\sim10^{18}$ molecules at room temperature. The nuclear polarization is tiny, $\epsilon=\hbar\gamma B_0/2k_BT\sim10^{-5}$ (\cref{sec:thermal}), so the state is
+$\hat\rho\approx\frac{I}{2^n}+\epsilon\,\Delta\hat\rho$, almost maximally mixed. One prepares a \emph{pseudo-pure} state $\hat\rho=(1-p)\frac I{2^n}+p\proj{0\dots0}$ by averaging over several experiments; the identity part gives no signal, and the
+deviation behaves like a pure state. But the weight $p\sim n\epsilon/2^n$ of the effective pure state decreases exponentially with the number of qubits, which limits NMR to about ten qubits. (The states are also so mixed that they are separable:
+NMR experiments do not involve entanglement, which raised a debate about their ``quantumness''.)
+
+\section{Electron spins in quantum dots}\label{sec:spinqubits}
+In the proposal of Loss and DiVincenzo (1998), the qubit is the spin of a single electron confined in a semiconductor quantum dot (an ``artificial atom'' defined by gate electrodes in a GaAs or Si/SiGe heterostructure). Single-qubit gates use
+electron spin resonance (an oscillating magnetic field) or electric-dipole spin resonance with a micromagnet. The two-qubit interaction is the \emph{exchange interaction}, controlled by the voltage of the gate between two dots.
+
+\begin{origin}[: the exchange interaction from the Hubbard model]
+Consider two dots, each with one orbital, and two electrons. The Hubbard model is
+\begin{equation}
+  H=-t\sum_{\sigma=\uparrow,\downarrow}\left(c_{1\sigma}^\dagger c_{2\sigma}+c_{2\sigma}^\dagger c_{1\sigma}\right)+U\sum_{i=1,2}n_{i\uparrow}n_{i\downarrow},
+\end{equation}
+where $t$ is the tunnelling amplitude between the dots and $U$ the charging energy of a doubly occupied dot. For $U\gg t$, the low-energy states have one electron per dot: four spin states, the singlet $S$ and the triplet $T_{0,\pm}$. Tunnelling
+couples the singlet (and only the singlet) to the doubly occupied states, at energy $U$. Indeed the Pauli principle forbids two electrons with the same spin in the same orbital, so the triplets cannot hop at all. The coupling of the singlet
+$\frac1{\sqrt2}(\ket{\uparrow,\downarrow}-\ket{\downarrow,\uparrow})$ to the symmetric combination of doubly occupied states $\frac1{\sqrt2}(\ket{\uparrow\downarrow,0}+\ket{0,\uparrow\downarrow})$ has the matrix element $-2t$. Second-order perturbation
+theory therefore lowers the singlet by $(2t)^2/U$ and leaves the triplets unchanged:
+\begin{equation}
+  E_T-E_S=J=\frac{4t^2}U,\qquad H_{\rm eff}=J\left(\vec S_1\cdot\vec S_2-\tfrac14\right)
+\end{equation}
+(with $\vec S$ in units of $\hbar$; $\vec S_1\cdot\vec S_2=-\frac34$ for the singlet and $+\frac14$ for the triplets). The same mechanism (kinetic exchange) is responsible for antiferromagnetism in Mott insulators, and the Ising model of \cref{ch:annealing}
+is its anisotropic limit. Since $t$ depends exponentially on the barrier between the dots, $J$ can be switched on and off by a gate voltage over many orders of magnitude.
+\end{origin}
+Pulsing $J$ for a time $\tau$ with $J\tau/\hbar=\pi/2$ gives the $\sqrt{\mathrm{SWAP}}$ gate (\cref{ch:gates}). The readout uses spin-to-charge conversion: a spin-dependent tunnelling event changes the charge of the dot, which is detected by a nearby
+charge sensor (Elzerman et al.\ 2004). The main decoherence source in GaAs is the hyperfine interaction with $\sim10^6$ nuclear spins; silicon, isotopically purified in $^{28}$Si (nuclear spin zero), gives coherence times of milliseconds.
+Spin qubits are tiny ($\sim100$\,nm) and compatible with CMOS fabrication, which makes them attractive for scaling; the challenge is the variability between dots and the wiring of many gates.
+
+\section{Neutral atoms and Rydberg blockade}
+Neutral atoms (Rb, Cs, Sr, Yb) are trapped individually in arrays of optical tweezers (tightly focused laser beams, which attract the atom by the AC Stark shift towards the intensity maximum), with hundreds to thousands of sites, rearranged by
+moving tweezers. The qubit is a pair of hyperfine or nuclear-spin levels of the ground state, with seconds of coherence. Atoms in the ground state hardly interact. Two-qubit gates use \emph{Rydberg states}, highly excited states with principal quantum
+number $n\sim50$--$100$, whose huge size ($\propto n^2$) gives a strong van der Waals interaction $V(r)=C_6/r^6$, with $C_6\propto n^{11}$.
+
+\paragraph{Rydberg blockade.} If two atoms closer than the \emph{blockade radius} $R_b=(C_6/\hbar\Omega)^{1/6}$ (several $\mu$m) are driven to the Rydberg state $\ket r$ with Rabi frequency $\Omega$, the doubly excited state $\ket{rr}$ is shifted out of resonance by
+$V\gg\hbar\Omega$: only one atom can be excited. A CZ gate follows (Jaksch et al., 2000). Let only $\ket1$ be coupled to $\ket r$. Apply a $\pi$ pulse on the control atom, a $2\pi$ pulse on the target, and a $\pi$ pulse on the control. A $2\pi$ Rabi
+rotation multiplies a state by $-1$ (\cref{sec:simplest}: $U(2\pi/\omega)=-I$). Then $\ket{00}\to\ket{00}$; $\ket{01}\to-\ket{01}$ (target $2\pi$); $\ket{10}\to-\ket{10}$ (control $\pi+\pi=2\pi$); $\ket{11}\to-\ket{11}$ (the control goes to $\ket r$, the
+target is blocked and does nothing, and the control returns with a sign $-1$). The result $\diag(1,-1,-1,-1)=\mathrm{CZ}\cdot(Z\otimes Z)$ is a CZ up to single-qubit $Z$ gates. Neutral-atom processors have demonstrated two-qubit fidelities above
+$99.5\%$, parallel gates on hundreds of atoms, and the first logical-qubit algorithms (2023--2024). They are also natural analog simulators and annealers of Ising models, since the blockade implements the constraint ``no two neighbours excited''.
+
+\section{Photons}
+\paragraph{Linear optics.} A qubit can be encoded in a single photon, either in its polarization (\cref{sec:photonic}) or in which of two modes it occupies ($\ket{01}$ or $\ket{10}$, the \emph{dual-rail} encoding). Single-qubit gates are easy and very accurate:
+phase shifters and beam splitters, realized for example with integrated waveguides. A beam splitter mixes two modes,
+\begin{equation}
+  \begin{pmatrix}\hat a_{\rm out}\\ \hat b_{\rm out}\end{pmatrix}=\begin{pmatrix}\cos\vartheta&\ii\sin\vartheta\\ \ii\sin\vartheta&\cos\vartheta\end{pmatrix}\begin{pmatrix}\hat a_{\rm in}\\ \hat b_{\rm in}\end{pmatrix},
+\end{equation}
+a unitary matrix (energy conservation), i.e.\ the rotation $R_x(-2\vartheta)$ of a dual-rail qubit; the 50:50 splitter has $\vartheta=\pi/4$. The readout uses single-photon detectors (superconducting nanowires reach $>95\%$ efficiency). Photons hardly
+decohere and travel at the speed of light, which makes them ideal for communication.
+
+\paragraph{Two-photon interference.} Two identical photons entering the two ports of a 50:50 beam splitter always exit together (Hong--Ou--Mandel effect, 1987): with $\hat a^\dagger\hat b^\dagger\to\frac12(\hat a^\dagger+\ii\hat b^\dagger)(\ii\hat a^\dagger+\hat b^\dagger)
+=\frac\ii2(\hat a^{\dagger2}+\hat b^{\dagger2})$, the amplitudes for one photon in each output cancel. This bosonic interference is the basic resource of linear optical quantum computing and of boson sampling.
+
+\paragraph{The interaction problem.} But for the same reason that they hardly decohere, photons hardly interact with each other. A two-qubit gate requires an optical nonlinearity, such as the Kerr effect in a nonlinear crystal: the refractive index
+depends on the intensity, $n=n_0+n_2I$, which for two modes gives the cross-Kerr Hamiltonian $H=\hbar\chi\hat n_a\hat n_b$ and, after a time $t$ with $\chi t=\pi$, a phase $-1$ only when both modes contain a photon: a CZ gate in dual-rail encoding.
+Available Kerr nonlinearities are very weak, and materials with a strong nonlinearity also absorb strongly (the real and imaginary parts of the susceptibility are related by the Kramers--Kronig relations). A conditional phase shift of $\pi$ between
+two single photons would be accompanied by the absorption of about 50 photons for each photon transmitted. These huge losses make this direct approach impractical.
+
+\paragraph{Measurement-induced nonlinearity.} Knill, Laflamme and Milburn (KLM, 2001) showed that linear optics, single-photon sources, detectors and feed-forward suffice for universal quantum computing: the nonlinearity is provided by the measurement
+of ancilla photons, and gates succeed with some probability, heralded by the detection pattern; teleportation (\cref{ch:teleportation}) boosts the success probability. Modern photonic architectures (fusion-based quantum computing) build large entangled
+cluster states from small resource states and probabilistic ``fusion'' measurements. The main challenges are photon losses and deterministic single-photon sources (quantum dots in cavities are approaching the requirements).
+
+\section{Current status}
+Superconducting circuits and trapped ions are at present the most advanced platforms for gate-based quantum computing, and both are available through cloud services. Neutral atoms held in optical tweezers, photonic circuits and spin qubits in
+semiconductors are also developing rapidly. Other approaches include topological qubits (Majorana modes, still at the stage of demonstrating the basic physics) and bosonic codes in microwave cavities (cat qubits, GKP states), which encode a qubit in an
+oscillator and use its large Hilbert space for error correction. No platform yet satisfies all the requirements at the scale needed for fault-tolerant quantum computation. Achieving it requires quantum error correction (\cref{ch:qec}), which multiplies the
+number of physical qubits needed for each logical qubit by $10^2$--$10^3$. The first demonstrations of logical qubits below threshold (2023--2024) mark the beginning of this new stage.
+
+\section{Exercises}
+\begin{exercise}
+A transmon has $E_J/h=20$\,GHz and $E_C/h=0.25$\,GHz. Compute $E_J/E_C$, $f_{01}$ and the anharmonicity. (Answer: $80$; $f_{01}\approx\sqrt{8\cdot20\cdot0.25}-0.25=6.07$\,GHz; $-250$\,MHz.)
+\end{exercise}
+\begin{exercise}
+Show that $H_{\rm JC}$ commutes with $\hat N=\hat a^\dagger\hat a+\proj e$. Compute the time evolution of $\ket{e,0}$ at resonance, and the probability to find the photon in the cavity.
+\end{exercise}
+\begin{exercise}
+For a $^{40}$Ca$^+$ ion with $\lambda=729$\,nm and trap frequency $\nu/2\pi=1$\,MHz, compute the Lamb--Dicke parameter (mass $40\times1.66\times10^{-27}$\,kg). (Answer: $\eta\approx0.1$.)
+\end{exercise}
+\begin{exercise}
+Verify the matrix element $-2t$ in the Hubbard derivation by writing the states with creation operators, e.g.\ $\ket{\uparrow,\downarrow}=c^\dagger_{1\uparrow}c^\dagger_{2\downarrow}\ket{\rm vac}$, and keeping track of the fermionic signs.
+\end{exercise}

@@ -1,0 +1,204 @@
+\chapter{Open quantum systems and decoherence}\label{ch:open}
+
+A qubit is never perfectly isolated. Its coupling to uncontrolled degrees of freedom (phonons, photons, nuclear spins, charge fluctuators, \dots) makes its evolution
+non-unitary: populations relax and coherences decay. This chapter derives the tools to describe it: quantum channels (Kraus operators) and master equations
+(Lindblad form), and applies them to the damped harmonic oscillator and to the qubit relaxation times $T_1$ and $T_2$.
+
+\section{Quantum channels and Kraus operators}
+\subsection{Derivation from a system--environment model}
+Let the system $S$ be in the state $\hat\rho$, initially uncorrelated with an environment $E$ in the pure state $\ket{e_0}$ (a mixed environment can always be
+purified, \cref{app:purification}). The total system evolves unitarily, $U$, and we then look at $S$ alone:
+\begin{equation}
+  \mathcal E(\hat\rho)=\tr_E\left[U(\hat\rho\otimes\proj{e_0})U^\dagger\right]=\sum_k\mel{e_k}{U}{e_0}\,\hat\rho\,\mel{e_0}{U^\dagger}{e_k}=\sum_kK_k\hat\rho K_k^\dagger,
+\end{equation}
+where $\{\ket{e_k}\}$ is a basis of $E$ and $K_k=\mel{e_k}U{e_0}$ are operators on $S$, the \emph{Kraus operators}. Unitarity of $U$ gives the completeness relation
+\begin{equation}
+  \sum_kK_k^\dagger K_k=\mel{e_0}{U^\dagger U}{e_0}=I,
+\end{equation}
+which guarantees $\tr\mathcal E(\hat\rho)=1$. The map $\mathcal E$ is linear, trace preserving, and \emph{completely positive}: it maps density matrices to density matrices even
+when it acts on a part of a larger entangled system. Conversely (Stinespring, Kraus), every completely positive trace-preserving map, called a \emph{quantum channel},
+has this form. The Kraus representation is not unique: $K'_j=\sum_ku_{jk}K_k$ with a unitary $u$ gives the same channel (a change of basis of the environment).
+
+\subsection{Standard qubit channels}
+With probability $p$ an error occurs:
+\begin{align}
+  \text{bit flip:}&\quad\mathcal E(\hat\rho)=(1-p)\hat\rho+pX\hat\rho X,\\
+  \text{phase flip (dephasing):}&\quad\mathcal E(\hat\rho)=(1-p)\hat\rho+pZ\hat\rho Z,\\
+  \text{depolarizing:}&\quad\mathcal E(\hat\rho)=(1-p)\hat\rho+\tfrac p3\left(X\hat\rho X+Y\hat\rho Y+Z\hat\rho Z\right).
+\end{align}
+In the Bloch-ball picture \cref{eq:blochball}, using $Z\vec\sigma Z=(-\sigma_x,-\sigma_y,\sigma_z)$, the phase flip maps $(r_x,r_y,r_z)\to((1-2p)r_x,(1-2p)r_y,r_z)$: the ball
+is squeezed into a cigar along $z$, and the coherences $\rho_{01}$ are multiplied by $1-2p$. The depolarizing channel shrinks the ball uniformly, $\vec r\to(1-\frac43p)\vec r$,
+and can also be written $\mathcal E(\hat\rho)=(1-\frac43p)\hat\rho+\frac43p\frac I2$, using the identity $\hat\rho+X\hat\rho X+Y\hat\rho Y+Z\hat\rho Z=2I$ for any $\hat\rho$ of unit trace.
+
+\paragraph{Amplitude damping (spontaneous emission).} An excited atom $\ket1$ emits a photon into the empty environment with probability $p$:
+\begin{equation}
+  U\ket0\ket{0_E}=\ket0\ket{0_E},\qquad U\ket1\ket{0_E}=\sqrt{1-p}\ket1\ket{0_E}+\sqrt p\ket0\ket{1_E}.
+\end{equation}
+The Kraus operators $K_k=\mel{k_E}U{0_E}$ are
+\begin{equation}
+  K_0=\begin{pmatrix}1&0\\0&\sqrt{1-p}\end{pmatrix},\qquad K_1=\begin{pmatrix}0&\sqrt p\\0&0\end{pmatrix},
+\end{equation}
+and
+\begin{equation}
+  \mathcal E\begin{pmatrix}\rho_{00}&\rho_{01}\\ \rho_{10}&\rho_{11}\end{pmatrix}=\begin{pmatrix}\rho_{00}+p\rho_{11}&\sqrt{1-p}\,\rho_{01}\\ \sqrt{1-p}\,\rho_{10}&(1-p)\rho_{11}\end{pmatrix}.
+\end{equation}
+For a continuous decay, $p=1-\e^{-\gamma t}$: the population decays as $\e^{-\gamma t}$ and the coherence as $\e^{-\gamma t/2}$. This factor $1/2$ is the origin of the relation
+$T_2=2T_1$ for purely radiative decay, found below with the master equation. The same model is a beam splitter of transmission $1-p$ acting on a photonic qubit: \emph{losses
+are amplitude damping}.
+
+\section{The Lindblad master equation}
+\subsection{Structure}
+For a memoryless (Markovian) environment, the evolution over a short time $\dd t$ is a channel close to the identity. Its Kraus operators must be of the form
+$K_0=I-(\frac\ii\hbar H+\frac12\sum_kL_k^\dagger L_k)\dd t$ and $K_k=\sqrt{\dd t}\,L_k$ ($k\ge1$), to satisfy $\sum K^\dagger K=I$ to first order in $\dd t$. Then
+$\hat\rho(t+\dd t)=\sum_kK_k\hat\rho K_k^\dagger$ gives, to first order,
+\begin{equation}\label{eq:lindblad}
+  \dot{\hat\rho}=-\frac\ii\hbar[H,\hat\rho]+\sum_k\Dis[L_k]\hat\rho,\qquad\Dis[L]\hat\rho=L\hat\rho L^\dagger-\frac12\left\{L^\dagger L,\hat\rho\right\}.
+\end{equation}
+This is the \emph{Lindblad} (Gorini--Kossakowski--Sudarshan--Lindblad, 1976) master equation, the most general generator of a Markovian completely positive evolution.
+The \emph{jump operators} $L_k$ describe the processes induced by the environment: $L\hat\rho L^\dagger$ is the ``jump'' (e.g.\ emission of a photon, detected or not), and the
+anticommutator is the corresponding loss of norm of the no-jump evolution.
+
+\subsection{Microscopic derivation for an oscillator coupled to a bath\starred}
+\begin{origin}[: the Born--Markov approximation]
+Consider a mode $\hat a$ of frequency $\omega$ (a cavity mode, a vibrational mode, or an LC resonator) coupled to a bath of oscillators $\hat b_k$:
+\begin{equation}
+  H=\hbar\omega\hat a^\dagger\hat a+\sum_k\hbar\omega_k\hat b_k^\dagger\hat b_k+\hbar\sum_kg_k\left(\hat a\hat b_k^\dagger+\hat a^\dagger\hat b_k\right).
+\end{equation}
+(This form follows from a linear coupling, e.g.\ capacitive or dipolar, in the rotating-wave approximation.) In the interaction picture, to second order in the coupling,
+and assuming (i) \emph{Born}: the bath is large and stays in its thermal state, $\hat\rho_{\rm tot}(t)\approx\hat\rho(t)\otimes\hat\rho_B$; (ii) \emph{Markov}: the bath
+correlation functions $\expval{\hat B(t)\hat B^\dagger(t-\tau)}$, with $\hat B=\sum_kg_k\hat b_k\e^{-\ii\omega_kt}$, decay on a time $\tau_c$ much shorter than the time
+scale of the system dynamics, one finds
+\begin{equation}
+  \dot{\hat\rho}_I=-\int_0^\infty\dd\tau\,\tr_B\left[V_I(t),\left[V_I(t-\tau),\hat\rho_I(t)\otimes\hat\rho_B\right]\right]/\hbar^2 .
+\end{equation}
+The time integrals produce $\int_0^\infty\dd\tau\,\e^{\ii(\omega-\omega_k)\tau}=\pi\delta(\omega-\omega_k)+\ii\,\mathcal P\frac1{\omega-\omega_k}$. The principal part
+gives a small frequency shift (Lamb shift), absorbed in $\omega$. The delta function gives the rates. With the thermal bath occupations
+$\expval{\hat b_k^\dagger\hat b_k}=\bar n(\omega_k)$, the result is \cref{eq:lindblad} with the two jump operators
+\begin{equation}
+  L_1=\sqrt{\gamma(\bar n+1)}\,\hat a\quad\text{(emission)},\qquad L_2=\sqrt{\gamma\bar n}\,\hat a^\dagger\quad\text{(absorption)},
+\end{equation}
+where $\bar n=\bar n(\omega)=(\e^{\hbar\omega/k_BT}-1)^{-1}$ and
+\begin{equation}
+  \gamma=2\pi\sum_kg_k^2\delta(\omega-\omega_k)=2\pi g(\omega)^2D(\omega),
+\end{equation}
+with $D$ the density of bath modes. This is Fermi's golden rule. Emission is stimulated ($\bar n+1$) and absorption proportional to $\bar n$, as in Einstein's theory of
+radiation (1917). For an atom in free space, the same calculation with the vacuum electromagnetic modes gives the Wigner--Weisskopf spontaneous emission rate
+$\gamma=\omega^3|d_{eg}|^2/(3\pi\varepsilon_0\hbar c^3)$, which gives a lifetime of $1.6$\,ns for the $2p$ state of hydrogen. Engineering $D(\omega)$, for example with a
+cavity, changes $\gamma$ (Purcell effect): this is used both to protect qubits and to read them out quickly.
+\end{origin}
+
+\section{The damped harmonic oscillator}
+With $H=\hbar\omega\hat a^\dagger\hat a$ and a thermal bath,
+\begin{equation}\label{eq:dampedHO}
+  \dot{\hat\rho}=-\ii\omega[\hat a^\dagger\hat a,\hat\rho]+\gamma(\bar n+1)\Dis[\hat a]\hat\rho+\gamma\bar n\Dis[\hat a^\dagger]\hat\rho .
+\end{equation}
+Explicitly,
+\begin{equation}
+  \dot{\hat\rho}=-\ii\omega[\hat a^\dagger\hat a,\hat\rho]+\frac{\gamma(\bar n+1)}2\left(2\hat a\hat\rho\hat a^\dagger-\hat a^\dagger\hat a\hat\rho-\hat\rho\hat a^\dagger\hat a\right)
+  +\frac{\gamma\bar n}2\left(2\hat a^\dagger\hat\rho\hat a-\hat a\hat a^\dagger\hat\rho-\hat\rho\hat a\hat a^\dagger\right).
+\end{equation}
+
+\paragraph{Matrix elements.} In the Fock basis, using $\hat a\ket n=\sqrt n\ket{n-1}$, $\hat a^\dagger\ket n=\sqrt{n+1}\ket{n+1}$:
+$(\hat a\hat\rho\hat a^\dagger)_{mn}=\sqrt{(m+1)(n+1)}\,\rho_{m+1,n+1}$, $(\hat a^\dagger\hat a\hat\rho)_{mn}=m\rho_{mn}$, $(\hat\rho\hat a^\dagger\hat a)_{mn}=n\rho_{mn}$,
+$(\hat a^\dagger\hat\rho\hat a)_{mn}=\sqrt{mn}\,\rho_{m-1,n-1}$, $(\hat a\hat a^\dagger\hat\rho)_{mn}=(m+1)\rho_{mn}$. Therefore
+\begin{multline}
+  \dot\rho_{mn}=-\ii\omega(m-n)\rho_{mn}+\gamma(\bar n+1)\left[\sqrt{(m+1)(n+1)}\,\rho_{m+1,n+1}-\frac{m+n}2\rho_{mn}\right]\\
+  +\gamma\bar n\left[\sqrt{mn}\,\rho_{m-1,n-1}-\frac{m+n+2}2\rho_{mn}\right].
+\end{multline}
+The equations for populations and coherences decouple, and the coherence $\rho_{mn}$ only couples to $\rho_{m\pm1,n\pm1}$, which oscillate at the same frequency.
+
+\paragraph{Populations.} For $m=n$, $p_n=\rho_{nn}$:
+\begin{equation}\label{eq:rateeq}
+  \dot p_n=\gamma(\bar n+1)\left[(n+1)p_{n+1}-np_n\right]+\gamma\bar n\left[np_{n-1}-(n+1)p_n\right].
+\end{equation}
+This is a classical rate equation: the level $n$ is fed from $n+1$ by emission and from $n-1$ by absorption, and depleted by both processes.
+\begin{proposition}
+The steady state of \cref{eq:rateeq} is the thermal distribution $p_n^{ss}=\bar n^n/(\bar n+1)^{n+1}$, and $\expval{\hat a^\dagger\hat a}$ relaxes to $\bar n$ at the rate $\gamma$:
+\begin{equation}
+  \frac{\dd}{\dd t}\expval{\hat n}=-\gamma\left(\expval{\hat n}-\bar n\right),\qquad\expval{\hat n}(t)=\bar n+\left(\expval{\hat n}(0)-\bar n\right)\e^{-\gamma t}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+\emph{Steady state.} Write \cref{eq:rateeq} as $\dot p_n=J_{n+1}-J_n$ with the net downward flux $J_n=\gamma(\bar n+1)np_n-\gamma\bar n\,np_{n-1}$ between levels $n$ and $n-1$.
+Since $J_0=0$, a stationary solution with $J_n=0$ for all $n$ (detailed balance) has $p_n/p_{n-1}=\bar n/(\bar n+1)=\e^{-\beta\hbar\omega}$, i.e.\ the thermal state \cref{eq:thermalHO}.
+\emph{Mean occupation.} For an operator $A$, $\frac{\dd}{\dd t}\expval A=\tr(A\dot{\hat\rho})$; by cyclicity of the trace,
+$\tr(A\,\Dis[L]\hat\rho)=\expval{L^\dagger AL-\frac12\{L^\dagger L,A\}}$. For $A=\hat n$ and $L=\hat a$: $\hat a^\dagger\hat n\hat a-\hat n^2=\hat a^\dagger\hat a^\dagger\hat a\hat a-\hat n^2=\hat n(\hat n-1)-\hat n^2=-\hat n$.
+For $L=\hat a^\dagger$: $\hat a\hat n\hat a^\dagger-\frac12\{\hat a\hat a^\dagger,\hat n\}=(\hat n+1)^2-(\hat n+1)\hat n=\hat n+1$. The Hamiltonian commutes with $\hat n$. Hence
+$\frac{\dd}{\dd t}\expval{\hat n}=-\gamma(\bar n+1)\expval{\hat n}+\gamma\bar n(\expval{\hat n}+1)=-\gamma\expval{\hat n}+\gamma\bar n$.
+\end{proof}
+Similarly $\frac{\dd}{\dd t}\expval{\hat a}=-(\ii\omega+\frac\gamma2)\expval{\hat a}$: the amplitude of a classical oscillation decays at the rate $\gamma/2$, the energy at the rate $\gamma$,
+exactly as for a classical damped oscillator with quality factor $Q=\omega/\gamma$.
+
+\section{Truncation to a qubit: $T_1$ and $T_2$}
+If only the states $\ket0$ and $\ket1$ are involved (because the oscillator is anharmonic, or because it is an atom), we replace
+\begin{equation}
+  \hat a\to\sigma^-=\ketbra01,\qquad\hat a^\dagger\to\sigma^+=\ketbra10,\qquad\hat a^\dagger\hat a\to\sigma^+\sigma^-=\proj1=\frac{I-Z}2,
+\end{equation}
+where $Z=\proj0-\proj1$ as in \cref{ch:bloch}. (The original notes write $\proj1=\frac12(1+\sigma_z)$, which corresponds to the opposite, ``atomic'', sign convention
+$\sigma_z=\proj1-\proj0$; the equations below are the same in both conventions when written with $\rho_{00},\rho_{11},\rho_{01},\rho_{10}$.) The master equation becomes
+\begin{equation}
+  \dot{\hat\rho}=-\ii\omega[\proj1,\hat\rho]+\gamma(\bar n+1)\Dis[\sigma^-]\hat\rho+\gamma\bar n\Dis[\sigma^+]\hat\rho .
+\end{equation}
+In components, with $\rho_{00}=1-\rho_{11}$ and $\rho_{01}=\rho_{10}^*$:
+\begin{align}
+  \dot\rho_{11}&=-\gamma(\bar n+1)\rho_{11}+\gamma\bar n\rho_{00}=-\gamma(2\bar n+1)\rho_{11}+\gamma\bar n,\\
+  \dot\rho_{10}&=-\left(\ii\omega+\frac{\gamma(2\bar n+1)}2\right)\rho_{10},\qquad\dot\rho_{01}=\left(\ii\omega-\frac{\gamma(2\bar n+1)}2\right)\rho_{01}.
+\end{align}
+(Check: $(\sigma^-\hat\rho\sigma^+)_{11}=0$, $(\sigma^+\sigma^-\hat\rho)_{11}=\rho_{11}$, $(\sigma^+\hat\rho\sigma^-)_{11}=\rho_{00}$, $(\sigma^-\sigma^+\hat\rho)_{11}=0$; and for the
+coherence each dissipator contributes $-\frac12\times$ its rate.) These are the \emph{Bloch equations}, with the parameters
+\begin{gather}
+  T_1^{-1}=\gamma(2\bar n+1),\qquad T_2=2T_1,\\
+  \rho_{11}^{ss}=\frac{\bar n}{2\bar n+1},\qquad\frac{\rho_{11}^{ss}}{\rho_{00}^{ss}}=\frac{\bar n}{\bar n+1},\qquad
+  \expval{\proj0-\proj1}_{ss}=\frac1{2\bar n+1},
+\end{gather}
+and the solutions
+\begin{equation}
+  \rho_{11}(t)=\rho_{11}^{ss}+\left[\rho_{11}(0)-\rho_{11}^{ss}\right]\e^{-t/T_1},\qquad\rho_{01}(t)=\rho_{01}(0)\,\e^{\ii\omega t}\e^{-t/T_2}.
+\end{equation}
+Note that the steady state $\rho_{11}/\rho_{00}=\e^{-\beta\hbar\omega}$ is again thermal (here for a two-level system, $\frac{1}{2\bar n+1}=\tanh\frac{\beta\hbar\omega}2$).
+$T_1$ is the \emph{energy relaxation} (longitudinal) time; $T_2$ the \emph{coherence} (transverse) time. On the Bloch sphere, $r_z$ relaxes to its equilibrium value in $T_1$
+and the transverse components spiral inwards in $T_2$.
+
+\paragraph{Pure dephasing.} Fluctuations of the qubit frequency (e.g.\ from charge or flux noise, or nuclear spins) randomize the phase without exchanging energy. They are
+described by the additional jump operator $L_\varphi=\sqrt{\gamma_\varphi/2}\,Z$, which does not change the populations and damps the coherences at the rate $\gamma_\varphi$
+(since $\Dis[Z]\hat\rho=Z\hat\rho Z-\hat\rho$ multiplies $\rho_{01}$ by $-2$). In general
+\begin{equation}
+  \frac1{T_2}=\frac1{2T_1}+\frac1{T_\varphi},\qquad T_2\le2T_1 .
+\end{equation}
+For slow (quasi-static) noise the decay is not exponential: a static random detuning $\delta$ with Gaussian distribution of width $\sigma$ gives
+$\overline{\e^{\ii\delta t}}=\e^{-\sigma^2t^2/2}$ ($T_2^*$ decay). Such inhomogeneous dephasing can be reversed by a $\pi$ pulse in the middle of the evolution (Hahn spin echo,
+1950), which is the simplest example of \emph{dynamical decoupling}.
+
+\paragraph{Driven qubit: optical Bloch equations.} Adding the Rabi drive \cref{eq:HRWA} in the rotating frame gives the optical Bloch equations, which describe Rabi oscillations
+damped on the time scales $T_1,T_2$, and a steady state with excited population $\rho_{11}^{ss}=\frac{(\Omega^2/4)(2T_1/T_2)}{\Delta^2+T_2^{-2}+\Omega^2T_1/T_2}$ (for $\bar n=0$; for radiative decay, $T_2=2T_1$, this is the familiar $\frac{\Omega^2/4}{\Delta^2+\gamma^2/4+\Omega^2/2}$),
+which saturates at $1/2$ for strong driving.
+
+\section{Decoherence of an observable: an example}
+Consider the position of a harmonic oscillator, $\hat x=(\hat a+\hat a^\dagger)/\sqrt2$, in the state $\ket\psi=(\ket0+\ket1)/\sqrt2$. The mean value $\mel\psi{\hat x}\psi$
+oscillates in time. In the density matrix formalism,
+\begin{equation}
+  \expval{\hat x}=\tr(\hat\rho\hat x)=\sum_n\mel n{\hat\rho\frac{\hat a+\hat a^\dagger}{\sqrt2}}n
+  =\frac1{\sqrt2}\sum_n\left(\sqrt{n+1}\,\rho_{n,n+1}+\sqrt n\,\rho_{n,n-1}\right).
+\end{equation}
+In our case only $n=0,1$ contribute: $\expval{\hat x}=\frac1{\sqrt2}(\rho_{01}+\rho_{10})=\sqrt2\operatorname{Re}\rho_{01}$, which involves only the off-diagonal terms. With
+$\rho_{01}(t)=\frac12\e^{\ii\omega t}\e^{-t/T_2}$ we get $\expval{\hat x}=\frac1{\sqrt2}\cos(\omega t)\,\e^{-t/T_2}$: a damped oscillation. If the coherences have decayed, there are no
+oscillations:
+\begin{equation}
+  \hat\rho=\begin{pmatrix}1/2&0\\0&1/2\end{pmatrix}\quad\Longrightarrow\quad\dot{\hat\rho}=0\ \text{(unitary part)},
+\end{equation}
+since $\hat\rho$ commutes with the Hamiltonian $\hat H=\hbar\omega(\hat a^\dagger\hat a+\frac12)$. (For $\bar n$ finite it still relaxes towards the thermal populations.)
+\emph{Physical observables that ``move'' are carried by the coherences; decoherence freezes them.} This is why quantum superpositions of macroscopically distinct states
+(Schrödinger cats) are never observed: their coherences decay at a rate proportional to the square of their ``distance'', which is enormous for macroscopic objects.
+
+\section{Exercises}
+\begin{exercise}
+Show that the depolarizing channel with $p=3/4$ maps every state to $I/2$, and that the composition of two phase-flip channels with probabilities $p_1,p_2$ is a phase-flip
+channel with $1-2p=(1-2p_1)(1-2p_2)$. Deduce that repeated dephasing gives an exponential decay of the coherence.
+\end{exercise}
+\begin{exercise}
+Derive $\frac{\dd}{\dd t}\expval{\hat a}=-(\ii\omega+\frac\gamma2)\expval{\hat a}$ from \cref{eq:dampedHO}, and show that it does not depend on $\bar n$.
+\end{exercise}
+\begin{exercise}
+A transmon has $T_1=100\,\mu$s and $T_2=80\,\mu$s. Compute $T_\varphi$. A two-qubit gate takes $50$\,ns: estimate the error per gate due to decoherence.
+(Answer: $T_\varphi\approx133\,\mu$s; error $\sim t/T_2\sim6\times10^{-4}$.)
+\end{exercise}

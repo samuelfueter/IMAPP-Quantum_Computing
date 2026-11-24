@@ -1,0 +1,173 @@
+\chapter[QFT and Shor's algorithm]{The quantum Fourier transform and Shor's algorithm}\label{ch:shor}
+
+In 1994 Peter Shor showed that a quantum computer can factor an integer $N$ in a time that grows only polynomially with the number of its digits \cite{Shor1997}. No polynomial classical algorithm is known
+for this problem. The difficulty of factoring large numbers is the basis of the RSA public-key cryptosystem, which is why Shor's algorithm had such a strong impact. The algorithm combines a classical
+reduction of factoring to the problem of finding the period of a function, and a quantum subroutine that finds this period efficiently using the quantum Fourier transform (QFT). We first construct
+the QFT and the phase-estimation algorithm, which are the core of most exponential quantum speed-ups.
+
+\section{The quantum Fourier transform}
+\subsection{Definition}
+For $Q=2^t$, the QFT is defined on the basis states of $t$ qubits by
+\begin{equation}\label{eq:qft}
+  U_{\rm QFT}\ket x=\frac1{\sqrt Q}\sum_{y=0}^{Q-1}\e^{2\pi\ii xy/Q}\ket y .
+\end{equation}
+On a general state it maps the amplitudes $a_x$ to their discrete Fourier transform $\tilde a_y=\frac1{\sqrt Q}\sum_x\e^{2\pi\ii xy/Q}a_x$. It is unitary, since
+$\mel{x'}{U^\dagger U}x=\frac1Q\sum_y\e^{2\pi\ii(x-x')y/Q}=\delta_{xx'}$
+(a geometric sum of $Q$-th roots of unity). For a single qubit ($Q=2$) it is the Hadamard gate.
+
+\subsection{Product form and circuit}
+Write $x=x_1x_2\dots x_t$ in binary ($x=\sum_jx_j2^{t-j}$) and use the binary fraction notation $0.x_lx_{l+1}\dots x_t=\sum_{j\ge l}x_j2^{l-1-j}$. Writing also $y=\sum_ly_l2^{t-l}$,
+\begin{equation}
+  \e^{2\pi\ii xy/Q}=\prod_{l=1}^t\e^{2\pi\ii xy_l2^{-l}},\qquad\text{and}\qquad\e^{2\pi\ii x2^{-l}}=\e^{2\pi\ii\,0.x_{t-l+1}\dots x_t},
+\end{equation}
+since the integer part of $x2^{-l}$ does not contribute. The sum over $y$ factorizes into a sum over each bit $y_l$:
+\begin{equation}\label{eq:qftproduct}
+  U_{\rm QFT}\ket{x_1\dots x_t}=\frac{\left(\ket0+\e^{2\pi\ii\,0.x_t}\ket1\right)\otimes\left(\ket0+\e^{2\pi\ii\,0.x_{t-1}x_t}\ket1\right)\otimes\dots\otimes\left(\ket0+\e^{2\pi\ii\,0.x_1x_2\dots x_t}\ket1\right)}{2^{t/2}}.
+\end{equation}
+This remarkable formula shows that the QFT of a basis state is a \emph{product state}, and gives the circuit. The phase $\e^{2\pi\ii\,0.x_1x_2\dots x_t}$ of the last factor is obtained by applying $H$ to $\ket{x_1}$
+(which gives $\ket0+\e^{2\pi\ii\,0.x_1}\ket1$, since $\e^{\ii\pi x_1}=(-1)^{x_1}$) and then the controlled phase rotations
+\begin{equation}
+  R_k=\begin{pmatrix}1&0\\0&\e^{2\pi\ii/2^k}\end{pmatrix},\qquad k=2,\dots,t,
+\end{equation}
+controlled by $x_k$, which add $x_k2^{-k}$ to the binary fraction. Repeating for $x_2,\dots,x_t$ and reversing the order of the qubits at the end:
+\begin{center}
+\begin{quantikz}[column sep=0.25cm]
+\lstick{$x_1$} & \gate{H} & \gate{R_2} & \gate{R_3} & \qw & \qw & \qw & \qw & \qw & \swap{2} & \qw\\
+\lstick{$x_2$} & \qw & \ctrl{-1} & \qw & \gate{H} & \gate{R_2} & \qw & \qw & \qw & \qw & \qw\\
+\lstick{$x_3$} & \qw & \qw & \ctrl{-2} & \qw & \ctrl{-1} & \gate{H} & \qw & \qw & \targX{} & \qw
+\end{quantikz}
+\end{center}
+The number of gates is $t$ Hadamards, $t(t-1)/2$ controlled rotations and $\lfloor t/2\rfloor$ swaps: $\order(t^2)$, compared with $\order(tQ)=\order(t2^t)$ operations for the classical fast Fourier
+transform of a vector of $2^t$ amplitudes. The rotations $R_k$ with $k\gtrsim\log_2t$ can be dropped with negligible error (approximate QFT, $\order(t\log t)$ gates). The exponential gain must be
+interpreted with care: the QFT does not give access to the Fourier coefficients, only to samples from $|\tilde a_y|^2$. It is useful when the transformed state has a few sharp peaks that encode the
+answer, as in phase estimation and period finding.
+
+\section{Phase estimation}
+\paragraph{Problem.} Given a unitary $U$ (as a circuit, together with its controlled powers $U^{2^j}$) and an eigenstate $\ket u$ with $U\ket u=\e^{2\pi\ii\varphi}\ket u$, estimate the phase $\varphi\in[0,1)$.
+
+\paragraph{Algorithm.} Use $t$ ``counting'' qubits in $\ket0$ and a register in $\ket u$.
+\begin{enumerate}
+  \item Apply $H^{\otimes t}$ to the counting register: $2^{-t/2}\sum_{y=0}^{2^t-1}\ket y\ket u$.
+  \item Apply controlled-$U^{2^j}$ from counting qubit $j$ (of weight $2^j$). Since $\ket u$ is an eigenstate, the phases are kicked back:
+  \begin{equation}
+    \frac1{2^{t/2}}\sum_y\ket y\,U^y\ket u=\frac1{2^{t/2}}\sum_y\e^{2\pi\ii\varphi y}\ket y\otimes\ket u .
+  \end{equation}
+  \item Apply the inverse QFT. If $\varphi=x/2^t$ exactly, the state above is $U_{\rm QFT}\ket x$ by \cref{eq:qft}, and the inverse QFT gives $\ket x$: the measurement returns the $t$ bits of $\varphi$ exactly.
+\end{enumerate}
+\paragraph{Accuracy.} If $\varphi$ is not a $t$-bit fraction, let $b$ be the integer closest to $2^t\varphi$ and $\delta=\varphi-b/2^t$, $|\delta|\le2^{-t-1}$. The amplitude of $\ket b$ is
+\begin{equation}
+  \frac1{2^t}\sum_{y=0}^{2^t-1}\e^{2\pi\ii\delta y}=\frac1{2^t}\frac{1-\e^{2\pi\ii\delta2^t}}{1-\e^{2\pi\ii\delta}},\qquad
+  P(b)=\frac{\sin^2(\pi\delta2^t)}{2^{2t}\sin^2(\pi\delta)}\ge\frac{(2\cdot2^t\delta)^2}{2^{2t}(\pi\delta)^2}=\frac4{\pi^2}\approx0.405,
+\end{equation}
+using $|\sin\pi u|\ge2|u|$ for $|u|\le\frac12$ and $|\sin\pi\delta|\le\pi|\delta|$. With $t=m+\lceil\log_2(2+1/2\epsilon)\rceil$ qubits, $\varphi$ is obtained to $m$ bits with probability at least $1-\epsilon$.
+Each additional bit of precision doubles the number of applications of $U$: the cost is $\order(1/\text{precision})$, the ``Heisenberg limit'', compared with $\order(1/\text{precision}^2)$ for repeated
+measurements of $\expval U$ (shot noise). Phase estimation is used in Shor's algorithm, quantum counting, the HHL algorithm (\cref{ch:qml}) and quantum chemistry (energies of molecules as phases of $\e^{-\ii Ht}$).
+
+\section{From factoring to period finding}
+\subsection{The classical reduction}
+\begin{enumerate}
+  \item Let $N$ be the integer to factor (odd, and not a prime power; both cases are easily detected classically).
+  \item Choose a random integer $1<a<N$.
+  \item Compute $\gcdf(a,N)$, for example with Euclid's algorithm.
+  \item If $\gcdf(a,N)\neq1$, it is a non-trivial factor of $N$, and we are done.
+  \item Otherwise, use the quantum period-finding subroutine to find the period $r$ of the function
+  \begin{equation}
+    f(x)=a^x\bmod N,
+  \end{equation}
+  i.e.\ the smallest $r>0$ such that $a^r\equiv1\pmod N$ (the \emph{order} of $a$ modulo $N$; it exists because $a$ is invertible modulo $N$ and the invertible residues form a finite group).
+  \item If $r$ is odd, or if $a^{r/2}\equiv-1\pmod N$, go back to step 2.
+  \item Otherwise, the factors of $N$ are $\gcdf(a^{r/2}+1,N)$ and $\gcdf(a^{r/2}-1,N)$.
+\end{enumerate}
+All steps except step 5 are easy for a classical computer: Euclid's algorithm computes a greatest common divisor in a time polynomial in the number of digits, and $a^{r/2}\bmod N$ is computed by repeated squaring.
+
+\paragraph{Why does it work?} By definition of the period, $a^r-1$ is a multiple of $N$. If $r$ is even, this can be factored as
+\begin{equation}
+  a^r-1=\left(a^{r/2}-1\right)\left(a^{r/2}+1\right)\equiv0\pmod N.
+\end{equation}
+The first factor is not a multiple of $N$, since $r$ is the smallest exponent with $a^r\equiv1$. If the second factor is not a multiple of $N$ either, i.e.\ if $a^{r/2}\not\equiv-1$, then $N$ divides the product
+without dividing either factor. Each factor must therefore share a non-trivial divisor with $N$, which the gcd extracts. For an odd $N$ with at least two distinct prime factors, a random $a$ satisfies these
+conditions with probability at least $1/2$ (the proof uses the Chinese remainder theorem: $r$ is the lcm of the orders modulo each prime power $p_i^{\alpha_i}$, and the conditions fail only if all these orders
+contain the same power of 2), so only a few repetitions are needed on average.
+
+\paragraph{Numerical example.} Let $N=15$ and choose $a=11$. Then $\gcdf(11,15)=1$, and we continue. The values of the function are
+\begin{center}
+\begin{tabular}{@{}lcccc@{}}\toprule
+$x$ & 0&1&2&3\\ $a^x$ & 1&11&121&1331\\ $f(x)=a^x\bmod15$ & 1&11&1&11\\ \bottomrule
+\end{tabular}
+\end{center}
+so the period is $r=2$. It is even, and $11^{2/2}\bmod15=11\neq-1\equiv14$, so we continue: $\gcdf(11+1,15)=3$, $\gcdf(11-1,15)=5$, and $15=3\times5$. For a number this small, the period is found by simply computing
+the function. For a number with hundreds of digits, the period can be astronomically large (up to $N$), and this direct approach is hopeless. This is where the quantum computer comes in.
+
+\section{Quantum period finding}
+\subsection{Direct formulation}
+The quantum subroutine uses two registers. The first, input register has $t$ qubits and dimension $Q=2^t$, chosen such that $N^2\le Q<2N^2$. The second, output register is large enough to hold the values of $f$ ($\lceil\log_2N\rceil$ qubits).
+\begin{enumerate}
+  \item \emph{Superposition.} Hadamard gates on the input register prepare $\frac1{\sqrt Q}\sum_{x=0}^{Q-1}\ket x\ket0$.
+  \item \emph{Evaluation of the function.} A unitary circuit computing $f$ (modular exponentiation) evaluates the function for all inputs at once: $\frac1{\sqrt Q}\sum_x\ket x\ket{f(x)}$.
+  \item \emph{Quantum Fourier transform} on the input register:
+  \begin{equation}
+    \frac1Q\sum_x\sum_y\e^{2\pi\ii xy/Q}\ket y\ket{f(x)}.
+  \end{equation}
+  \item \emph{Measurement.} Both registers are measured. The output register gives some value $f(x_0)$, and the input register gives some $y$. Since $f(x)=f(x_0)$ exactly for $x=x_0+rb$, $b=0,1,2,\dots$,
+  the probability of a given pair of results is
+  \begin{equation}
+    P(y,f(x_0))=\abs{\frac1Q\sum_{x:\,f(x)=f(x_0)}\e^{2\pi\ii xy/Q}}^2=\abs{\frac1Q\sum_{b=0}^{m-1}\e^{2\pi\ii(x_0+rb)y/Q}}^2,\qquad m\approx Q/r.
+  \end{equation}
+\end{enumerate}
+The phase $\e^{2\pi\ii x_0y/Q}$ factors out, and what remains is a geometric sum of the phases $\e^{2\pi\ii\,bry/Q}$. These add up constructively only if $ry/Q$ is close to an integer $k$, and cancel otherwise.
+The measured $y$ is therefore, with high probability, close to a multiple of $Q/r$:
+\begin{equation}
+  \frac yQ\approx\frac kr .
+\end{equation}
+\paragraph{Peak probability.} Let $y$ be the integer closest to $kQ/r$, so that $ry=kQ+\epsilon$ with $|\epsilon|\le r/2$. The phases are $2\pi b\epsilon/Q$ and, exactly as in phase estimation,
+$|\sum_{b<m}\e^{2\pi\ii b\epsilon/Q}|\ge\frac2\pi m$ because $m|\epsilon|/Q\le\frac12$. Hence $P(y,f(x_0))\ge\frac4{\pi^2}\frac{m^2}{Q^2}\approx\frac4{\pi^2r^2}$. Summing over the $r$ possible values of $f(x_0)$ and
+the $r$ values of $k$, the probability to obtain one of the peaks is at least $4/\pi^2\approx40\%$.
+
+\paragraph{Continued fractions.} Since $|y/Q-k/r|\le1/(2Q)\le1/(2N^2)<1/(2r^2)$, a classical theorem guarantees that $k/r$ is one of the \emph{convergents} of the continued-fraction expansion of $y/Q$, which
+are computed in polynomial time. This gives $k/r$ in lowest terms, i.e.\ $r$ itself if $\gcdf(k,r)=1$ (which happens with probability $\Omega(1/\log\log r)$), or a divisor of $r$, in which case the procedure is
+repeated and the least common multiple of the results is taken. The choice $Q\ge N^2$ is exactly what makes the continued-fraction step work.
+
+\subsection{The phase-estimation formulation}
+Equivalently, period finding is phase estimation for the unitary $U_a\ket z=\ket{az\bmod N}$ (a permutation of the residues coprime with $N$). Its eigenstates are
+\begin{equation}
+  \ket{u_s}=\frac1{\sqrt r}\sum_{k=0}^{r-1}\e^{-2\pi\ii sk/r}\ket{a^k\bmod N},\qquad U_a\ket{u_s}=\e^{2\pi\ii s/r}\ket{u_s},\quad s=0,\dots,r-1,
+\end{equation}
+as one checks by shifting the summation index. We cannot prepare a given $\ket{u_s}$ without knowing $r$, but $\frac1{\sqrt r}\sum_s\ket{u_s}=\ket1$: starting the target register in $\ket1$, phase estimation returns
+$s/r$ for a random $s$. The controlled-$U_a^{2^j}$ gates are controlled multiplications by $a^{2^j}\bmod N$, whose constants are precomputed classically by repeated squaring. This is the \emph{modular
+exponentiation} circuit, built from quantum adders (\cref{sec:halfadder}); it dominates the cost, with $\order(n^3)$ elementary gates for an $n$-bit number (or $\order(n^2\log n)$ with fast multiplication).
+The QFT costs only $\order(n^2)$.
+
+\begin{keypoint}
+The QFT is the key element. It converts the periodicity of $f$, hidden in a superposition that cannot be read out directly, into sharp peaks in the probability distribution of $y$, through interference.
+This is an exponential speed-up compared with the best known classical algorithm, the number field sieve, whose running time is $\exp\left(\order(n^{1/3}(\log n)^{2/3})\right)$.
+\end{keypoint}
+
+\section{Example: factoring 15}
+The algorithm was first demonstrated in 2001 by factoring $N=15$ on a seven-qubit NMR quantum computer \cite{Vandersypen2001}. The input register had only $t=3$ qubits ($Q=8$). This is less than the $N^2$
+required in general, but it is sufficient here because the period divides $Q$.
+
+\paragraph{The easy case, $a=11$.} The period is $r=2$, and $Q/r=4$. If the output register is measured in the state $11$, the input register is left in $\frac12(\ket1+\ket3+\ket5+\ket7)$, and its Fourier transform
+has amplitudes $\frac1{4\sqrt2}\sum_{x\text{ odd}}\e^{2\pi\ii xy/8}$, which vanish unless $y$ is a multiple of 4. The input register is found in a mixture of $\ket{000}$ and $\ket{100}$, i.e.\ $y=0$ or $y=4$, each
+with probability $1/2$. The period of the distribution of $y$ is 4, hence $r=Q/4=2^3/4=2$.
+
+\paragraph{The more complicated case, $a=7$.} Now $7^x\bmod15=1,7,4,13,1,7,\dots$, so that $r=4$. If the output is $4$, the input register is left in $(\ket2+\ket6)/\sqrt2$, with Fourier amplitudes
+$\frac14\e^{\ii\pi y/2}(1+\e^{\ii\pi y})$, non-zero for even $y$ only. The input register is found in a mixture of $\ket{000}$, $\ket{010}$, $\ket{100}$, $\ket{110}$, i.e.\ $y=0,2,4,6$, each with probability $1/4$.
+The spacing of the peaks is $Q/r=2$, hence $r=Q/2=2^3/2=4$. (In terms of continued fractions: $y/Q=2/8=1/4$ or $6/8=3/4$ give $r=4$; $4/8=1/2$ gives only the divisor $2$, and $0$ gives nothing.) Then
+$7^{4/2}\bmod15=4\neq-1$, and $\gcdf(4+1,15)=5$, $\gcdf(4-1,15)=3$.
+
+\paragraph{Outlook.} Factoring 15 is of course trivial classically. The importance of these experiments is to demonstrate all the elements of the algorithm (and many ``demonstrations'' simplify the circuit by using
+knowledge of the answer, which must be kept in mind). Factoring numbers large enough to threaten RSA would require thousands of error-corrected logical qubits; resource estimates for RSA-2048 have decreased from
+about $10^9$ physical qubits (2012) to about $2\times10^7$ (Gidney and Ekerå, 2019) and below $10^6$ noisy qubits running for about a week (Gidney, 2025), still far beyond present technology. This prospect has
+nevertheless motivated the development and standardization (NIST, 2024) of post-quantum cryptographic methods, based on mathematical problems such as lattice problems, which are believed to resist quantum attacks.
+Shor's algorithm also solves the discrete logarithm problem, which breaks elliptic-curve cryptography. Both are instances of the \emph{hidden subgroup problem} for abelian groups, which quantum computers solve efficiently.
+
+\section{Exercises}
+\begin{exercise}
+Write the matrix of the QFT for $t=2$ and check that it is unitary. Verify the product formula \cref{eq:qftproduct} for $\ket{x}=\ket{11}$.
+\end{exercise}
+\begin{exercise}
+Apply Shor's reduction to $N=21$ with $a=2$. Find the period, and the factors. What happens with $a=13$? (Answer: $r=6$, $2^3=8$, $\gcdf(9,21)=3$, $\gcdf(7,21)=7$; for $a=13$, $r=2$ and $13\equiv-8$, $\gcdf(14,21)=7$.)
+\end{exercise}
+\begin{exercise}
+Compute the continued-fraction convergents of $y/Q=427/512$ and find the period if $N=21$. (Answer: $427/512\approx0.834$; the expansion is $[0;1,5,42,\dots]$ with convergents $0,\,1,\,5/6,\,211/253,\dots$; $5/6$ is the last one with denominator smaller than $N$ and gives $r=6$.)
+\end{exercise}

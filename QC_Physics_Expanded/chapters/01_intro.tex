@@ -1,0 +1,68 @@
+\chapter{Introduction}\label{ch:intro}
+
+\section{What quantum information is good for}
+Quantum informatics, the use of quantum systems to store, transmit and process information, is
+useful and important for
+\begin{itemize}
+  \item \textbf{basic science}: a better understanding of quantum physics, and the solution of quantum many-body problems;
+  \item \textbf{communications}: quantum key distribution, quantum networks, quantum repeaters;
+  \item \textbf{computing}: algorithms that are faster than any known classical algorithm for specific problems;
+  \item \textbf{simulation}: using a controllable quantum system to emulate another one (this was the original motivation of Feynman in 1982);
+  \item \textbf{sensing and metrology}: using entanglement and coherence to beat classical limits of precision.
+\end{itemize}
+Private companies are mostly interested in communications and computing, while academia can use
+quantum computing and quantum simulation for research. Quantum machine learning, for example, can be useful for both.
+
+A specialist in quantum computing in a company or in a research team should be able to answer the following questions:
+\begin{itemize}
+  \item Do we need a quantum computer at all? Is there a known quantum algorithm with an advantage for this problem?
+  \item Can it work in our case? This requires an estimate of the error rate of the algorithm and of its implementation on a particular quantum computer
+  (number of gates $\times$ error per gate, coherence time, connectivity).
+  \item How do we map an optimization problem onto the hardware (QUBO, Ising model, embedding)?
+\end{itemize}
+In research, quantum computing is of interest for high-energy physics, nanophysics and photonics, i.e.\
+the research fields of the laboratories of UCA (LPCA, Institut Pascal).
+
+\section{Why quantum mechanics changes computation}
+A classical bit is either $0$ or $1$. A \emph{qubit} is a quantum two-level system, whose state is a vector
+\begin{equation}
+  \ket\psi=\alpha\ket0+\beta\ket1,\qquad |\alpha|^2+|\beta|^2=1,
+\end{equation}
+in a two-dimensional complex Hilbert space. Three features of quantum mechanics, absent from classical
+physics, are used by quantum computers:
+\begin{enumerate}
+  \item \textbf{Superposition and interference.} Amplitudes, not probabilities, are added. Amplitudes are complex
+  numbers and can cancel each other (destructive interference) or reinforce each other (constructive interference).
+  Quantum algorithms are clever arrangements of interference.
+  \item \textbf{Entanglement.} The state of $n$ qubits lives in a space of dimension $2^n$, and a generic state cannot be
+  described qubit by qubit. Describing it classically requires $2^n$ complex numbers: about $10^{15}$ bytes for $n=46$.
+  This exponential size is both the reason why quantum systems are hard to simulate and the resource a quantum computer exploits.
+  \item \textbf{Measurement.} The outcome of a measurement is random, and the measurement changes the state.
+  At the end of a computation we obtain only $n$ classical bits out of the $2^n$ amplitudes. This severely limits
+  what can be gained, and is the reason why only a few problems have a quantum speed-up.
+\end{enumerate}
+
+\section{Where we are}
+Do not expect too much from this course: it is a general introduction to the topic. And do not expect too much from
+quantum computing in the short term either. In spite of the ``Python interface'', we are at the age of ENIAC
+(programming by hard-wiring registers), even before the age of the assembly language. At the same time the programming
+paradigm is very different from classical programming, which makes things even harder. The positive point is that you can
+become the new Knuth or Dijkstra.
+
+The present era is often called NISQ (Noisy Intermediate-Scale Quantum, a term coined by J.~Preskill in 2018):
+devices with $10^2$--$10^3$ physical qubits, error rates of $10^{-3}$--$10^{-2}$ per two-qubit gate, and no or only
+rudimentary error correction. Error-corrected (``fault-tolerant'') quantum computers capable of running Shor's
+algorithm on cryptographically relevant numbers would require of the order of $10^6$ physical qubits.
+
+\section{Plan of the notes}
+\begin{itemize}
+  \item \Cref{ch:qm}--\cref{ch:applications1}: one qubit. Postulates of quantum mechanics, the two-level system and
+  its physical origins, the Bloch sphere, measurement, and first applications (random numbers, no-cloning, BB84).
+  \item \Cref{ch:entanglement}--\cref{ch:teleportation}: many qubits. Entanglement, Bell inequalities, the density
+  matrix, decoherence and master equations, entanglement criteria, teleportation.
+  \item \Cref{ch:gates}--\cref{ch:qec}: gates and algorithms. Universal gates, Qiskit, Deutsch--Jozsa, Grover, QFT and Shor,
+  complexity, error correction.
+  \item \Cref{ch:annealing}--\cref{ch:qml}: optimization, annealing, adiabatic computing and quantum machine learning.
+  \item \Cref{ch:implementations}: physical implementations, with derivations of the Hamiltonians of superconducting
+  qubits, trapped ions, cavity QED, NMR, spins in quantum dots, neutral atoms and photons.
+\end{itemize}

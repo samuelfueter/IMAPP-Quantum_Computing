@@ -1,0 +1,148 @@
+\chapter{Many qubits and entanglement}\label{ch:entanglement}
+
+So far we have seen that a lot of useful things can be done already with a single qubit: random numbers and quantum cryptography are part of the
+larger field of quantum informatics. Quantum computing with gates really starts when we go beyond a single qubit.
+
+\section{Composite systems and the tensor product}\label{sec:tensor}
+\subsection{Why a tensor product?}
+\begin{origin}[: the tensor-product postulate]
+If system $A$ can be in any of the states $\ket{i}_A$ ($i=1..d_A$) and system $B$ in any of the states $\ket\mu_B$ ($\mu=1..d_B$), then the
+pair can be in any of the $d_Ad_B$ joint configurations $\ket i_A\ket\mu_B$, and, by the superposition principle, in any linear combination of
+them. The state space is therefore of dimension $d_Ad_B$ (not $d_A+d_B$, as it would be for a classical description by a list of properties).
+The tensor product $\Ha_A\otimes\Ha_B$ is precisely the space spanned by the products, with the scalar product
+$(\bra i\bra\mu)(\ket j\ket\nu)=\braket ij\braket\mu\nu$. Probabilities of independent events multiply, which is consistent with
+$|\braket{i\mu}{\psi_A\psi_B}|^2=|\braket i{\psi_A}|^2|\braket\mu{\psi_B}|^2$. For $n$ qubits the dimension is $2^n$.
+\end{origin}
+
+\subsection{Kronecker products of matrices and vectors}
+Let $A$ be an $m\times n$ matrix and $B$ a $p\times q$ matrix. Their tensor (Kronecker) product $A\otimes B$ is the $mp\times nq$ matrix with elements
+\begin{equation}
+  (A\otimes B)_{p(r-1)+v,\ q(s-1)+w}=a_{rs}b_{vw},
+\end{equation}
+that is, the block matrix
+\begin{equation}
+  A\otimes B=\begin{pmatrix}a_{11}B&\cdots&a_{1n}B\\ \vdots&\ddots&\vdots\\ a_{m1}B&\cdots&a_{mn}B\end{pmatrix}.
+\end{equation}
+For example,
+\begin{equation}
+  \sigma_z\otimes\sigma_x=\begin{pmatrix}1\cdot\sigma_x&0\cdot\sigma_x\\0\cdot\sigma_x&-1\cdot\sigma_x\end{pmatrix}
+  =\begin{pmatrix}0&1&0&0\\1&0&0&0\\0&0&0&-1\\0&0&-1&0\end{pmatrix}.
+\end{equation}
+The same rule applies to vectors, which fixes the ordering of the basis of the composite system:
+\begin{equation}
+  \ket0\otimes\ket0=\ket{00}=\begin{pmatrix}1\\0\end{pmatrix}\otimes\begin{pmatrix}1\\0\end{pmatrix}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},\quad
+  \ket{01}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},\quad\ket{10}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},\quad\ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix},
+\end{equation}
+and similarly $\ket{000}=(1,0,0,0,0,0,0,0)^T$. In general, the basis states of $n$ qubits are ordered as the binary numbers $00\dots0$, $00\dots1$, \dots, $11\dots1$
+(big-endian convention, used throughout these notes). Useful rules:
+\begin{equation}
+  (A\otimes B)(C\otimes D)=AC\otimes BD,\quad(A\otimes B)^\dagger=A^\dagger\otimes B^\dagger,\quad\tr(A\otimes B)=\tr A\,\tr B,
+\end{equation}
+and the eigenvalues of $A\otimes B$ are the products $a_ib_j$ of the eigenvalues. An operator acting on qubit $k$ only, such as $\sigma^z_k$, means
+$I\otimes\cdots\otimes\sigma^z\otimes\cdots\otimes I$ in the full $2^n$-dimensional space.
+
+\section{Entanglement}
+\begin{definition}
+A pure state of $A$ and $B$ is a \emph{product} (separable) state if it can be written $\ket\psi=\ket{\psi_A}\otimes\ket{\psi_B}$. Otherwise it is \emph{entangled}.
+For $N$ parts, a state is fully separable if it factorizes into a tensor product of $N$ single-part states.
+\end{definition}
+A state that can be factored is, for example,
+\begin{equation}
+  \Psi_{1+2}=\frac1{\sqrt2}\left(\ket0_1\ket1_2-\ket1_1\ket1_2\right)=\frac1{\sqrt2}\left(\ket0_1-\ket1_1\right)\ket1_2 .
+\end{equation}
+On the other hand, the following maximally entangled state cannot be factored:
+\begin{equation}\label{eq:singlet}
+  \Psi_{1+2}=\frac1{\sqrt2}\left(\ket0_1\ket1_2-\ket1_1\ket0_2\right).
+\end{equation}
+\begin{proof}
+Suppose it can: $\frac1{\sqrt2}(\ket{01}-\ket{10})=(a\ket0+b\ket1)\otimes(c\ket0+d\ket1)=ac\ket{00}+ad\ket{01}+bc\ket{10}+bd\ket{11}$. Identifying coefficients,
+\begin{equation}
+  ac=0,\quad bd=0,\quad ad=\tfrac1{\sqrt2},\quad bc=-\tfrac1{\sqrt2}.
+\end{equation}
+The third and fourth equations require $a,b,c,d$ all non-zero, which contradicts the first two.
+\end{proof}
+
+\begin{proposition}[Entanglement criterion for two qubits]\label{prop:det}
+The state $\ket\psi=\alpha\ket{00}+\beta\ket{01}+\gamma\ket{10}+\delta\ket{11}$ is a product state if and only if $\alpha\delta-\beta\gamma=0$.
+\end{proposition}
+\begin{proof}
+Arrange the coefficients in the matrix $\Psi=\begin{pmatrix}\alpha&\beta\\ \gamma&\delta\end{pmatrix}$. A product state $(a,b)\otimes(c,d)$ has
+$\Psi=\begin{pmatrix}a\\b\end{pmatrix}\begin{pmatrix}c&d\end{pmatrix}$, a matrix of rank one, hence $\det\Psi=0$. Conversely, a non-zero $2\times2$ matrix with
+zero determinant has rank one, i.e.\ is an outer product of two vectors.
+\end{proof}
+The quantity $C=2|\alpha\delta-\beta\gamma|\in[0,1]$ is the \emph{concurrence} of the pure state; it is $0$ for product states and $1$ for maximally entangled
+states such as \cref{eq:singlet}. The argument generalizes: a bipartite state is a product state iff its coefficient matrix has rank one. The rank is the Schmidt
+number (\cref{app:schmidt}).
+
+\paragraph{Consequence.} As soon as two subsystems 1 and 2 are entangled, there is no such thing as ``the wave function of subsystem 1'' alone. The whole is more
+than the sum of its parts: all the information may be in the correlations, none in the parts. The description of a part requires the density matrix
+(\cref{ch:density}). Entangled states are not rare: for random states of many qubits, product states form a set of measure zero.
+
+\subsection{The Bell states}
+The four maximally entangled states
+\begin{equation}\label{eq:bellstates}
+  \ket{\Phi^\pm}=\frac{\ket{00}\pm\ket{11}}{\sqrt2},\qquad\ket{\Psi^\pm}=\frac{\ket{01}\pm\ket{10}}{\sqrt2}
+\end{equation}
+form an orthonormal basis of two qubits, the \emph{Bell basis}. $\ket{\Psi^-}$ is the spin \emph{singlet} (total spin $0$); the other three form the
+\emph{triplet} (total spin $1$). They are all related by local operations on one qubit: $\ket{\Phi^-}=(Z\otimes I)\ket{\Phi^+}$,
+$\ket{\Psi^+}=(X\otimes I)\ket{\Phi^+}$, $\ket{\Psi^-}=(XZ\otimes I)\ket{\Phi^+}$ (up to sign). They are created from product states by the circuit
+\begin{center}
+\begin{quantikz}
+\lstick{$\ket{x}$} & \gate{H} & \ctrl{1} & \qw \\
+\lstick{$\ket{y}$} & \qw & \targ{} & \qw
+\end{quantikz}
+\qquad$\ket{00}\to\ket{\Phi^+},\ \ket{01}\to\ket{\Psi^+},\ \ket{10}\to\ket{\Phi^-},\ \ket{11}\to\ket{\Psi^-}$.
+\end{center}
+For example, $H\otimes I$ maps $\ket{00}$ to $(\ket{00}+\ket{10})/\sqrt2$, and the CNOT (\cref{sec:cnot}) flips the second qubit in the second term, giving
+$(\ket{00}+\ket{11})/\sqrt2$. Running the circuit backwards (CNOT, then $H$) maps the Bell basis onto the computational basis: this is how a \emph{Bell measurement}
+is performed on a quantum computer.
+
+\subsection{Multipartite entanglement\starred}
+For three qubits, two inequivalent kinds of genuine tripartite entanglement exist:
+\begin{equation}
+  \ket{\mathrm{GHZ}}=\frac{\ket{000}+\ket{111}}{\sqrt2},\qquad\ket{W}=\frac{\ket{001}+\ket{010}+\ket{100}}{\sqrt3}.
+\end{equation}
+Tracing out one qubit of GHZ leaves a separable (classically correlated) state, while for W the remaining two qubits are still entangled. No local operations,
+even assisted by classical communication and with a finite probability of success, can convert one into the other (Dür, Vidal, Cirac 2000).
+
+\section{Quantum parallelism and entanglement}\label{sec:parallelism}
+Why is entanglement important for quantum computing? Because it makes the link between the input and the output.
+
+The idea of \emph{quantum parallelism} is based on the possibility for a qubit to be in a superposition of two states. It is therefore possible to perform a
+computation for all possible inputs (input qubits in their superpositions) and obtain all possible outputs in a single run. Given a classical function
+$f:\{0,1\}^n\to\{0,1\}^m$, the reversible implementation $U_f\ket x\ket y=\ket x\ket{y\oplus f(x)}$ (\cref{sec:reversible}) gives
+\begin{equation}
+  U_f\left(\frac1{\sqrt{2^n}}\sum_x\ket x\right)\ket0=\frac1{\sqrt{2^n}}\sum_x\ket x\ket{f(x)}.
+\end{equation}
+A measurement at the end gives one single result, but quantum algorithms enhance the probability to measure the result ``of interest''. For example, one can look
+for the solutions of an equation, the output being its right-hand side. All possible inputs give all possible values, but interference can increase the probability
+to measure the correct output. How do we then know to which input it corresponds, i.e.\ to which values of the unknowns? Only thanks to entanglement: each output
+is entangled with the corresponding inputs, so that when we observe a value of the output qubits, the input qubits collapse onto the states corresponding to that output.
+
+\begin{example}[Multiplication of two bits]
+We want
+\begin{equation}
+  \ket{00}\to\ket0,\quad\ket{01}\to\ket0,\quad\ket{10}\to\ket0,\quad\ket{11}\to\ket1 .
+\end{equation}
+The state of the system should be a superposition of the four 3-qubit states $\ket{000}$, $\ket{010}$, $\ket{100}$, $\ket{111}$ (2 input qubits and 1 output qubit)
+and no other terms. This state is entangled: a product of single-qubit states containing $\ket{000}$ and $\ket{111}$ would also contain terms such as $\ket{001}$ or
+$\ket{110}$. Measuring the output and finding $1$ projects the inputs onto $\ket{11}$; finding $0$ projects them onto $(\ket{00}+\ket{01}+\ket{10})/\sqrt3$.
+The circuit is a Toffoli gate (\cref{sec:toffoli}) with the output qubit as target.
+\end{example}
+
+\begin{remark}
+Entanglement is necessary but not sufficient for a quantum speed-up. By the Gottesman--Knill theorem, circuits made only of $H$, $S$ and CNOT gates can
+create highly entangled states but are efficiently simulable classically. Conversely, a pure-state computation whose entanglement stays bounded (small Schmidt rank
+across every cut) can be simulated efficiently with tensor networks (Vidal 2003). Since entanglement is crucial, there is a large effort to create and maximize it,
+and this requires being able to measure it and describe its decay by decoherence (\cref{ch:density,ch:open}).
+\end{remark}
+
+\section{Exercises}
+\begin{exercise}
+Which of the following states are entangled? $\frac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$; $\frac12(\ket{00}+\ket{01}+\ket{10}-\ket{11})$;
+$\frac1{\sqrt2}(\ket{00}+\ii\ket{11})$. Compute their concurrence.
+\end{exercise}
+\begin{exercise}
+Show that $\ket{\Psi^-}$ has the same form in every basis: $\ket{\Psi^-}=\frac1{\sqrt2}(\ket{\vec n,+}\ket{\vec n,-}-\ket{\vec n,-}\ket{\vec n,+})$ for any axis $\vec n$.
+(Hint: $(U\otimes U)\ket{\Psi^-}=\det U\,\ket{\Psi^-}$ for any $2\times2$ matrix $U$.)
+\end{exercise}

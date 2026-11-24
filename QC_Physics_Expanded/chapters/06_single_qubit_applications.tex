@@ -1,0 +1,255 @@
+\chapter{What can be done with one qubit}\label{ch:applications1}
+
+\section{Photonic qubits: polarization}\label{sec:photonic}
+Light is quantized; its particles are called photons. A photon in a given spatial mode has two polarization states (horizontal and vertical
+linear polarizations, as in 3D glasses; the circular basis can be used as well), so each photon is a two-level system, a qubit. Quantum gates
+acting on photons are implemented by waveplates (quarter- and half-waveplates), made of birefringent materials, which have different
+refractive indices for the two polarizations and therefore accumulate different phases. Projective measurements are implemented by
+polarizers and polarizing beam splitters.
+
+\subsection{Jones vectors and the Poincaré sphere}
+\begin{origin}[: from Maxwell's equations to a qubit]
+A monochromatic plane wave propagating along $z$ has the electric field
+$\vec E(z,t)=\operatorname{Re}\left[(E_H\vec e_x+E_V\vec e_y)\e^{\ii(kz-\omega t)}\right]$. The complex two-component \emph{Jones vector}
+$(E_H,E_V)$, normalized to unit intensity, describes the polarization. Its global phase is irrelevant to the polarization (it is just a
+shift of the origin of time). The polarization of a classical wave is therefore described by exactly the same mathematics as a qubit:
+a normalized vector of $\C^2$ modulo a global phase. For a single photon, the Jones vector becomes the quantum state
+$\ket\psi=\alpha\ket H+\beta\ket V$ and $|\alpha|^2$ becomes a probability.
+\end{origin}
+We identify $\ket H=\ket0$, $\ket V=\ket1$. Then
+\begin{center}
+\begin{tabular}{@{}lll@{}}\toprule
+Polarization & State & Point on the Poincaré sphere\\ \midrule
+horizontal, vertical & $\ket H$, $\ket V$ & $\pm\vec e_z$\\
+diagonal, antidiagonal ($\pm45^\circ$) & $\ket{D},\ket{A}=(\ket H\pm\ket V)/\sqrt2$ & $\pm\vec e_x$\\
+right, left circular & $\ket{R},\ket L=(\ket H\pm\ii\ket V)/\sqrt2$ & $\pm\vec e_y$\\ \bottomrule
+\end{tabular}
+\end{center}
+(The handedness convention for circular polarization varies between textbooks.) The components of the Bloch vector are the normalized
+\emph{Stokes parameters}, measured classically with polarizers: $S_1=I_H-I_V$, $S_2=I_D-I_A$, $S_3=I_R-I_L$, divided by the total intensity.
+A linear polarization at angle $\eta$ from the horizontal, $\cos\eta\ket H+\sin\eta\ket V$, corresponds by \cref{eq:blochstate} to
+$\theta=2\eta$, $\varphi=0$: a point on the equator-crossing great circle in the $xz$ plane at polar angle $2\eta$.
+
+The pseudospin is thus rotated by a \emph{double angle} with respect to the polarization: orthogonal polarizations ($H$ and $V$) differ by
+$90^\circ$ in real space, while orthogonal qubit states are $180^\circ$ apart on the sphere. One needs to get used to it when working with photons.
+
+\subsection{Waveplates as quantum gates}
+A plate of thickness $L$ of a birefringent crystal with indices $n_f$ (fast axis) and $n_s$ (slow axis) delays the slow component by the phase
+\begin{equation}
+  \delta=\frac{2\pi(n_s-n_f)L}{\lambda}.
+\end{equation}
+With the fast axis horizontal, the plate acts as $J_0(\delta)=\diag(1,\e^{\ii\delta})=\e^{\ii\delta/2}R_z(\delta)$: a rotation of the Poincaré
+sphere about the $z$ axis by $\delta$. A half-wave plate (HWP) has $\delta=\pi$ ($J_0=Z$), a quarter-wave plate (QWP) has $\delta=\pi/2$ ($J_0=S$).
+
+A plate rotated by an angle $\alpha$ in the laboratory is $J(\alpha)=\mathcal R(\alpha)J_0\mathcal R(-\alpha)$ with the real rotation matrix
+$\mathcal R(\alpha)=\begin{pmatrix}\cos\alpha&-\sin\alpha\\ \sin\alpha&\cos\alpha\end{pmatrix}=R_y(2\alpha)$: a physical rotation by $\alpha$ is a rotation of the
+sphere by $2\alpha$ about $y$. For a half-wave plate,
+\begin{equation}
+  J_{\rm HWP}(\alpha)=\begin{pmatrix}\cos2\alpha&\sin2\alpha\\ \sin2\alpha&-\cos2\alpha\end{pmatrix}.
+\end{equation}
+It maps $\ket H$ to the linear polarization at $2\alpha$: a HWP at angle $\alpha$ \emph{mirrors} the polarization about its axis. Special cases:
+at $\alpha=0$ it is the $Z$ gate; at $\alpha=45^\circ$ it is the $X$ gate ($H\leftrightarrow V$); at $\alpha=22.5^\circ$ it is exactly the
+\emph{Hadamard gate}. A QWP at $45^\circ$ transforms linear into circular polarization. With a QWP--HWP--QWP sequence, any $SU(2)$ rotation
+can be realised (this is the optical version of the Euler decomposition, \cref{thm:euler}).
+
+\subsection{Measurement: Malus's law}
+A polarizer along the direction $\eta_0$ realizes the projective measurement onto $\ket{\eta_0}=\cos\eta_0\ket H+\sin\eta_0\ket V$. The
+equivalent of \cref{eq:projector} is \emph{Malus's law}: the probability of transmission is
+\begin{equation}
+  p=|\braket{\eta_0}\psi|^2=\cos^2\eta=\cos^2\frac\Theta2,
+\end{equation}
+where $\eta$ is the angle between the polarization of light and the transmission axis of the polarizer, and $\Theta=2\eta$ is the angle between
+the pseudospin of the light and the pseudospin eigenvector of the polarizer. For a classical beam, Malus's law (1809) gives the transmitted
+intensity; for a single photon it gives a probability.
+
+\section{Random number generation}
+\subsection{Why true randomness matters}
+Random numbers are an essential resource in many areas: cryptographic keys and nonces, quantum key distribution, Monte Carlo simulations,
+randomized algorithms, statistical sampling and lotteries. Most random numbers used in practice come from \emph{pseudo-random number generators}.
+These are deterministic algorithms that expand a short seed into a long sequence that looks random. Anyone who knows the algorithm and the
+seed can reproduce the whole sequence, which is a serious weakness in cryptography, and the sequence is eventually periodic.
+
+Classical physical generators, based for instance on thermal noise or chaotic circuits, avoid the explicit seed. Their unpredictability,
+however, comes only from our ignorance of the microscopic details: the underlying dynamics is deterministic in principle, and it is hard to
+certify that no hidden correlations, drifts or external influences are present.
+
+Quantum mechanics offers a fundamentally different source. According to the Born rule, the outcome of a measurement on a superposition state
+is intrinsically unpredictable. No additional information about the system, even in principle, can determine it in advance (this statement is
+made precise, and testable, by Bell's theorem, \cref{ch:bell}). This is the basis of \emph{quantum random number generators} (QRNGs) \cite{Jacak2021}.
+
+\subsection{Example: a photon and a polarizer}
+Consider a single photon linearly polarized at an angle $\theta$ with respect to the horizontal axis:
+\begin{equation}
+  \ket\psi=\cos\theta\ket H+\sin\theta\ket V.
+\end{equation}
+The photon is sent onto a polarizer that transmits horizontal polarization, followed by a single-photon detector. This realizes the
+projective measurement with projectors $P_H=\proj H$ (transmitted, detector clicks) and $P_V=\proj V$ (absorbed, no click). The transmission
+probability is
+\begin{equation}
+  p(H)=\mel\psi{P_H}\psi=|\braket H\psi|^2=\cos^2\theta,
+\end{equation}
+which is Malus's law at the level of a single photon. For $\theta=45^\circ$, $\ket\psi=(\ket H+\ket V)/\sqrt2$ and $p(H)=p(V)=1/2$. Each photon is
+transmitted or absorbed with equal probability. Assigning the bit value $1$ to a click and $0$ to no click, a stream of identically prepared
+photons produces a sequence of independent, unbiased random bits. After the measurement the transmitted photon is in state $\ket H$, so its
+polarization no longer carries any memory of the random choice.
+
+\subsection{Practical remarks}
+A real device deviates from this ideal picture. If the angle is not exactly $45^\circ$, the bits are biased, with $p(1)=\cos^2\theta\neq\frac12$.
+Photon losses and the finite detector efficiency also look like ``no click'' events and add to the bias. A common improvement replaces the
+polarizer by a \emph{polarizing beam splitter} with a detector in each output port, so that both outcomes are actually detected and events with no
+photon are discarded. Most commercial QRNGs actually use a beam splitter, which is the same measurement for a photon in a superposition of two
+spatial modes.
+
+Residual bias is removed by classical post-processing. The simplest method is \emph{von Neumann's procedure} \cite{vonNeumann1951}: group the bits
+in pairs, map $01\to0$ and $10\to1$, and discard $00$ and $11$.
+\begin{proposition}
+For independent bits with any fixed bias $P(1)=p$, the output of the von Neumann extractor is exactly unbiased; on average it produces
+$p(1-p)$ output bits per input bit.
+\end{proposition}
+\begin{proof}
+For independent bits, $P(01)=(1-p)p=P(10)$, so conditioned on keeping the pair, both outputs have probability $1/2$. A pair is kept with
+probability $2p(1-p)$ and yields one bit, i.e.\ $p(1-p)$ bits per input bit (at most $1/4$, for $p=1/2$).
+\end{proof}
+The method relies on independence; correlated bits require stronger \emph{randomness extractors} (e.g.\ hashing with Toeplitz matrices), whose
+output length is set by the min-entropy $H_{\min}=-\log_2\max_xP(x)$ of the raw data.
+
+Finally, the randomness of such a device rests on trusting its physical model (state preparation, polarizer and detectors). \emph{Device-independent}
+QRNGs remove this assumption by certifying the randomness through the violation of a Bell inequality, at the cost of a much lower bit rate.
+
+\section{The no-cloning theorem}\label{sec:nocloning}
+A natural question is whether an unknown quantum state can be copied. Suppose there exists a linear operator $C$ that clones any state $\ket\alpha$
+onto a second system initially prepared in a reference state $\ket0$:
+\begin{equation}\label{eq:clone}
+  C\ket\alpha\ket0=\ket\alpha\ket\alpha\qquad\text{for all }\ket\alpha.
+\end{equation}
+\begin{theorem}[No-cloning \cite{WoottersZurek1982,Dieks1982}]
+No linear (in particular, no unitary) operator satisfies \cref{eq:clone} for all states.
+\end{theorem}
+\begin{proof}[Proof 1 (linearity)]
+Let $\ket a$, $\ket b$ be two orthogonal states. By \cref{eq:clone}, $C\ket a\ket0=\ket a\ket a$ and $C\ket b\ket0=\ket b\ket b$. For the
+superposition $\ket x=(\ket a+\ket b)/\sqrt2$, linearity gives
+\begin{equation}
+  C\ket x\ket0=\frac1{\sqrt2}\left(\ket a\ket a+\ket b\ket b\right),
+\end{equation}
+whereas a true clone would be
+\begin{equation}
+  \ket x\ket x=\frac12\left(\ket a\ket a+\ket a\ket b+\ket b\ket a+\ket b\ket b\right).
+\end{equation}
+The two differ: the first does not contain the cross terms, and even its coefficients differ. Contradiction.
+\end{proof}
+\begin{proof}[Proof 2 (unitarity)]
+If $U\ket a\ket0=\ket a\ket a$ and $U\ket b\ket0=\ket b\ket b$, take the scalar product of the two equations. Since $U^\dagger U=I$, the left-hand side gives
+$\braket ab\braket00=\braket ab$ and the right-hand side gives $\braket ab^2$. Thus $\braket ab=\braket ab^2$, so $\braket ab=0$ or $1$:
+only identical or orthogonal states can be cloned by the same machine. (Allowing the machine to end in a state $\ket{M_a}$ that depends on the input does
+not help: one gets $|\braket ab|=|\braket ab|^2|\braket{M_a}{M_b}|\le|\braket ab|^2$.)
+\end{proof}
+Cloning is therefore not forbidden for states known to belong to a fixed orthogonal set $\{\ket a,\ket b\}$: classical information can be copied (a CNOT
+copies $\ket0$ and $\ket1$). It is the requirement to copy their superpositions as well that leads to the contradiction.
+
+\begin{remark}[History and relation to relativity]
+The theorem was found in 1982 in response to N.~Herbert's ``FLASH'' proposal for faster-than-light communication. Alice and Bob share an entangled pair
+(\cref{ch:entanglement}); Alice measures her particle either in the $Z$ or in the $X$ basis, which leaves Bob's particle in a state of the $Z$ basis or of
+the $X$ basis. If Bob could make many copies of his particle, he could measure them and find out which basis Alice chose, instantaneously. No-cloning
+forbids it. More generally, perfect cloning would allow signalling and perfect state discrimination.
+\end{remark}
+\begin{remark}[Approximate cloning\starred]
+Imperfect copies are allowed. The best universal cloner for qubits (Bužek and Hillery, 1996) produces two copies, each with fidelity
+$F=\mel\psi{\rho_{\rm copy}}\psi=5/6$ for every input state. Its Bloch vector is shrunk by a factor $2/3$.
+\end{remark}
+
+\section{Quantum key distribution: BB84}\label{sec:bb84}
+\subsection{The problem}
+The only provably secure classical cipher is the \emph{one-time pad} (Vernam, 1917): the message $m$ is combined with a random key $k$ of the same length,
+$c=m\oplus k$, and decrypted by $m=c\oplus k$. The ciphertext is statistically independent of the message (Shannon, 1949), provided that the key is
+truly random, used only once, and \emph{known only to the two parties}. The hard part is to distribute the key. Public-key cryptography (RSA) solves
+this problem only under computational assumptions, which Shor's algorithm (\cref{ch:shor}) would break.
+
+The BB84 protocol, proposed by Bennett and Brassard in 1984 \cite{BB84}, was the first quantum key distribution (QKD) scheme. Its goal is to establish a
+shared secret key between two parties, traditionally called Alice and Bob. Its security does not rely on computational assumptions. It follows from the
+laws of quantum mechanics: an eavesdropper cannot copy an unknown quantum state in order to measure it later (no-cloning), and cannot measure it without
+disturbing it if she does not know the basis.
+
+The protocol uses two channels: a \emph{quantum channel}, along which Alice sends single photons to Bob, and a public but \emph{authenticated} classical
+channel, along which they compare their choices of basis. (Authentication requires a short pre-shared secret; QKD is therefore really a key
+\emph{expansion} protocol.) It was originally formulated for single photons. Ekert later proposed a version based on entangled pairs \cite{Ekert1991}
+(\cref{sec:e91}).
+
+\subsection{Encoding}
+Alice encodes each bit in the polarization of a photon, using one of two bases:
+\begin{align}
+  \text{rectilinear basis }(+):&\quad 0\mapsto\ket\uparrow,\quad 1\mapsto\ket\rightarrow,\\
+  \text{diagonal basis }(\times):&\quad 0\mapsto\ket\nearrow,\quad 1\mapsto\ket\searrow,
+\end{align}
+with $\ket\nearrow,\ket\searrow=(\ket\rightarrow\pm\ket\uparrow)/\sqrt2$. The states within one basis are orthogonal, while the two bases are
+\emph{mutually unbiased}: $|\braket\uparrow\nearrow|^2=|\braket\uparrow\searrow|^2=1/2$. On the Poincaré sphere, the four states lie at the four points
+$\pm\vec e_z$, $\pm\vec e_x$ of a great circle. If a photon is measured in the basis in which it was prepared, the result is certain. If it is measured in the
+other basis, the result is completely random.
+
+\subsection{The protocol}
+\begin{enumerate}
+  \item Alice generates a random bit string and, for each bit, a random choice of basis ($+$ or $\times$). She sends Bob one photon per bit, polarized accordingly.
+  \item Bob independently chooses a random basis for each photon and measures its polarization in that basis.
+  \item Over the public channel, Alice and Bob announce the bases they used, but not the bit values. They keep only the bits for which the bases coincide
+  (on average half of them). This is the \emph{sifted key}.
+  \item They publicly compare a random subset of the sifted key to estimate the \emph{quantum bit error rate} (QBER) $Q$, and discard these bits.
+  \item If $Q$ is below a threshold, they perform classical \emph{error correction} (so that both have the same string) and \emph{privacy amplification}
+  (hashing the string into a shorter one about which Eve's information is negligible).
+\end{enumerate}
+An example is shown in \cref{tab:bb84}. In columns 2, 4, 5 and 7 the bases differ, and Bob's result is random. In the other columns his result coincides with Alice's bit.
+
+\begin{table}[h]\centering
+\begin{tabular}{@{}lcccccccc@{}}\toprule
+Alice's random bit & 0&1&1&0&1&0&0&1\\
+Alice's basis & $+$&$+$&$\times$&$+$&$\times$&$\times$&$\times$&$+$\\
+Polarization sent & $\uparrow$&$\rightarrow$&$\searrow$&$\uparrow$&$\searrow$&$\nearrow$&$\nearrow$&$\rightarrow$\\
+Bob's basis & $+$&$\times$&$\times$&$\times$&$+$&$\times$&$+$&$+$\\
+Polarization measured & $\uparrow$&$\nearrow$&$\searrow$&$\nearrow$&$\rightarrow$&$\nearrow$&$\rightarrow$&$\rightarrow$\\
+Same basis? & \checkmark&--&\checkmark&--&--&\checkmark&--&\checkmark\\
+Shared key & 0&&1&&&0&&1\\ \bottomrule
+\end{tabular}
+\caption{An example of the BB84 protocol with eight photons.}\label{tab:bb84}
+\end{table}
+
+\subsection{Security against intercept--resend}
+Suppose an eavesdropper, Eve, intercepts each photon, measures it in a randomly chosen basis, and resends to Bob a photon in the state she found.
+Consider a bit that survives sifting (Alice and Bob used the same basis).
+\begin{itemize}
+  \item With probability $1/2$ Eve chose the right basis: she learns the bit and resends the correct state. No error.
+  \item With probability $1/2$ she chose the wrong basis: her result is random, and she resends a state of the wrong basis. Bob, measuring in Alice's basis,
+  obtains a random result, wrong with probability $1/2$.
+\end{itemize}
+Eve therefore introduces errors in $\frac12\times\frac12=25\%$ of the sifted bits, while learning $50\%$ of them. Comparing $m$ bits, Alice and Bob
+detect her with probability $1-(3/4)^m$, i.e.\ $>99.99\%$ for $m=32$. Because of the no-cloning theorem, Eve cannot avoid this disturbance by copying
+the photons. More subtle attacks trade information for disturbance, but there is always a trade-off: \emph{information gain implies disturbance}.
+
+\begin{caveat}[: how much error is tolerable?]
+Real channels have errors even without Eve, and Alice and Bob must attribute \emph{all} errors to Eve. The Shor--Preskill security proof (2000)
+shows that, against the most general attacks, a secret key can be distilled at the rate (secret bits per sifted bit)
+\begin{equation}
+  r=1-2h(Q),\qquad h(Q)=-Q\log_2Q-(1-Q)\log_2(1-Q),
+\end{equation}
+where one $h(Q)$ is the cost of error correction and the other the cost of privacy amplification. The rate vanishes at $Q\approx11\%$. Above this threshold
+the key is discarded.
+\end{caveat}
+
+\subsection{Practical QKD}
+Single-photon sources are difficult, so most systems use attenuated laser pulses, coherent states with a mean photon number $\mu\approx0.1$--$0.5$. The number of
+photons per pulse is Poisson distributed, $P(n)=\e^{-\mu}\mu^n/n!$, so a fraction $P(n\ge2)/P(n\ge1)\approx\mu/2$ of the non-empty pulses contains several photons.
+Eve can keep one of them and let the others go to Bob (\emph{photon-number-splitting attack}). The \emph{decoy-state} method (Hwang 2003; Lo, Ma, Chen 2005)
+defeats this attack by randomly varying $\mu$, which lets Alice and Bob estimate the single-photon contribution. Detector side channels (``blinding'' attacks)
+motivate measurement-device-independent QKD. Commercial QKD systems reach a few hundred kilometres in fibre; the Chinese satellite Micius distributed keys
+over $1200$\,km (2017). Beyond that, \emph{quantum repeaters}, based on entanglement swapping (\cref{ch:teleportation}) and quantum memories, are required, since
+the no-cloning theorem also forbids optical amplification of quantum signals.
+
+\section{Exercises}
+\begin{exercise}
+Show that a half-wave plate at $22.5^\circ$ implements the Hadamard gate on polarization qubits, and that a QWP at $45^\circ$ maps $\ket H$ to a circular polarization.
+\end{exercise}
+\begin{exercise}
+In BB84, Eve measures every photon in the \emph{Breidbart basis}, halfway between the two bases (at $22.5^\circ$ in real space). Show that she guesses
+each sifted bit correctly with probability $\cos^2(\pi/8)\approx0.85$, and that she induces a QBER of $25\%$.
+\end{exercise}
+\begin{exercise}
+Compute the probability that Eve, measuring every photon as in the intercept--resend attack, remains undetected when Alice and Bob compare $m$ bits. How many bits must
+be compared to detect her with probability $1-10^{-9}$?
+\end{exercise}

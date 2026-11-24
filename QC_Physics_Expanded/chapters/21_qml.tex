@@ -1,0 +1,94 @@
+\chapter[Quantum machine learning]{Quantum machine learning and variational algorithms}\label{ch:qml}
+
+Machine learning consists largely of optimization and linear algebra on large datasets: training a model means minimizing a cost function, often by manipulating large matrices. Quantum machine learning (QML) asks
+whether quantum computers can perform these tasks faster or better \cite{Biamonte2017}. Linear regression, discussed in \cref{ch:annealing}, is a good example, since it can be approached in three different ways.
+
+\section{Three approaches to linear regression}
+\paragraph{Optimization with quantum annealers.} As we have seen, training a linear regression model can be written as a QUBO problem by binarizing the weights, and solved on a quantum annealer \cite{DatePotok2021}.
+The same strategy applies to other models whose training reduces to a quadratic cost function, such as support vector machines or clustering. The limitations are those of quantum annealing itself: the number and connectivity of
+the qubits, the finite precision of the binarized weights, and the absence of a guaranteed speed-up.
+
+\paragraph{Quantum linear algebra.} Ordinary least squares requires solving the linear system $X^TXw=X^Ty$. The HHL algorithm \cite{HHL2009} solves a linear system $A\vec x=\vec b$ in a time that grows only logarithmically with the
+size of the matrix, for sparse and well-conditioned matrices. Its application to least-squares fitting \cite{Wiebe2012} promises an exponential speed-up over the classical $\order(D^3)$ inversion. The algorithm works as follows
+($A$ Hermitian, with eigenvectors $\ket{u_j}$ and eigenvalues $\lambda_j$):
+\begin{enumerate}
+  \item Encode $\vec b$ as a quantum state $\ket b=\sum_j\beta_j\ket{u_j}$ (amplitude encoding: $\log_2N$ qubits for $N$ numbers).
+  \item Phase estimation of $\e^{\ii At}$ (\cref{ch:shor}) gives $\sum_j\beta_j\ket{u_j}\ket{\lambda_j}$.
+  \item A rotation of an ancilla controlled by the eigenvalue register,
+  $\ket{\lambda_j}\ket0\to\ket{\lambda_j}\big(\sqrt{1-C^2/\lambda_j^2}\,\ket0+\frac C{\lambda_j}\ket1\big)$,
+  then uncomputation of $\ket{\lambda_j}$.
+  \item Post-selecting the ancilla in $\ket1$ leaves $\propto\sum_j\frac{\beta_j}{\lambda_j}\ket{u_j}=A^{-1}\ket b$, the normalized solution $\ket x$.
+\end{enumerate}
+The cost is $\tilde\order(\log N\,s^2\kappa^2/\epsilon)$ for an $s$-sparse matrix with condition number $\kappa$ and precision $\epsilon$. These promises come with important caveats \cite{Aaronson2015}. The data must first be loaded into a quantum
+state, which may itself take a time proportional to their size (or require a ``quantum RAM'' that does not exist). The solution is obtained as a quantum state $\ket x$, from which only a few properties (e.g.\ $\mel x Mx$) can be read out
+efficiently, not all the weights. The condition number enters polynomially. And for several of these problems, ``quantum-inspired'' classical algorithms with a comparable scaling have since been found \cite{Tang2019}, when the classical
+data structure allows the same sampling access.
+
+\paragraph{Variational quantum models.} The approach best suited to present-day noisy hardware uses \emph{parameterized quantum circuits}. Classical data are encoded into a quantum state by a \emph{feature map}, such as angle encoding
+$\ket{\phi(x)}=\bigotimes_iR_y(x_i)\ket0$ or the Pauli expansion circuit \texttt{PauliFeatureMap} of Qiskit's circuit library. A circuit $U(\vec\theta)$ with adjustable rotation angles then acts on this state, and the expectation value
+of a measured observable, $f_{\vec\theta}(x)=\mel{\phi(x)}{U^\dagger(\vec\theta)OU(\vec\theta)}{\phi(x)}$, serves as the prediction of the model. The angles are trained by a classical optimizer that minimizes the squared error, exactly
+as in classical regression, with the quantum computer evaluating the model and the classical computer updating its parameters. Alternatively, the quantum state can be used to compute a \emph{kernel}, a similarity measure between data points in
+an exponentially large Hilbert space, $k(x,x')=|\braket{\phi(x)}{\phi(x')}|^2$, which is then used by a classical algorithm such as a support vector machine \cite{Havlicek2019}.
+
+\section{Variational algorithms}
+\subsection{The variational principle and VQE}
+The \emph{variational quantum eigensolver} (VQE, Peruzzo et al.\ 2014) estimates the ground-state energy of a Hamiltonian $H$ (a molecule, a spin model) by minimizing $E(\vec\theta)=\mel{\psi(\vec\theta)}H{\psi(\vec\theta)}$ over a family of
+trial states prepared by a circuit. It rests on the \emph{variational principle}:
+\begin{equation}
+  E(\vec\theta)\ge E_0\quad\text{for all }\vec\theta,
+\end{equation}
+since, expanding $\ket{\psi(\vec\theta)}=\sum_nc_n\ket{n}$ on the eigenstates of $H$, $E(\vec\theta)=\sum_n|c_n|^2E_n\ge E_0\sum_n|c_n|^2=E_0$. The Hamiltonian is written as a sum of Pauli strings, $H=\sum_kh_kP_k$ (for molecules, via the
+Jordan--Wigner mapping of fermions to qubits), and each $\expval{P_k}$ is measured separately, with the shot-noise cost discussed in \cref{ch:measurement}.
+
+\subsection{QAOA}
+The quantum approximate optimization algorithm uses the trial state
+\begin{equation}
+  \ket{\vec\gamma,\vec\beta}=\e^{-\ii\beta_pH_I}\e^{-\ii\gamma_pH_F}\cdots\e^{-\ii\beta_1H_I}\e^{-\ii\gamma_1H_F}\ket+^{\otimes n},
+\end{equation}
+with the Ising cost Hamiltonian $H_F$ of \cref{ch:annealing} and the mixer $H_I=\sum_iX_i$, and minimizes $\expval{H_F}$ over the $2p$ angles. It is a Trotterized, optimized version of quantum annealing. For MaxCut, $H_F=\sum_{(ij)\in E}Z_iZ_j$.
+
+\subsection{Gradients: the parameter-shift rule}
+Training requires gradients. Finite differences are very sensitive to shot noise, but for gates of the form $\e^{-\ii\theta P/2}$ with $P^2=I$ (all Pauli rotations) the gradient is given exactly by two evaluations of the circuit.
+\begin{proposition}[Parameter-shift rule]
+If $f(\theta)=\mel\psi{U^\dagger(\theta)AU(\theta)}\psi$ with $U(\theta)=\e^{-\ii\theta P/2}$, $P^2=I$ (other gates before and after are absorbed in $\ket\psi$ and $A$), then
+\begin{equation}
+  \frac{\dd f}{\dd\theta}=\frac12\left[f\left(\theta+\frac\pi2\right)-f\left(\theta-\frac\pi2\right)\right].
+\end{equation}
+\end{proposition}
+\begin{proof}
+By \cref{prop:involution}, $U(\theta)=\cos\frac\theta2-\ii\sin\frac\theta2P$, so $f$ is a quadratic form in $(\cos\frac\theta2,\sin\frac\theta2)$, i.e.\ a trigonometric polynomial of degree one in $\theta$: $f(\theta)=a+b\cos\theta+c\sin\theta$.
+Then $f(\theta+\frac\pi2)-f(\theta-\frac\pi2)=-2b\sin\theta+2c\cos\theta=2f'(\theta)$.
+\end{proof}
+
+\subsection{Difficulties}
+Variational algorithms face serious obstacles: (i) \emph{barren plateaus}: for random, deep, or highly expressive circuits, the gradients vanish exponentially with the number of qubits (McClean et al.\ 2018), so that an exponential number of
+shots is needed to train them; (ii) noise also flattens the cost landscape; (iii) the classical optimization is non-convex with many local minima; (iv) the number of measurements needed to estimate $\expval H$ to chemical accuracy can be huge.
+No practical quantum advantage has been demonstrated with variational algorithms so far.
+
+\section{Useful subroutines}
+\paragraph{The swap test.} The overlap of two states, needed for kernels and fidelity estimation, can be measured with one ancilla:
+\begin{center}
+\begin{quantikz}
+\lstick{$\ket0$} & \gate{H} & \ctrl{1} & \gate{H} & \meter{}\\
+\lstick{$\ket\psi$} & \qw & \swap{1} & \qw & \qw\\
+\lstick{$\ket\phi$} & \qw & \targX{} & \qw & \qw
+\end{quantikz}
+\end{center}
+After the controlled SWAP and the second Hadamard, the state is $\frac12\ket0(\ket{\psi\phi}+\ket{\phi\psi})+\frac12\ket1(\ket{\psi\phi}-\ket{\phi\psi})$, and
+\begin{equation}
+  P(0)=\frac14\norm{\ket{\psi\phi}+\ket{\phi\psi}}^2=\frac{1+|\braket\psi\phi|^2}2 .
+\end{equation}
+(For a kernel, it is simpler to apply $U_\phi(x')^\dagger U_\phi(x)$ to $\ket0$ and measure the probability of $\ket{0\dots0}$.)
+
+\section{Outlook}
+Quantum machine learning is a very active field, but no practical advantage over classical machine learning has been demonstrated so far. Quantum computers are most likely to help for data that are themselves quantum, such as the outputs
+of quantum sensors or quantum simulations, rather than for classical datasets. There are rigorous results showing exponential advantages in learning from quantum experiments with a quantum memory (Huang et al.\ 2022).
+
+\section{Exercises}
+\begin{exercise}
+Compute $f(\theta)=\mel0{R_y(\theta)^\dagger ZR_y(\theta)}0$ and check the parameter-shift rule.
+\end{exercise}
+\begin{exercise}
+For angle encoding of a single feature, $\ket{\phi(x)}=R_y(x)\ket0$, compute the kernel $k(x,x')$. Which classical kernel is it?
+(Answer: $\cos^2\frac{x-x'}2$.)
+\end{exercise}

@@ -1,0 +1,149 @@
+\chapter[Oracle algorithms]{Oracle algorithms: Deutsch--Jozsa, Bernstein--Vazirani, Simon}\label{ch:dj}
+
+The first quantum algorithms were formulated in the \emph{query} (or oracle) model: a function $f$ is given as a black box, and we count how many times it must be evaluated to learn some
+property of $f$. In this model speed-ups can be proved rigorously, and the algorithms show the basic mechanism of quantum computation: parallelism, phase kickback and interference.
+
+\section{The oracle and phase kickback}
+A function $f:\{0,1\}^n\to\{0,1\}$ is accessed through the unitary oracle \cref{eq:Uf}, $U_f\ket{x,y}=\ket{x,y\oplus f(x)}$. If the output qubit is prepared in $\ket-=(\ket0-\ket1)/\sqrt2$,
+\begin{equation}\label{eq:kickback}
+  U_f\ket x\ket-=\ket x\frac{\ket{f(x)}-\ket{1\oplus f(x)}}{\sqrt2}=(-1)^{f(x)}\ket x\ket-,
+\end{equation}
+since flipping $\ket-$ just changes its sign. The output qubit is unchanged and the value of the function appears as a \emph{phase} of the input register (\emph{phase kickback}). We can forget
+the output qubit and describe the oracle as the \emph{phase oracle} $O_f\ket x=(-1)^{f(x)}\ket x$.
+
+\section{The Hadamard transform}
+\begin{lemma}\label{lem:hadamard}
+For a single qubit, $H\ket x=\frac1{\sqrt2}\sum_{z=0}^1(-1)^{xz}\ket z$. For $n$ qubits,
+\begin{equation}\label{eq:Hn}
+  H^{\otimes n}\ket x=\frac1{\sqrt{2^n}}\sum_{z\in\{0,1\}^n}(-1)^{x\cdot z}\ket z,\qquad x\cdot z=x_1z_1\oplus\dots\oplus x_nz_n.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For one qubit: $H\ket0=(\ket0+\ket1)/\sqrt2$ and $H\ket1=(\ket0-\ket1)/\sqrt2$; the sign is negative only for $x=z=1$. For $n$ qubits, $H^{\otimes n}\ket{x_1\dots x_n}=\bigotimes_iH\ket{x_i}
+=\bigotimes_i\frac1{\sqrt2}\sum_{z_i}(-1)^{x_iz_i}\ket{z_i}$; expanding the product gives the sum over all strings $z$ with the sign $(-1)^{\sum_ix_iz_i}$, and only the parity of the exponent matters.
+\end{proof}
+In particular $H^{\otimes n}\ket{0\dots0}=2^{-n/2}\sum_z\ket z$, the uniform superposition, and $H^{\otimes n}$ is its own inverse. $H^{\otimes n}$ is the Fourier transform over the group $\Z_2^n$.
+
+\section{Deutsch's algorithm ($n=1$)}
+Deutsch (1985) asked whether a function $f:\{0,1\}\to\{0,1\}$ is constant ($f(0)=f(1)$) or balanced ($f(0)\neq f(1)$). Classically, two evaluations are needed. Quantum mechanically:
+\begin{align}
+  \ket0\ket1&\xrightarrow{H\otimes H}\frac{\ket0+\ket1}{\sqrt2}\ket-\xrightarrow{U_f}\frac{(-1)^{f(0)}\ket0+(-1)^{f(1)}\ket1}{\sqrt2}\ket-\nonumber\\
+  &\quad=\pm\frac{\ket0+(-1)^{f(0)\oplus f(1)}\ket1}{\sqrt2}\ket-\xrightarrow{H\otimes I}\pm\ket{f(0)\oplus f(1)}\ket- .
+\end{align}
+Measuring the first qubit gives $f(0)\oplus f(1)$, a \emph{global} property of $f$, with a single evaluation. Note that neither $f(0)$ nor $f(1)$ is learned.
+
+\section{The Deutsch--Jozsa algorithm}
+The Deutsch--Jozsa algorithm \cite{DeutschJozsa1992} was one of the first examples of a problem that a quantum computer solves dramatically faster than a classical one.
+
+\paragraph{The problem.} We are given a function $f$ of $n$ bits (an integer $x\in\{0,\dots,2^n-1\}$) with values $f(x)\in\{0,1\}$. We are \emph{promised} that $f$ is either constant ($0$ for all $x$,
+or $1$ for all $x$) or balanced ($0$ for exactly half of the inputs and $1$ for the other half). The task is to decide which. A classical deterministic algorithm must, in the worst case, check one more
+than half of the inputs, i.e.\ $2^{n-1}+1$ queries, exponentially many. The Deutsch--Jozsa algorithm requires a single query.\footnote{A probabilistic classical algorithm does much better than the worst
+case: after $k$ random queries giving equal values, the probability that a balanced function would produce this outcome is about $2^{1-k}$. The exponential separation holds for an exact, deterministic answer.}
+
+\paragraph{The algorithm.} It uses $n$ input qubits and one output qubit, and starts in $\ket{\psi_0}=\ket0^{\otimes n}\ket1$.
+\begin{enumerate}
+  \item \emph{Superposition.} A Hadamard gate on each qubit gives
+  \begin{equation}
+    \ket{\psi_1}=\sum_{x=0}^{2^n-1}\frac{\ket x}{\sqrt{2^n}}\left[\frac{\ket0-\ket1}{\sqrt2}\right].
+  \end{equation}
+  \item \emph{Oracle.} By phase kickback \cref{eq:kickback},
+  \begin{equation}
+    \ket{\psi_2}=\sum_x\frac{(-1)^{f(x)}\ket x}{\sqrt{2^n}}\left[\frac{\ket0-\ket1}{\sqrt2}\right].
+  \end{equation}
+  Thanks to the superposition, a single application of the oracle has evaluated $f$ for all $2^n$ inputs at once (quantum parallelism).
+  \item \emph{Interference.} Hadamard gates are applied again to the input qubits. By \cref{lem:hadamard},
+  \begin{equation}
+    \ket{\psi_3}=\sum_z\sum_x\frac{(-1)^{x\cdot z+f(x)}}{2^n}\ket z\left[\frac{\ket0-\ket1}{\sqrt2}\right].
+  \end{equation}
+  \item \emph{Measurement.} The input register is measured. The amplitude of $\ket{0}^{\otimes n}$ ($z=0$, for which $x\cdot z=0$) is
+  \begin{equation}
+    a_0=\frac1{2^n}\sum_x(-1)^{f(x)}.
+  \end{equation}
+  \begin{itemize}
+    \item If $f$ is constant, all the terms are equal and $a_0=\pm1$. Since the state is normalized, all the other amplitudes vanish, and the measurement gives $0\dots0$ with certainty.
+    \item If $f$ is balanced, half of the terms are $+1$ and half are $-1$. They cancel, $a_0=0$, and the result $0\dots0$ never occurs.
+  \end{itemize}
+\end{enumerate}
+If $0\dots0$ is observed, the function is constant; otherwise, it is balanced. The answer is obtained with certainty after a single query.
+\begin{center}
+\begin{quantikz}
+\lstick{$\ket0^{\otimes n}$} & \qwbundle{n} & \gate{H^{\otimes n}} & \gate[2]{U_f} & \gate{H^{\otimes n}} & \meter{}\\
+\lstick{$\ket1$} & \qw & \gate{H} & & \qw & \qw
+\end{quantikz}
+\end{center}
+The algorithm illustrates the two ingredients of a quantum speed-up. Quantum parallelism alone is not enough, since measuring $\ket{\psi_2}$ would give a single random value of $x$. It is the final
+Hadamard transform that makes the $2^n$ contributions interfere, constructively or destructively depending on the global property of $f$ we are interested in. The individual values $f(x)$ are never
+learned, only whether the function is constant or balanced. For a function that is neither (no promise), $|a_0|^2=(1-2w/2^n)^2$, where $w$ is the number of ones of $f$.
+
+\section{The Bernstein--Vazirani algorithm}
+Suppose now that $f_a(x)=a\cdot x\bmod2$ for an unknown string $a$. Classically, $n$ queries are needed (query $x=0\dots010\dots0$ to learn each bit of $a$). The Deutsch--Jozsa circuit gives
+\begin{equation}
+  H^{\otimes n}\left(\frac1{\sqrt{2^n}}\sum_x(-1)^{a\cdot x}\ket x\right)=H^{\otimes n}H^{\otimes n}\ket a=\ket a,
+\end{equation}
+using \cref{eq:Hn} and $(H^{\otimes n})^2=I$. A single query reveals $a$ with certainty.
+
+\section{Implementation in Qiskit}
+\paragraph{An oracle.} Constructing oracles often requires bitwise operations on integers. In Python, \texttt{x << y} shifts \texttt{x} by \texttt{y} places to the left ($x\cdot2^y$) and \texttt{x \& y}
+is the bitwise AND. Thus \texttt{1 << i} is the binary number with a single 1 in position $i$, and \texttt{a \& (1 << i)} is non-zero iff bit $i$ of $a$ is 1. These operations give a simple family of
+balanced functions on $n$-bit numbers $k<2^n$:
+\begin{equation}
+  f_a(k)=\left(\text{number of 1 bits in }a\,\&\,k\right)\bmod2,\qquad0<a<2^n,
+\end{equation}
+which is exactly $a\cdot k$. The number $a$ selects which bits of $k$ are kept. For $a=1$, $f_a(k)$ is the parity of $k$: half of the numbers are even and half are odd, so $f_a$ is balanced. The same holds
+for any $a\neq0$: if bit $j$ of $a$ is set, flipping bit $j$ of $k$ flips $f_a(k)$, which pairs the inputs with $f=0$ and $f=1$. The corresponding oracle applies a CNOT from each selected input qubit to the output qubit:
+\begin{lstlisting}
+def dj_oracle(a, n):
+    oracle = QuantumCircuit(n + 1)
+    for i in range(n):
+        if a & (1 << i):      # bit i of a is set
+            oracle.cx(i, n)   # input qubit i controls the output qubit n
+    return oracle
+\end{lstlisting}
+For $a=0$ the oracle is empty and the function is constant.
+
+\paragraph{The circuit.}
+\begin{lstlisting}
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
+
+n, a = 3, 5
+qc = QuantumCircuit(n + 1, n)
+qc.x(n)                                      # output qubit in |1>
+qc.h(range(n + 1))                           # step 1: superposition
+qc.compose(dj_oracle(a, n), inplace=True)    # step 2: oracle
+qc.h(range(n))                               # step 3: interference
+qc.measure(range(n), range(n))               # step 4: measurement
+
+sim = AerSimulator()
+counts = sim.run(transpile(qc, sim), shots=1000).result().get_counts()
+\end{lstlisting}
+For $a=0$ (constant function) all 1000 shots give \texttt{'000'}. For $a=5$ (balanced function) all shots give \texttt{'101'}, a non-zero result, as expected. For this family of oracles the measured
+string is the number $a$ itself (Bernstein--Vazirani); with Qiskit's little-endian printing, the string \texttt{'101'} is directly the binary representation of $a=5$.
+
+\section{Simon's algorithm\starred}
+The Deutsch--Jozsa speed-up disappears if a small probability of error is allowed. Simon (1994) found a problem with an exponential separation even against randomized classical algorithms,
+which inspired Shor.
+
+\paragraph{Problem.} $f:\{0,1\}^n\to\{0,1\}^n$ satisfies $f(x)=f(y)\iff y=x\oplus s$ for an unknown non-zero ``period'' $s$. Find $s$. Classically, one must find a collision $f(x)=f(y)$; by the birthday
+paradox this needs $\Omega(2^{n/2})$ queries.
+
+\paragraph{Algorithm.} Prepare $2^{-n/2}\sum_x\ket x\ket0$, apply $U_f$ to get $2^{-n/2}\sum_x\ket x\ket{f(x)}$, and measure the second register. The result $f(x_0)$ leaves the first register in
+$(\ket{x_0}+\ket{x_0\oplus s})/\sqrt2$. Applying $H^{\otimes n}$,
+\begin{equation}
+  \frac1{\sqrt{2^{n+1}}}\sum_z\left[(-1)^{x_0\cdot z}+(-1)^{(x_0\oplus s)\cdot z}\right]\ket z=\frac1{\sqrt{2^{n+1}}}\sum_z(-1)^{x_0\cdot z}\left[1+(-1)^{s\cdot z}\right]\ket z .
+\end{equation}
+Only strings with $s\cdot z=0$ survive, each with probability $2^{1-n}$. Each run gives a random $z$ orthogonal to $s$ (mod 2). After $\order(n)$ runs we have $n-1$ linearly independent equations
+$s\cdot z_k=0$, which Gaussian elimination over $\Z_2$ solves for $s$ in $\order(n^3)$ classical operations. The quantum algorithm uses $\order(n)$ queries: an exponential speed-up. Shor's algorithm
+(\cref{ch:shor}) is the same idea with the group $\Z_2^n$ replaced by $\Z_N$ and $H^{\otimes n}$ by the quantum Fourier transform.
+
+\section{Exercises}
+\begin{exercise}
+Write the four possible oracles $U_f$ for $n=1$ as $4\times4$ matrices and check Deutsch's algorithm for each of them.
+\end{exercise}
+\begin{exercise}
+Show that for the Deutsch--Jozsa algorithm the final output qubit is always in $\ket-$ and is never entangled with the input register. Why is entanglement nevertheless present in the algorithm
+when $U_f$ is decomposed into gates? (Hint: consider the oracle $\CNOT$ alone with a control in $\ket+$ and a target in $\ket0$ instead of $\ket-$.)
+\end{exercise}
+\begin{exercise}
+Run Simon's algorithm by hand for $n=2$, $s=11$, $f(00)=f(11)=00$, $f(01)=f(10)=01$.
+\end{exercise}

@@ -1,0 +1,173 @@
+\chapter{Multi-qubit gates and universality}\label{ch:gates}
+
+\section{Reversible computation}\label{sec:reversible}
+A quantum computation (before measurement) is a unitary transformation, and unitary transformations are invertible. Classical logic, however, is mostly irreversible:
+the AND gate maps four inputs to two outputs and loses information. Landauer (1961) showed that erasing one bit dissipates at least $k_BT\ln2$ of heat; Bennett (1973) showed that
+any classical computation can be made reversible, at the price of keeping extra (``garbage'') bits. The standard construction turns any function $f:\{0,1\}^n\to\{0,1\}^m$ into the
+permutation of basis states
+\begin{equation}\label{eq:Uf}
+  U_f\ket x\ket y=\ket x\ket{y\oplus f(x)},
+\end{equation}
+where $\oplus$ is the bitwise addition modulo 2. It is a permutation (hence unitary), and its own inverse: $U_f^2\ket x\ket y=\ket x\ket{y\oplus f(x)\oplus f(x)}=\ket x\ket y$.
+Every classical circuit for $f$ with $G$ gates can be turned into a reversible circuit for $U_f$ with $\order(G)$ Toffoli gates and ancillas, which are reset to $\ket0$ by
+\emph{uncomputing} the intermediate results (compute, copy the result with CNOTs, run the circuit backwards). Uncomputation is essential in quantum computing: garbage left
+entangled with the result would destroy the interference that algorithms rely on.
+
+\section{The CNOT gate}\label{sec:cnot}
+The controlled-NOT (CNOT) gate acts on two qubits, a \emph{control} and a \emph{target}. If the control qubit is in state $\ket0$, the target is left unchanged. If the control is
+in state $\ket1$, the target is inverted ($\ket0\leftrightarrow\ket1$). The control qubit itself is never modified in the computational basis. Truth table:
+\begin{center}
+\begin{tabular}{@{}cc|cc@{}}\toprule
+\multicolumn{2}{c|}{Before}&\multicolumn{2}{c}{After}\\
+Control & Target & Control & Target\\ \midrule
+0&0&0&0\\0&1&0&1\\1&0&1&1\\1&1&1&0\\ \bottomrule
+\end{tabular}
+\qquad
+\begin{quantikz}
+\lstick{$\ket x$} & \ctrl{1} & \qw\ \rstick{$\ket x$}\\
+\lstick{$\ket y$} & \targ{} & \qw\ \rstick{$\ket{y\oplus x}$}
+\end{quantikz}
+\end{center}
+The target output is the exclusive OR of the two inputs:
+\begin{equation}
+  \CNOT\ket x\ket y=\ket x\ket{y\oplus x}.
+\end{equation}
+Unlike the classical XOR gate, which has two inputs and one output, CNOT keeps the control bit in its output. It is therefore reversible, as every unitary quantum gate must be.
+
+\paragraph{Matrix.} In the basis $\ket0=(1,0)^T$, $\ket1=(0,1)^T$ a qubit is $\ket\psi=\alpha\ket0+\beta\ket1=(\alpha,\beta)^T$, and the inverted qubit is $X\ket\psi=(\beta,\alpha)^T$.
+In the basis $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$, with the first qubit as control,
+\begin{equation}\label{eq:cnotmatrix}
+  \CNOT=\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}=\proj0\otimes I+\proj1\otimes X.
+\end{equation}
+The upper-left block is the identity acting on the target when the control is $\ket0$; the lower-right block is the NOT gate, acting when the control is $\ket1$.
+Multiplying by the column vectors $\ket{00}=(1,0,0,0)^T,\dots,\ket{11}=(0,0,0,1)^T$ leaves the first two unchanged and exchanges the last two:
+$\CNOT\ket{10}=\ket{11}$, $\CNOT\ket{11}=\ket{10}$, in agreement with the truth table.
+
+\paragraph{What CNOT does to superpositions.}
+\begin{itemize}
+  \item It \emph{entangles}: $\CNOT\,\ket+\ket0=\ket{\Phi^+}$. A product state becomes maximally entangled.
+  \item It ``copies'' basis states, $\ket x\ket0\to\ket x\ket x$, but not superpositions (no-cloning): $(\alpha\ket0+\beta\ket1)\ket0\to\alpha\ket{00}+\beta\ket{11}$.
+  \item \emph{The control is not always unchanged.} In the $X$ basis the roles are reversed: $(H\otimes H)\CNOT_{1\to2}(H\otimes H)=\CNOT_{2\to1}$. For example
+  $\CNOT\ket+\ket-=\ket-\ket-$: the phase is ``kicked back'' onto the control. Phase kickback is the mechanism of the Deutsch--Jozsa, Grover and phase-estimation algorithms.
+\end{itemize}
+
+\section{Other two-qubit gates}
+\paragraph{Controlled-$Z$.} $\mathrm{CZ}=\diag(1,1,1,-1)=\proj0\otimes I+\proj1\otimes Z$. It is symmetric in the two qubits (it only puts a sign on $\ket{11}$). Since $HXH=Z$,
+\begin{equation}
+  (I\otimes H)\,\CNOT\,(I\otimes H)=\mathrm{CZ},
+\end{equation}
+which can be checked by multiplying the matrices, for instance with SymPy (\cref{ch:qiskit}).
+
+\paragraph{SWAP.} $\mathrm{SWAP}\ket{x}\ket{y}=\ket y\ket x$. It is made of three CNOTs with alternating control:
+\begin{equation}
+  \mathrm{SWAP}=\CNOT_{1\to2}\,\CNOT_{2\to1}\,\CNOT_{1\to2}.
+\end{equation}
+Proof on basis states: $\ket{x,y}\to\ket{x,x\oplus y}\to\ket{x\oplus(x\oplus y),x\oplus y}=\ket{y,x\oplus y}\to\ket{y,x\oplus y\oplus y}=\ket{y,x}$. This is the reversible version of the
+classic XOR-swap trick. On hardware with limited connectivity, SWAPs are used to bring distant qubits next to each other, which is one of the main overheads of transpilation.
+
+\paragraph{Controlled-$U$.} For any single-qubit $U$, $C(U)=\proj0\otimes I+\proj1\otimes U$.
+\begin{proposition}[\cite{NielsenChuang}, Cor.~4.2]
+Write $U=\e^{\ii\alpha}AXBXC$ with $ABC=I$ (always possible by the Euler decomposition: $A=R_z(\beta)R_y(\theta/2)$, $B=R_y(-\theta/2)R_z(-(\delta+\beta)/2)$,
+$C=R_z((\delta-\beta)/2)$). Then $C(U)$ is implemented by
+\begin{center}
+\begin{quantikz}
+ & \qw & \ctrl{1} & \qw & \ctrl{1} & \qw & \gate{\diag(1,\e^{\ii\alpha})} & \qw\\
+ & \gate{C} & \targ{} & \gate{B} & \targ{} & \gate{A} & \qw & \qw
+\end{quantikz}
+\end{center}
+\end{proposition}
+\begin{proof}
+If the control is $\ket0$, the target undergoes $ABC=I$. If it is $\ket1$, it undergoes $AXBXC$ and the phase gate gives the factor $\e^{\ii\alpha}$, i.e.\ $U$.
+The identity $XR_y(\theta)X=R_y(-\theta)$, $XR_z(\theta)X=R_z(-\theta)$ is used to check $AXBXC=R_z(\beta)R_y(\theta)R_z(\delta)$.
+\end{proof}
+
+\section{The Toffoli gate}\label{sec:toffoli}
+The Toffoli gate, or controlled-controlled-NOT (CCNOT), flips the target if and only if both controls are $\ket1$: $\ket{x,y,z}\to\ket{x,y,z\oplus xy}$. With $z=0$ it computes the AND,
+and with $x=y=1$ it is a NOT. Since $\{\text{AND},\text{NOT}\}$ is universal for Boolean logic, \emph{the Toffoli gate alone is universal for classical reversible computation} (with ancillas).
+It is not natively available in hardware and is decomposed into two-qubit gates. With $V=\sqrt X$ (so that $V^2=X$),
+\begin{center}
+\begin{quantikz}
+\lstick{$x$} & \ctrl{2} & \qw & \qw\\
+\lstick{$y$} & \ctrl{1} & \qw & \qw\\
+\lstick{$z$} & \targ{} & \qw & \qw
+\end{quantikz}
+\ $=$\
+\begin{quantikz}
+ & \qw & \ctrl{1} & \qw & \ctrl{1} & \ctrl{2} & \qw\\
+ & \ctrl{1} & \targ{} & \ctrl{1} & \targ{} & \qw & \qw\\
+ & \gate{V} & \qw & \gate{V^\dagger} & \qw & \gate{V} & \qw
+\end{quantikz}
+\end{center}
+Check: the target receives $V^{y}$, then $V^{\dagger(x\oplus y)}$, then $V^{x}$; the total exponent is $y-(x\oplus y)+x=2xy$, so the target undergoes $V^{2xy}=X^{xy}$. The CNOTs on $y$ cancel.
+Decomposing the controlled-$V$ gates further, the standard circuit uses 6 CNOTs and 7 $T$ or $T^\dagger$ gates; 6 CNOTs is optimal. On real hardware with nearest-neighbour connectivity,
+extra SWAPs increase this count (\cref{sec:halfadder}).
+
+\section{Universal gate sets}\label{sec:universal}
+\begin{definition}
+A set of gates is \emph{universal} if any unitary on any number of qubits can be implemented \emph{exactly} by a finite circuit of these gates, or \emph{approximately universal}
+if any unitary can be approximated to any accuracy $\varepsilon$ in operator norm.
+\end{definition}
+\begin{theorem}
+Single-qubit gates and CNOT are universal.
+\end{theorem}
+\begin{proof}[Sketch of proof (\cite{NielsenChuang}, \S4.5)]
+\emph{Step 1: two-level unitaries.} Any unitary $U$ on a $d$-dimensional space is a product of at most $d(d-1)/2$ \emph{two-level} unitaries, i.e.\ unitaries that act non-trivially only
+on two basis vectors. This is the complex version of the Givens-rotation (or Jacobi) method: one multiplies $U$ by two-level unitaries chosen to make the entries of the first column zero,
+one by one, below the diagonal; unitarity then also makes the first row trivial, and one proceeds by induction on $d$.
+
+\emph{Step 2: two-level unitaries from controlled gates.} A two-level unitary acting on $\ket s$ and $\ket t$ ($n$-bit strings) is implemented by a sequence of CNOT-type gates (a Gray
+code) that maps $\ket s$ and $\ket t$ onto two strings differing in a single bit, then a single-qubit gate on that bit controlled by all the other bits, then the inverse Gray code.
+
+\emph{Step 3: multi-controlled gates.} A $C^{n-1}(U)$ gate is decomposed into Toffoli gates (with ancillas) and a $C(U)$; Toffoli and $C(U)$ are made of CNOTs and single-qubit gates as above.
+\end{proof}
+The construction is not efficient: a generic $n$-qubit unitary needs $\order(4^n)$ gates. This is unavoidable. A unitary on $n$ qubits has $4^n$ real parameters, and a circuit of $G$ gates from
+a finite set of $g$ gates can produce at most $(gn^2)^G$ distinct circuits; covering all unitaries to accuracy $\varepsilon$ requires $G=\Omega(4^n\log(1/\varepsilon)/\log n)$.
+\emph{Most unitaries cannot be implemented efficiently}; the art of quantum algorithms is to find useful ones that can.
+
+\paragraph{A finite universal set.} Hardware and error-correcting codes offer only a finite set of gates. The set $\{H,T,\CNOT\}$ (often written ``Clifford $+T$'') is approximately universal.
+The key observation is that $HTHT$ is (up to phase) a rotation of the Bloch sphere by an angle $\theta$ with $\cos\frac\theta2=\cos^2\frac\pi8$, which is an irrational multiple of $\pi$.
+Its powers are therefore dense in the rotations about its axis. Combined with a second rotation $THTH$ about a non-parallel axis, any rotation can be approximated (Boykin et al.\ 1999).
+\begin{theorem}[Solovay--Kitaev]
+If a finite set of single-qubit gates, closed under inverses, generates a dense subgroup of $SU(2)$, then any single-qubit gate can be approximated to accuracy $\varepsilon$ by a sequence
+of $\order(\log^c(1/\varepsilon))$ gates of the set, with $c\approx2$--$4$ depending on the construction.
+\end{theorem}
+Approximation is thus cheap: the overhead is polylogarithmic. Without $T$, the gates $\{H,S,\CNOT\}$ generate only the finite \emph{Clifford group}, which maps Pauli operators to Pauli
+operators and is classically simulable (Gottesman--Knill). The $T$ gate is the ``non-Clifford'' resource that makes quantum computers powerful, and in fault-tolerant architectures it is
+the expensive gate (it requires magic-state distillation).
+
+\section{Physical origin of two-qubit gates}
+Two-qubit gates require an interaction between qubits. The three generic interactions found in nature generate the three standard entangling gates.
+\begin{origin}[: from interactions to gates]
+\textbf{Ising ($ZZ$) interaction} (nuclear spins in NMR with $J$-coupling, dispersively coupled superconducting qubits, Rydberg atoms): $H=\frac{\hbar J}{4}Z_1Z_2$. Since
+$\proj{11}=\frac14(I-Z_1-Z_2+Z_1Z_2)$,
+\begin{equation}
+  \mathrm{CZ}=\e^{\ii\pi\proj{11}}=\e^{\ii\pi/4}\,\e^{-\ii\frac\pi4Z_1}\e^{-\ii\frac\pi4Z_2}\,\e^{\ii\frac\pi4Z_1Z_2}.
+\end{equation}
+All terms commute, so CZ is obtained by letting the qubits interact for the time $t$ with $Jt/4=-\pi/4$ (or $Jt=\pi$ with the opposite sign of $J$) together with single-qubit $Z$ rotations
+by $\pi/2$. Adding Hadamards on the target gives a CNOT.
+
+\textbf{Heisenberg exchange interaction} (electron spins in neighbouring quantum dots, \cref{sec:spinqubits}): $H=J\,\vec S_1\cdot\vec S_2=\frac{J\hbar^2}4\vec\sigma_1\cdot\vec\sigma_2$. The
+identity $\vec\sigma_1\cdot\vec\sigma_2=2\,\mathrm{SWAP}-I$ (check it on the triplet, eigenvalue $+1$, and on the singlet, eigenvalue $-3$) gives
+$U(t)=\e^{\ii\phi}\e^{-\ii\frac{J\hbar t}2\mathrm{SWAP}}=\e^{\ii\phi}\left(\cos\frac{J\hbar t}2-\ii\sin\frac{J\hbar t}2\,\mathrm{SWAP}\right)$, using $\mathrm{SWAP}^2=I$. For $J\hbar t=\pi$ this is the
+SWAP gate (up to phase), and for half this time the entangling $\sqrt{\mathrm{SWAP}}$ gate. Two $\sqrt{\mathrm{SWAP}}$ and single-qubit rotations make a CNOT (Loss and DiVincenzo, 1998).
+
+\textbf{$XY$ (flip-flop) interaction} (superconducting qubits coupled by a capacitor or a resonator, \cref{sec:transmon}): $H=\hbar g(\sigma_1^+\sigma_2^-+\sigma_1^-\sigma_2^+)=\frac{\hbar g}2(X_1X_2+Y_1Y_2)$.
+It exchanges an excitation, $\ket{01}\leftrightarrow\ket{10}$, and acts as $\hbar g\,\sigma_x$ in this subspace. After $gt=\pi/2$ it gives the iSWAP gate (up to the sign of $\ii$),
+$\ket{01}\to-\ii\ket{10}$, $\ket{10}\to-\ii\ket{01}$; after $gt=\pi/4$, $\sqrt{\mathrm{iSWAP}}$. Resonance is controlled by tuning the qubit frequencies.
+\end{origin}
+Any entangling two-qubit gate, together with arbitrary single-qubit gates, is universal (Brylinski 2002). Hardware therefore chooses whatever gate its interaction makes natural: CZ
+(Google, Rydberg atoms), cross-resonance/ECR (IBM), Mølmer--Sørensen $XX$ (trapped ions, \cref{sec:ions}), and transpilers convert circuits into the native gate set.
+
+\section{Exercises}
+\begin{exercise}
+Verify the operation of the CNOT gate: write the four basis vectors as column vectors using the tensor product, multiply them by \cref{eq:cnotmatrix}, and check the truth table.
+\end{exercise}
+\begin{exercise}
+Show that $(H\otimes H)\CNOT_{1\to2}(H\otimes H)=\CNOT_{2\to1}$. Interpret it with the Bloch sphere.
+\end{exercise}
+\begin{exercise}
+Show that $\CNOT$ cannot be written as $A\otimes B$. Show that it can create a Bell state from a product state, while $A\otimes B$ cannot change the Schmidt coefficients (\cref{app:schmidt}).
+\end{exercise}
+\begin{exercise}
+Using the formula of the CZ derivation, find the evolution time and the single-qubit corrections needed to realize CZ with the NMR coupling $H=\frac{\hbar\pi J}{2}Z_1Z_2$, $J=200$\,Hz.
+\end{exercise}

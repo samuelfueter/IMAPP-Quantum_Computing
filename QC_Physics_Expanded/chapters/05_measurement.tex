@@ -1,0 +1,99 @@
+\chapter{Measurement and probability}\label{ch:measurement}
+
+\section{Projective measurements}
+An observable $M$ has the spectral decomposition
+\begin{equation}
+  M=\sum_m m\,P_m,
+\end{equation}
+where $P_m$ is the projector onto the eigenspace of eigenvalue $m$. The possible outcomes are the eigenvalues. The probability to get $m$ is
+\begin{equation}\label{eq:born}
+  p(m)=\mel\psi{P_m}\psi,
+\end{equation}
+and if the value $m$ is obtained, the state becomes
+\begin{equation}\label{eq:collapse}
+  \ket{\psi'}=\frac{P_m\ket\psi}{\sqrt{p(m)}}.
+\end{equation}
+The projectors satisfy
+\begin{equation}
+  \sum_mP_m=I\qquad\text{and}\qquad P_mP_{m'}=\delta_{mm'}P_m,
+\end{equation}
+which guarantee $\sum_mp(m)=1$ and $p(m)\ge0$ ($\mel\psi{P_m}\psi=\norm{P_m\psi}^2$). Often one defines only the projectors; there is then an implicit
+observable $M=\sum_m m P_m$ with arbitrary distinct labels $m$. The projectors are often defined by a basis (``measure in the basis $\{\ket m\}$''):
+$P_m=\proj m$, and then $p(m)=|\braket m\psi|^2$.
+
+\paragraph{Properties.}
+\begin{itemize}
+  \item \emph{Mean value:} $\expval M=\sum_m m\,p(m)=\mel\psi M\psi$.
+  \item \emph{Repeatability:} measuring $M$ again immediately gives $m$ with certainty, since $P_m\ket{\psi'}=\ket{\psi'}$.
+  \item \emph{Global phases are irrelevant:} $\ket\psi\to\e^{\ii\gamma}\ket\psi$ does not change \cref{eq:born}. Relative phases, however, matter as soon
+  as one measures in another basis.
+\end{itemize}
+
+\begin{example}
+$\ket\psi=(\ket0+\ket1)/\sqrt2$, $P_0=\proj0$:
+$p(0)=\frac{\bra0+\bra1}{\sqrt2}\proj0\frac{\ket0+\ket1}{\sqrt2}=\frac12$. The state after the observation is
+$P_0\ket\psi/\sqrt{p(0)}=\frac{\ket0/\sqrt2}{\sqrt{1/2}}=\ket0$.
+\end{example}
+
+\section{Measurement along an arbitrary axis}
+Let $\vec n$ be a unit vector. Then $\vec n\cdot\vec\sigma=n_1\sigma_1+n_2\sigma_2+n_3\sigma_3$ is the observable ``spin along $\vec n$''
+(a Stern--Gerlach apparatus oriented along $\vec n$). Its eigenvalues are $\pm1$ and its projectors are (Problem 2.60 in \cite{NielsenChuang})
+\begin{equation}\label{eq:projector}
+  P_\pm=\frac{I\pm\vec n\cdot\vec\sigma}2.
+\end{equation}
+\begin{proof}
+Since $(\vec n\cdot\vec\sigma)^2=I$, $P_\pm^2=\frac{I\pm2\vec n\cdot\vec\sigma+I}{4}=P_\pm$; $P_+P_-=\frac{I-I}4=0$; $P_++P_-=I$; and
+$P_+-P_-=\vec n\cdot\vec\sigma$. These are exactly the properties of the spectral projectors of $\vec n\cdot\vec\sigma$ with eigenvalues $\pm1$.
+For $\vec n=\vec e_z$, $P_+=\proj0$ and $P_-=\proj1$: indeed $\sigma_z=\proj0-\proj1$ and $I=\proj0+\proj1$.
+\end{proof}
+For a qubit prepared in $\ket0$,
+\begin{equation}
+  p(+)=\mel0{P_+}0=\frac{1+n_3}2=\frac{1+\cos\theta}2=\cos^2\frac\theta2,
+\end{equation}
+where $\theta$ is the polar angle of $\vec n$ on the Bloch sphere (equivalently, the Poincaré sphere for photons): $\theta=0\Rightarrow p=1$,
+$\theta=\pi/2\Rightarrow p=1/2$, $\theta=\pi\Rightarrow p=0$. More generally, for a state with Bloch vector $\vec m$,
+$p(+)=\frac{1+\vec m\cdot\vec n}2$, which proves \cref{eq:overlapbloch}.
+
+\paragraph{Measuring in any basis with a computational-basis detector.} Quantum computers usually measure only $Z$. To measure along $\vec n$,
+one first applies the rotation $U$ that brings $\vec n$ to $\vec e_z$, then measures $Z$, since
+$\mel\psi{U^\dagger P_\pm^{(z)}U}\psi=\mel\psi{P_\pm^{(\vec n)}}\psi$. For example, $X$ is measured by applying $H$ before the measurement.
+
+\section{Statistics of repeated measurements}
+A single measurement gives one random outcome; quantum mechanics predicts probabilities, which are estimated by repeating the experiment
+(``shots''). With $N$ shots, the number of outcomes $+$ is binomial, and the estimated probability $\hat p=N_+/N$ has a standard deviation
+\begin{equation}
+  \delta\hat p=\sqrt{\frac{p(1-p)}N}\le\frac1{2\sqrt N}.
+\end{equation}
+This \emph{projection noise} (or shot noise) is the reason why a quantum computer must run each circuit thousands of times: the precision of
+an estimated expectation value improves only as $1/\sqrt N$. For variational algorithms (\cref{ch:qml}), this is a major cost.
+
+\section{Generalized measurements (POVM)\starred}\label{sec:povm}
+Real detectors are often not projective: a photon detector destroys the photon, and some measurements have more outcomes than the dimension of
+the space. The general description uses \emph{measurement operators} $M_m$ with $\sum_mM_m^\dagger M_m=I$:
+\begin{equation}
+  p(m)=\mel\psi{M_m^\dagger M_m}\psi,\qquad\ket{\psi'}=\frac{M_m\ket\psi}{\sqrt{p(m)}}.
+\end{equation}
+If we care only about the probabilities, it suffices to know the positive operators $E_m=M_m^\dagger M_m$, $\sum_mE_m=I$, the
+\emph{positive operator-valued measure} (POVM). Projective measurements are the special case $E_m=P_m$. By Naimark's theorem, any POVM can be
+realised as a projective measurement on a larger system (the qubit plus an ancilla) after a unitary interaction.
+
+\begin{example}[Unambiguous discrimination]
+Alice sends either $\ket0$ or $\ket+$. No measurement can distinguish them with certainty since they are not orthogonal. The three-outcome POVM
+$E_1=c\proj1$, $E_2=c\proj-$, $E_3=I-E_1-E_2$, with $c=\sqrt2/(1+\sqrt2)$, never errs: outcome $1$ excludes $\ket0$ (so the state was $\ket+$),
+outcome $2$ excludes $\ket+$ (so it was $\ket0$), and outcome $3$ means ``don't know''. It succeeds with probability $1-1/\sqrt2\approx0.29$, which
+is optimal.
+\end{example}
+
+\section{Exercises}
+\begin{exercise}
+A qubit is in the state $\ket\psi=\cos\frac\theta2\ket0+\e^{\ii\varphi}\sin\frac\theta2\ket1$. Compute the probabilities of the outcomes of
+a measurement of $X$, of $Y$ and of $Z$. Show that the three measurements together determine the state (quantum state tomography).
+\end{exercise}
+\begin{exercise}
+Check that $E_3$ in the unambiguous discrimination example is positive, and compute the success probability.
+\end{exercise}
+\begin{exercise}[Quantum Zeno effect]
+A qubit evolves under $H=\frac{\hbar\omega}2\sigma_x$ starting from $\ket0$, and is measured in the $Z$ basis $N$ times during the interval
+$[0,T]$, with $\omega T=\pi$. Show that the probability to find it in $\ket0$ at all measurements is $[\cos^2(\pi/2N)]^N\to1$ as $N\to\infty$.
+Frequent measurement freezes the evolution.
+\end{exercise}

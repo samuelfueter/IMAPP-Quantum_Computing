@@ -1,0 +1,87 @@
+% ---------- Packages ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,decorations.pathmorphing,positioning,3d,shapes.geometric}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage[nameinlink,capitalise]{cleveref}
+
+% ---------- Theorems ----------
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}{Exercise}[chapter]
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newenvironment{solution}{\begin{proof}[Solution]}{\end{proof}}
+
+% ---------- Boxes ----------
+\tcbset{enhanced,breakable,boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{origin}[1][]{colback=blue!3,colframe=blue!50!black,
+  title={Physical origin#1},fonttitle=\bfseries\small}
+\newtcolorbox{keypoint}[1][]{colback=green!3,colframe=green!40!black,
+  title={Key point#1},fonttitle=\bfseries\small}
+\newtcolorbox{caveat}[1][]{colback=red!3,colframe=red!50!black,
+  title={Caveat#1},fonttitle=\bfseries\small}
+
+% ---------- Code ----------
+\lstset{language=Python,basicstyle=\ttfamily\small,keywordstyle=\color{blue!60!black}\bfseries,
+  commentstyle=\color{green!40!black}\itshape,stringstyle=\color{red!60!black},
+  frame=single,framerule=0.3pt,rulecolor=\color{gray!60},backgroundcolor=\color{gray!4},
+  breaklines=true,columns=fullflexible,showstringspaces=false,upquote=true}
+
+% ---------- Macros ----------
+\newcommand{\ket}[1]{\left|#1\right\rangle}
+\newcommand{\bra}[1]{\left\langle#1\right|}
+\newcommand{\braket}[2]{\left\langle#1\middle|#2\right\rangle}
+\newcommand{\ketbra}[2]{\left|#1\middle\rangle\!\middle\langle#2\right|}
+\newcommand{\proj}[1]{\ketbra{#1}{#1}}
+\newcommand{\mel}[3]{\left\langle#1\middle|#2\middle|#3\right\rangle}
+\newcommand{\expval}[1]{\left\langle#1\right\rangle}
+\newcommand{\tr}{\operatorname{Tr}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\id}{I}
+\newcommand{\Ha}{\mathcal H}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\e}{\mathrm e}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\vsig}{\vec\sigma}
+\newcommand{\comm}[2]{\left[#1,#2\right]}
+\newcommand{\acomm}[2]{\left\{#1,#2\right\}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\CNOT}{\mathrm{CNOT}}
+\newcommand{\gcdf}{\operatorname{gcd}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\Dis}{\mathcal D}
+\newcommand{\order}{\mathcal O}
+\newcommand{\starred}{$^\star$}
+
+% Quantum circuits
+\usepackage{quantikz}
+
+\numberwithin{equation}{chapter}
+\setlist{itemsep=2pt,topsep=4pt}
+\emergencystretch=2em

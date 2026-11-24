@@ -1,0 +1,115 @@
+\chapter{Detecting entanglement: the Peres criterion}\label{ch:peres}
+
+\section{Separable mixed states}
+For pure states, entanglement means ``not a product'' (\cref{prop:det}). For mixed states the definition must allow for classical correlations.
+\begin{definition}[Werner, 1989]
+A density matrix of $AB$ is \emph{separable} if it is a convex combination of product states,
+\begin{equation}\label{eq:separable}
+  \hat\rho=\sum_ip_i\,\hat\rho_i^A\otimes\hat\rho_i^B,\qquad p_i\ge0,\ \sum_ip_i=1.
+\end{equation}
+Otherwise it is \emph{entangled}.
+\end{definition}
+Separable states are exactly those that Alice and Bob can prepare with local operations and classical communication (LOCC): they agree on $i$ with probability $p_i$
+(e.g.\ by a phone call) and prepare $\hat\rho_i^A$ and $\hat\rho_i^B$ locally. For example $\frac12(\proj{00}+\proj{11})$ is correlated (both qubits are always equal in the
+$Z$ basis) but separable. In contrast, $\proj{\Phi^+}$ has the same diagonal but also the coherences $\ketbra{00}{11}$, which make it entangled: it is correlated in
+every basis. Deciding whether a given $\hat\rho$ is separable is hard in general (NP-hard in the dimension, Gurvits 2003), but there are simple necessary criteria.
+
+\section{Partial transpose}
+Let $\hat\rho$ be a density matrix on $\Ha_A\otimes\Ha_B$:
+\begin{equation}
+  \hat\rho=\sum_{ijkl}p^{ij}_{kl}\ketbra ij\otimes\ketbra kl.
+\end{equation}
+Its \emph{partial transpose} with respect to $B$ is
+\begin{equation}
+  \hat\rho^{T_B}=(I\otimes T)\hat\rho=\sum_{ijkl}p^{ij}_{kl}\ketbra ij\otimes\left(\ketbra kl\right)^T=\sum_{ijkl}p^{ij}_{kl}\ketbra ij\otimes\ketbra lk
+  =\sum_{ijkl}p^{ij}_{lk}\ketbra ij\otimes\ketbra kl,
+\end{equation}
+where in the last step the summation indices $k$ and $l$ have been exchanged. In terms of matrix elements, only the indices of subsystem $B$ are exchanged:
+\begin{equation}
+  \left(\rho^{T_B}\right)_{m\mu,n\nu}=\rho_{m\nu,n\mu},
+\end{equation}
+where Latin indices refer to $A$ and Greek indices to $B$. With the big-endian ordering, $\hat\rho$ is a block matrix made of $\dim\Ha_A\times\dim\Ha_A$ blocks, each of size
+$\dim\Ha_B\times\dim\Ha_B$:
+\begin{equation}
+  \hat\rho=\begin{pmatrix}A_{11}&A_{12}&\cdots\\A_{21}&A_{22}&\cdots\\ \vdots&\vdots&\ddots\end{pmatrix}\quad\Longrightarrow\quad
+  \hat\rho^{T_B}=\begin{pmatrix}A_{11}^T&A_{12}^T&\cdots\\A_{21}^T&A_{22}^T&\cdots\\ \vdots&\vdots&\ddots\end{pmatrix}.
+\end{equation}
+Each block is transposed, but the order of the blocks is not changed. (The partial transpose depends on the basis, but its eigenvalues do not.)
+
+\section{The Peres--Horodecki criterion}
+\begin{theorem}[Peres \cite{Peres1996}; Horodecki \cite{Horodecki1996}]
+If $\hat\rho$ is separable, then all the eigenvalues of $\hat\rho^{T_B}$ are non-negative (``PPT'': positive partial transpose). Equivalently, if $\hat\rho^{T_B}$ has a negative
+eigenvalue, then $\hat\rho$ is entangled. For systems of dimension $2\times2$ and $2\times3$, the converse is also true: PPT implies separability.
+\end{theorem}
+\begin{proof}[Proof of the first part]
+A separable state is a convex sum of product states, \cref{eq:separable}. Then
+\begin{equation}
+  \hat\rho^{T_B}=(I\otimes T)\hat\rho=\sum_ip_i\,\hat\rho_i^A\otimes\left(\hat\rho_i^B\right)^T.
+\end{equation}
+Transposition preserves the eigenvalues, so $(\hat\rho_i^B)^T$ has the same non-negative eigenvalues as $\hat\rho_i^B$, and is itself a valid density matrix (it is
+also the complex conjugate of $\hat\rho_i^B$, since $\hat\rho_i^B$ is Hermitian). $\hat\rho^{T_B}$ is therefore a convex sum of positive semi-definite operators, and is positive
+semi-definite. A negative eigenvalue violates this requirement.
+\end{proof}
+\begin{remark}[Why the transpose?]
+The transpose $T$ is a \emph{positive} map (it maps density matrices to density matrices) which is not \emph{completely positive}: $I\otimes T$ applied to an entangled
+state can give a non-positive operator. Physically, $\hat\rho^T=\hat\rho^*$ is the time-reversed state; reversing time on one half of an entangled system only is not a
+physical operation. Every positive but not completely positive map gives an entanglement criterion, and the set of all of them characterizes separability (Horodecki 1996).
+In higher dimensions there exist entangled PPT states (``bound entanglement''), which cannot be distilled into Bell pairs.
+\end{remark}
+
+\section{Examples}
+\begin{example}[An entangled state]
+For $\ket\psi=(\ket{01}+\ket{10})/\sqrt2$, in the basis $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$,
+\begin{equation}
+  \hat\rho=\frac12\begin{pmatrix}0&0&0&0\\0&1&1&0\\0&1&1&0\\0&0&0&0\end{pmatrix},
+\end{equation}
+where, for example, $\rho_{10,01}=\braket{10}\psi\braket\psi{01}=\frac12$. The partial transpose moves the off-diagonal elements: $\rho_{01,10}\to(\rho^{T_B})_{00,11}$ and
+$\rho_{10,01}\to(\rho^{T_B})_{11,00}$ (the upper-right block $\begin{pmatrix}0&0\\1&0\end{pmatrix}$ becomes $\begin{pmatrix}0&1\\0&0\end{pmatrix}$), so that
+\begin{equation}
+  \hat\rho^{T_B}=\frac12\begin{pmatrix}0&0&0&1\\0&1&0&0\\0&0&1&0\\1&0&0&0\end{pmatrix}.
+\end{equation}
+Its eigenvalues follow from (omitting the factor $\frac12$)
+\begin{equation}
+  \det\begin{pmatrix}-\lambda&0&0&1\\0&1-\lambda&0&0\\0&0&1-\lambda&0\\1&0&0&-\lambda\end{pmatrix}=\lambda^2(1-\lambda)^2-(1-\lambda)^2=(1-\lambda)^2(\lambda-1)(\lambda+1)=0.
+\end{equation}
+The eigenvalues of $\hat\rho^{T_B}$ are therefore $\frac12,\frac12,\frac12$ and $\lambda_4=-\frac12<0$: the state is entangled. The eigenvector of the negative eigenvalue is
+$(\ket{00}-\ket{11})/\sqrt2$.
+\end{example}
+
+\begin{example}[A separable state]
+For $\ket{\psi_2}=(\ket{10}+\ket{00})/\sqrt2=\frac1{\sqrt2}(\ket0+\ket1)\otimes\ket0$,
+\begin{equation}
+  \hat\rho=\frac12\begin{pmatrix}1&0&1&0\\0&0&0&0\\1&0&1&0\\0&0&0&0\end{pmatrix}\quad\Longrightarrow\quad\hat\rho^{T_B}=\hat\rho,
+\end{equation}
+because every block is symmetric. The partial transpose is the same matrix, with eigenvalues $1,0,0,0\ge0$, as expected for a separable state.
+\end{example}
+
+\begin{example}[The Werner state]\label{ex:werner}
+Consider the mixture of a singlet with white noise, $\hat\rho_W=p\proj{\psi^-}+(1-p)\frac I4$, $0\le p\le1$. This models a Bell pair sent through a depolarizing channel.
+Since $I^{T_B}=I$ and $\proj{\psi^-}^{T_B}$ has eigenvalues $\frac12,\frac12,\frac12,-\frac12$ (as in the first example, up to a local unitary), $\hat\rho_W^{T_B}$ has the eigenvalues
+\begin{equation}
+  \frac p2+\frac{1-p}4\ (\times3),\qquad-\frac p2+\frac{1-p}4=\frac{1-3p}4.
+\end{equation}
+The Werner state is entangled if and only if $p>1/3$. (It violates the CHSH inequality only for $p>1/\sqrt2$: entanglement and nonlocality are not the same thing.)
+\end{example}
+
+\section{Quantifying entanglement}
+\begin{itemize}
+  \item The \emph{negativity} $\mathcal N=\sum_{\lambda_i<0}|\lambda_i(\hat\rho^{T_B})|$ ($=\frac12$ for a Bell state, $\frac{3p-1}4$ for the Werner state with $p>1/3$) and the
+  logarithmic negativity $E_N=\log_2(1+2\mathcal N)$ are easily computable entanglement measures.
+  \item The \emph{concurrence} of Wootters (1998), $C(\hat\rho)=\max(0,\lambda_1-\lambda_2-\lambda_3-\lambda_4)$, where $\lambda_i$ are the square roots of the eigenvalues of
+  $\hat\rho(Y\otimes Y)\hat\rho^*(Y\otimes Y)$ in decreasing order, gives the exact entanglement of formation of any two-qubit state. For pure states it reduces to
+  $2|\alpha\delta-\beta\gamma|$ (\cref{prop:det}).
+  \item An \emph{entanglement witness} is an observable $W$ with $\tr(W\hat\rho)\ge0$ for all separable states. Measuring $\tr(W\hat\rho)<0$ proves entanglement with a single
+  observable, without full tomography. For a target state $\ket\psi$, $W=\alpha I-\proj\psi$ with $\alpha$ the maximal squared overlap of $\ket\psi$ with product states ($\frac12$
+  for Bell states) is a witness: a fidelity with a Bell state larger than $1/2$ proves entanglement.
+\end{itemize}
+
+\section{Exercises}
+\begin{exercise}
+Show that the partial transpose with respect to $A$ has the same spectrum as the partial transpose with respect to $B$. (Hint: $\hat\rho^{T_A}=(\hat\rho^{T_B})^T$.)
+\end{exercise}
+\begin{exercise}
+For which values of $p$ is $\hat\rho=p\proj{\Phi^+}+(1-p)\proj{01}$ entangled?
+(Answer: for all $p>0$. Compute the eigenvalue of the block $\{\ket{01},\ket{10}\}$ of $\hat\rho^{T_B}$.)
+\end{exercise}
