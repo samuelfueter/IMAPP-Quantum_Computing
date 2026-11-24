@@ -129,12 +129,98 @@ By the Ehrenfest theorem (\cref{eq:heisenberg}),
 \end{equation*}
 Conversely, the two real parameters of the Bloch vector determine the state up to a global phase, so the Bloch equation contains all the dynamics.
 \end{proof}
-Comparing $H=h_0\sigma_0+\vec h\cdot\vec\sigma$ with $H=-\frac\hbar2\vec\Omega\cdot\vec\sigma$ gives the pseudospin rotation vector
-$\vec\Omega=-2\vec h/\hbar$. The Bloch vector rotates rigidly about the axis $\vec h$ with angular velocity $2|\vec h|/\hbar=(E_+-E_-)/\hbar$.
-The eigenstates of $H$ are the two points $\pm\vec h/|\vec h|$, which do not move. For a spin in a magnetic field, $\vec\Omega=\gamma\vec B$
-and \cref{eq:precession} is the Larmor precession $\dot{\vec\mu}=\gamma\vec\mu\times\vec B$, identical to the classical equation for a
-magnetic top. For the driven atom in the rotating frame, \cref{eq:HRWA}, $\vec h=\frac\hbar2(\Omega,0,-\Delta)$: the Rabi formula is the
-geometry of a vector precessing about a tilted axis.
+
+\subsection{What precesses around what?}\label{sec:precession}
+Equation \eqref{eq:precession} is easy to misread, so let us state precisely what moves and around which axis.
+\begin{itemize}
+  \item \textbf{The vector that moves} is the Bloch vector (pseudospin) $\vec S(t)=\mel{\psi(t)}{\vec\sigma}{\psi(t)}$, i.e.\ the \emph{state}.
+  \item \textbf{The axis} is the vector $\vec\Omega$ (equivalently $\vec h$), which is fixed by the \emph{Hamiltonian}: for a spin it is the direction of the
+  magnetic field. It does not move (for a time-independent $H$).
+\end{itemize}
+\emph{The state precesses around the Hamiltonian axis}, never the other way round. Comparing $H=h_0\sigma_0+\vec h\cdot\vec\sigma$ with $H=-\frac\hbar2\vec\Omega\cdot\vec\sigma$
+gives $\vec\Omega=-2\vec h/\hbar$, and \cref{eq:precession} can be rewritten in the two equivalent forms
+\begin{equation}\label{eq:precession2}
+  \dot{\vec S}=-\vec\Omega\times\vec S=\vec\omega_p\times\vec S,\qquad\vec\omega_p=-\vec\Omega=\frac2\hbar\vec h .
+\end{equation}
+The equation $\dot{\vec S}=\vec\omega_p\times\vec S$ is the kinematics of a rigid rotation with \emph{angular velocity vector} $\vec\omega_p$ (as $\dot{\vec r}=\vec\omega\times\vec r$
+for a point of a rotating solid). Therefore:
+\begin{itemize}
+  \item the Bloch vector rotates about the axis $\vec h$, \emph{counterclockwise} (right-hand rule: thumb along $\vec h$) or, equivalently, clockwise about $\vec\Omega$;
+  \item with the angular frequency $|\vec\omega_p|=2|\vec h|/\hbar=(E_+-E_-)/\hbar$, the Bohr frequency of the two eigenstates.
+\end{itemize}
+
+\paragraph{The motion is on a cone.} Two quantities are conserved:
+\begin{equation}
+  \frac{\dd}{\dd t}|\vec S|^2=2\vec S\cdot(\vec\omega_p\times\vec S)=0,\qquad
+  \frac{\dd}{\dd t}(\vec S\cdot\vec h)=(\vec\omega_p\times\vec S)\cdot\vec h=0 .
+\end{equation}
+The length of the Bloch vector is constant (pure states stay pure), and so is its projection on $\vec h$, i.e.\ the mean energy $\expval H=h_0+\vec h\cdot\vec S$. The tip of $\vec S$
+therefore moves on a circle: $\vec S$ sweeps a \emph{cone} of fixed opening angle $\beta_0$ around $\vec h$ (\cref{fig:precession}). In quantum language, the populations of the two
+eigenstates, $\cos^2\frac{\beta_0}2$ and $\sin^2\frac{\beta_0}2$, are constant (\cref{eq:overlapbloch}); only their relative phase evolves, at the Bohr frequency, and this
+phase \emph{is} the azimuthal angle around the cone.
+\begin{itemize}
+  \item The two eigenstates of $H$ are the points $\pm\vec h/|\vec h|$ ($\beta_0=0$ or $\pi$): a cone of zero opening, so they do not move. Stationary states are the fixed points of the rotation.
+  \item A state perpendicular to $\vec h$ ($\beta_0=\pi/2$) moves on a great circle: this is the case of maximal oscillation of the observables.
+\end{itemize}
+
+\begin{figure}[h]\centering
+\begin{tikzpicture}[scale=2.2]
+  \draw[gray] (0,0) circle (1);
+  \draw[gray,dashed] (1,0) arc (0:180:1 and 0.28);
+  \draw[gray] (-1,0) arc (180:360:1 and 0.28);
+  \draw[->,very thick,blue] (0,0)--(0,1.35) node[above]{$\vec h$ (axis fixed by $H$, e.g.\ $\vec B$)};
+  \draw[thick,red!70!black] (0,0.71) ellipse (0.71 and 0.2);
+  \draw[->,very thick,red] (0,0)--(0.54,0.58) node[right]{$\vec S(t)$};
+  \draw[dashed,red!60] (0,0)--(-0.71,0.71);
+  \draw[->,thick,red!70!black] (0.25,0.53) arc (-70:-20:0.5 and 0.15);
+  \node[red!70!black,font=\small] at (1.15,0.75) {$\vec\omega_p=\tfrac2\hbar\vec h$};
+  \draw (0,0.3) arc (90:47:0.3); \node at (0.1,0.4) {\small$\beta_0$};
+  \fill[blue] (0,1) circle (0.8pt) node[left,font=\small]{eigenstate};
+  \fill[blue] (0,-1) circle (0.8pt) node[left,font=\small]{eigenstate};
+\end{tikzpicture}
+\caption{Precession on the Bloch sphere. The axis $\vec h$ is set by the Hamiltonian and stays fixed. The Bloch vector $\vec S$ of the state rotates around it on a cone,
+counterclockwise when viewed from the tip of $\vec h$, at the Bohr frequency $(E_+-E_-)/\hbar$. The opening angle $\beta_0$ (i.e.\ the populations of the eigenstates)
+is conserved. The eigenstates $\pm\vec h/|\vec h|$ do not move.}\label{fig:precession}
+\end{figure}
+
+\paragraph{Explicit solution for an axis along $z$.} Take $\vec h=h_z\vec e_z$, i.e.\ $H=h_z\sigma_z$. Then \cref{eq:precession2} reads $\dot S_x=-\omega_pS_y$,
+$\dot S_y=\omega_pS_x$, $\dot S_z=0$, with $\omega_p=2h_z/\hbar$, so
+\begin{equation}
+  S_x+\ii S_y=\sin\theta\,\e^{\ii(\varphi_0+\omega_pt)},\qquad S_z=\cos\theta=\text{const}.
+\end{equation}
+The polar angle is fixed and the azimuth grows linearly. The same result follows directly from the Schrödinger equation: the component $\ket0$ (energy $+h_z$) acquires the
+phase $\e^{-\ii h_zt/\hbar}$ and $\ket1$ the phase $\e^{+\ii h_zt/\hbar}$, so the relative phase $\varphi$ in \cref{eq:blochstate} grows as $\varphi_0+2h_zt/\hbar$.
+\emph{Precession is nothing but the evolution of the relative phase between the two energy eigenstates.}
+
+\paragraph{Example 1: the gate of \cref{sec:simplest}.} For $H=\frac{\hbar\omega}2\sigma_x$, $\vec h=\frac{\hbar\omega}2\vec e_x$ and $\vec\omega_p=\omega\vec e_x$. Starting from
+$\ket0$ (north pole), $\vec S$ is perpendicular to the axis and moves on the great circle in the $yz$ plane:
+$\vec S(t)=(0,-\sin\omega t,\cos\omega t)$. (Check with $\psi(t)=(\cos\frac{\omega t}2,-\ii\sin\frac{\omega t}2)$: $S_z=\cos^2-\sin^2=\cos\omega t$,
+$S_y=2\operatorname{Im}(\alpha^*\beta)=-\sin\omega t$.) The right-hand rotation about $+x$ takes $+z$ towards $-y$, as found. At $\omega t=\pi$ the spin is at the south pole:
+the NOT gate is a half-turn around $x$.
+
+\paragraph{Example 2: detuned Rabi oscillations.} For the driven atom in the rotating frame, \cref{eq:HRWA}, $\vec h=\frac\hbar2(\Omega,0,-\Delta)$: the axis is tilted from the
+equator by the detuning. Starting at the north pole, $\vec S$ moves on a cone around this tilted axis, with angular frequency $\Omega_R=\sqrt{\Omega^2+\Delta^2}$. If $\beta$
+is the angle between the axis and $\vec e_z$, $\cos\beta=-\Delta/\Omega_R$, the cone reaches at most the polar angle $2\beta$, so the maximal excited population is
+$\frac{1-\cos2\beta}2=\sin^2\beta=\Omega^2/\Omega_R^2$. The Rabi formula \cref{eq:rabiformula} is pure geometry: only at resonance ($\Delta=0$) is the axis in the equatorial
+plane and the cone a great circle through both poles.
+
+\paragraph{A real spin in a magnetic field.} With $H=-\vec\mu\cdot\vec B=-\frac{\hbar\gamma}2\vec B\cdot\vec\sigma$ (\cref{sec:spin}), $\vec\Omega=\gamma\vec B$ and
+\cref{eq:precession} is the Larmor equation
+\begin{equation}
+  \frac{\dd\vec\mu}{\dd t}=\gamma\,\vec\mu\times\vec B=-\gamma\vec B\times\vec\mu .
+\end{equation}
+The magnetic moment (and the spin) precesses around $\vec B$ at the Larmor frequency $\omega_L=|\gamma|B$. The sense depends on the sign of $\gamma$: for the proton
+($\gamma>0$) the precession is clockwise seen from the tip of $\vec B$; for the electron ($\gamma<0$, the moment is antiparallel to the spin) it is counterclockwise.
+Classically, this is a gyroscope: the field exerts the torque $\vec\tau=\vec\mu\times\vec B$ on a body with angular momentum $\vec L=\vec\mu/\gamma$, and since $\dd\vec L/\dd t=\vec\tau$
+is perpendicular to $\vec L$, the torque does not align $\vec L$ with $\vec B$ (as a compass needle with friction would) but makes it turn around $\vec B$, exactly like a spinning
+top in gravity. \emph{A spin never aligns with the field by precession alone}: alignment, i.e.\ relaxation to the ground state, requires energy exchange with an environment,
+described by $T_1$ (\cref{ch:open}). Precession conserves energy; relaxation does not.
+
+\paragraph{Rotating frame.} In NMR or ESR, a static field $B_0\vec e_z$ makes the spin precess quickly ($\omega_0=\gamma B_0\sim$ hundreds of MHz), and a weak field $B_1$
+rotating in the $xy$ plane at frequency $\omega$ drives transitions. Viewed from a frame rotating with $B_1$, the spin feels the \emph{effective field}
+$\vec B_{\rm eff}=(B_0-\omega/\gamma)\vec e_z+B_1\vec e_x$: the rotation of the frame subtracts $\omega/\gamma$ from the static field (this is the Bloch-vector version of
+\cref{eq:frame}). At resonance the $z$ component vanishes and the spin precesses slowly around $B_1$ in the equatorial plane, from the north to the south pole: this slow
+precession, seen in the lab as a spiral down the sphere, is the Rabi oscillation (``nutation'') of \cref{sec:rabi}, with $\Omega=\gamma B_1$ and $\Delta=\omega_0-\omega$.
 
 \begin{keypoint}
 It is very useful to write both the Hamiltonian and the spinor in polar coordinates: the action of any single-qubit gate is then a rotation
