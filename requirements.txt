@@ -5,3 +5,5 @@ qiskit
 qiskit-aer
 qiskit-ibm-runtime
 ipykernel
+plotly
+nbformat
